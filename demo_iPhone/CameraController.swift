@@ -38,7 +38,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         checkPhotoLibraryAuthorization(checkedCameraAuthorization(_:))
         
         // configure first capture session
-        configureNewSession(sessionPreset: AVCaptureSessionPresetLow)
+        configureNewSession(sessionPreset: AVCaptureSessionPresetPhoto)
         
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
@@ -49,15 +49,17 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func configureNewSession(sessionPreset: String) {
+        self.sessionPreset = sessionPreset
+        
         let videoCaptureDevice = defaultDevice()
         guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
             print("Cannot get video input from camera.")
             return
         }
         
-        let capturePhotoOutput = AVCapturePhotoOutput()
-        capturePhotoOutput.isHighResolutionCaptureEnabled = true
-        capturePhotoOutput.isLivePhotoCaptureEnabled = false
+        self.capturePhotoOutput = AVCapturePhotoOutput()
+        self.capturePhotoOutput.isHighResolutionCaptureEnabled = true
+        self.capturePhotoOutput.isLivePhotoCaptureEnabled = false
         
         self.captureSession = AVCaptureSession()
         self.captureSession.beginConfiguration()
@@ -65,11 +67,20 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureSession.addInput(videoInput)
         self.captureSession.addOutput(capturePhotoOutput)
         self.captureSession.commitConfiguration()
-        self.capturePhotoOutput = capturePhotoOutput
+        
+        print("New session configured.")
+    }
+    
+    func useCaptureSessionPreset(_ sessionPreset: String) {
+        if sessionPreset != self.sessionPreset {
+            configureNewSession(sessionPreset: sessionPreset)
+        }
     }
     
     func takePhoto(photoSettings: AVCapturePhotoSettings) {
+        print("Capturing photo: \(self.capturePhotoOutput)")
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+        print("Started capturing photo.")
     }
     
     //MARK: AVCapturePhotoCaptureDelegate
@@ -78,7 +89,10 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         //print("Finished processing sample buffer.")
-        self.photoSampleBuffers.append(photoSampleBuffer!)
+        guard let photoSampleBuffer = photoSampleBuffer else {
+            fatalError("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
+        }
+        self.photoSampleBuffers.append(photoSampleBuffer)
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {

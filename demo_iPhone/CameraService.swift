@@ -111,10 +111,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         // handle camera instruction
         switch packet.cameraInstruction! {
         case CameraInstruction.CaptureStillImage:
+            self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
             self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
             break
         case CameraInstruction.CapturePhotoBracket:
+            self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
             let settings = self.cameraController.photoBracketSettings
+            print("SETTINGS: \(packet.captureSessionPreset)")
             self.cameraController.takePhoto(photoSettings: settings)
             break
         case CameraInstruction.EndCaptureSession:

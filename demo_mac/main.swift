@@ -10,6 +10,7 @@ import Foundation
 import Cocoa
 import CoreFoundation
 import CocoaAsyncSocket
+import AVFoundation
 
 let app = NSApplication.shared()    // creates new shared application -- is necessary to create new windows
 // will need to call NSApp.run() -> starts main event loop
@@ -41,7 +42,7 @@ func captureNextBracket() {
     displayController.windows.first!.drawImage(image)
     
     let cameraInstruction = CameraInstruction.CapturePhotoBracket
-    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: cameraInstruction)
+    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: cameraInstruction, captureSessionPreset: AVCaptureSessionPresetMedium)
     cameraServiceBrowser.sendPacket(cameraInstructionPacket)
     
     photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)", photoCount: 3, completionHandler: captureNextBracket)
