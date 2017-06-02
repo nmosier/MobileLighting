@@ -169,11 +169,11 @@
 		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
 			isa = PBXGroup;
 			children = (
+				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
 				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
 				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
-				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 			);
 			path = demo_mac;
 			sourceTree = "<group>";
@@ -503,6 +503,7 @@
 				E11F1FCC1EE1B521008F9F0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "demo_mac" */ = {
 			isa = XCConfigurationList;
@@ -511,6 +512,7 @@
 				E11F1FDF1EE1B5A2008F9F0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
