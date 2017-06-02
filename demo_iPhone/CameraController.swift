@@ -150,7 +150,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }, completionHandler: completionHandler(_:_:))
     }
     
-    // from Apple's Photo Capture Programmign Guide
+    // based on code from Apple's Photo Capture Programming Guide
     // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
     func defaultDevice() -> AVCaptureDevice {
         if let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInDuoCamera,
@@ -162,7 +162,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                                                              position: .back) {
             return device // use default back facing camera otherwise
         } else {
-            fatalError("All supported devices are expected to have at least one of the queried capture devices.")
+            fatalError("No capture device found.")
         }
     }
 }

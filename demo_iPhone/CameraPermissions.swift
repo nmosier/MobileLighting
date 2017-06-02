@@ -18,26 +18,26 @@ import Foundation
 import AVFoundation
 import Photos
 
-// from Apple's Photo Capture Programmign Guide
+// based on code from Apple's Photo Capture Programming Guide
 // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
 func checkCameraAuthorization(_ completionHandler: @escaping ((_ authorized: Bool) -> Void)) {
     switch AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo) {
     case .authorized:
-        //The user has previously granted access to the camera.
+        // is authorized
         completionHandler(true)
         
     case .notDetermined:
-        // The user has not yet been presented with the option to grant video access so request access.
+        // need to ask for access
         AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { success in
             completionHandler(success)
         })
         
     case .denied:
-        // The user has previously denied access.
+        // access already denied
         completionHandler(false)
         
     case .restricted:
-        // The user doesn't have the authority to request access e.g. parental restriction.
+        // parental restriction enabled?
         completionHandler(false)
     }
 }
@@ -48,26 +48,27 @@ func checkedCameraAuthorization(_ authorized: Bool) {
     }
 }
 
-// from Apple's Photo Capture Programmign Guide
+// based on code from Apple's Photo Capture Programming Guide
 // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
 func checkPhotoLibraryAuthorization(_ completionHandler: @escaping ((_ authorized: Bool) -> Void)) {
     switch PHPhotoLibrary.authorizationStatus() {
     case .authorized:
-        // The user has previously granted access to the photo library.
+        // can already access photo library
         completionHandler(true)
         
     case .notDetermined:
-        // The user has not yet been presented with the option to grant photo library access so request access.
+        // Need to request access
+        PHPhotoLibrary.requestAuthorization(<#T##handler: (PHAuthorizationStatus) -> Void##(PHAuthorizationStatus) -> Void#>)
         PHPhotoLibrary.requestAuthorization({ status in
             completionHandler((status == .authorized))
         })
         
     case .denied:
-        // The user has previously denied access.
+        // access denied
         completionHandler(false)
         
     case .restricted:
-        // The user doesn't have the authority to request access e.g. parental restriction.
+        // parental restriction enabled?
         completionHandler(false)
     }
 }
