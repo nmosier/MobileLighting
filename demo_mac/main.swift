@@ -11,7 +11,7 @@ import Cocoa
 import CoreFoundation
 import CocoaAsyncSocket
 
-NSApplication.shared()    // creates new shared application -- is necessary to create new windows
+let app = NSApplication.shared()    // creates new shared application -- is necessary to create new windows
 // will need to call NSApp.run() -> starts main event loop
 
 var cameraServiceBrowser: CameraServiceBrowser!
@@ -74,29 +74,9 @@ func temp() {
     instructionInputQueue.async {
         while !cameraServiceBrowser.readyToSendPacket {}
         captureNextBracket()
-        /*
-         while true {
-         
-         // make sure can send camera instruction
-         guard self.cameraServiceBrowser.readyToSendPacket else {
-         continue
-         }
-         //self.cameraServiceBrowser.getInstructionPrompt()
-         let cameraInstruction = CameraInstruction.CapturePhotoBracket
-         let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: cameraInstruction)
-         self.cameraServiceBrowser.sendPacket(cameraInstructionPacket)
-         
-         // for testing
-         self.photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)-", photoCount: 3, completionHandler: self.changeImage)
-         
-         bracketNumber += 1
-         }*/
     }
 }
 
 temp()
 
-//NSMenu.setMenuBarVisible(false)
-//let appDelegate = AppDelegate()
-//app.delegate = appDelegate
 NSApp.run()

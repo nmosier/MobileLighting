@@ -32,6 +32,7 @@
 		E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */; };
 		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
+		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -93,6 +94,7 @@
 		E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPermissions.swift; sourceTree = "<group>"; };
 		E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
+		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,6 +171,7 @@
 		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
 			isa = PBXGroup;
 			children = (
+				E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */,
 				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
@@ -295,6 +298,7 @@
 				E11F1FEB1EE1B7C1008F9F0F /* FullscreenWindow.swift in Sources */,
 				E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */,
 				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
 				E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */,
 				E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */,
