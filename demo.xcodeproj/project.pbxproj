@@ -7,31 +7,108 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E11F1FA21EE1B3B4008F9F0F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FA11EE1B3B4008F9F0F /* main.swift */; };
+		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
+		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
+		E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FB61EE1B521008F9F0F /* Main.storyboard */; };
+		E11F1FBA1EE1B521008F9F0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FB91EE1B521008F9F0F /* Assets.xcassets */; };
+		E11F1FBD1EE1B521008F9F0F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */; };
+		E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */; };
+		E11F1FD41EE1B57C008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FDB1EE1B5A2008F9F0F /* main.swift */; };
+		E11F1FE01EE1B5B7008F9F0F /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
+		E11F1FE21EE1B5CA008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE31EE1B730008F9F0F /* CameraController.swift */; };
+		E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */; };
+		E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */; };
+		E11F1FEB1EE1B7C1008F9F0F /* FullscreenWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */; };
+		E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */; };
+		E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */; };
+		E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
+		E11F1FF21EE1B90F008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
+		E11F1FF51EE1BA96008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E11F1FF91EE1BBD7008F9F0F /* CameraPermissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */; };
+		E11F1FFA1EE1BBD7008F9F0F /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */; };
+		E11F1FFB1EE1BBD7008F9F0F /* PhotoSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */; };
+		E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */; };
+		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
+		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		E11F1F9C1EE1B3B4008F9F0F /* CopyFiles */ = {
+		E11F1FD21EE1B55B008F9F0F /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			dstPath = "";
+			dstSubfolderSpec = 10;
 			files = (
+				E11F1FD41EE1B57C008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E11F1FD71EE1B5A2008F9F0F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = usr/share/man/man1;
+			dstSubfolderSpec = 10;
+			files = (
+				E11F1FE21EE1B5CA008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E11F1FF31EE1BA82008F9F0F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E11F1FF51EE1BA96008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E11F1F9E1EE1B3B4008F9F0F /* demo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo; sourceTree = BUILT_PRODUCTS_DIR; };
-		E11F1FA11EE1B3B4008F9F0F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = demo_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E11F1FB41EE1B521008F9F0F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E11F1FB71EE1B521008F9F0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E11F1FB91EE1B521008F9F0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E11F1FBC1EE1B521008F9F0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		E11F1FBE1EE1B521008F9F0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FD91EE1B5A2008F9F0F /* demo_mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_mac; sourceTree = BUILT_PRODUCTS_DIR; };
+		E11F1FDB1EE1B5A2008F9F0F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FE31EE1B730008F9F0F /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
+		E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraServiceBrowser.swift; sourceTree = "<group>"; };
+		E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayController.swift; sourceTree = "<group>"; };
+		E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FullscreenWindow.swift; sourceTree = "<group>"; };
+		E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoReceiver.swift; sourceTree = "<group>"; };
+		E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraInstructionPacket.swift; sourceTree = "<group>"; };
+		E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDataPacket.swift; sourceTree = "<group>"; };
+		E11F1FEF1EE1B90F008F9F0F /* Timing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Timing.swift; sourceTree = "<group>"; };
+		E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPermissions.swift; sourceTree = "<group>"; };
+		E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		E11F1F9B1EE1B3B4008F9F0F /* Frameworks */ = {
+		E11F1FAD1EE1B521008F9F0F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E11F1FD61EE1B5A2008F9F0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E11F1FE01EE1B5B7008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,45 +118,103 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
-				E11F1FA01EE1B3B4008F9F0F /* demo */,
+				E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */,
+				E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */,
+				E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */,
+				E11F1FEF1EE1B90F008F9F0F /* Timing.swift */,
+				E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */,
+				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
+				E11F1FB11EE1B521008F9F0F /* demo_iPhone */,
+				E11F1FDA1EE1B5A2008F9F0F /* demo_mac */,
 				E11F1F9F1EE1B3B4008F9F0F /* Products */,
+				E11F1FA81EE1B4E7008F9F0F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		E11F1F9F1EE1B3B4008F9F0F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E11F1F9E1EE1B3B4008F9F0F /* demo */,
+				E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */,
+				E11F1FD91EE1B5A2008F9F0F /* demo_mac */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E11F1FA01EE1B3B4008F9F0F /* demo */ = {
+		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E11F1FA11EE1B3B4008F9F0F /* main.swift */,
+				E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */,
+				E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */,
 			);
-			path = demo;
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E11F1FB11EE1B521008F9F0F /* demo_iPhone */ = {
+			isa = PBXGroup;
+			children = (
+				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
+				E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */,
+				E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */,
+				E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */,
+				E11F1FB41EE1B521008F9F0F /* ViewController.swift */,
+				E11F1FB61EE1B521008F9F0F /* Main.storyboard */,
+				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
+				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
+				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
+				E11F1FE31EE1B730008F9F0F /* CameraController.swift */,
+			);
+			path = demo_iPhone;
+			sourceTree = "<group>";
+		};
+		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
+			isa = PBXGroup;
+			children = (
+				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
+				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
+				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
+				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
+				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
+			);
+			path = demo_mac;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E11F1F9D1EE1B3B4008F9F0F /* demo */ = {
+		E11F1FAF1EE1B521008F9F0F /* demo_iPhone */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E11F1FA51EE1B3B4008F9F0F /* Build configuration list for PBXNativeTarget "demo" */;
+			buildConfigurationList = E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "demo_iPhone" */;
 			buildPhases = (
-				E11F1F9A1EE1B3B4008F9F0F /* Sources */,
-				E11F1F9B1EE1B3B4008F9F0F /* Frameworks */,
-				E11F1F9C1EE1B3B4008F9F0F /* CopyFiles */,
+				E11F1FAC1EE1B521008F9F0F /* Sources */,
+				E11F1FAD1EE1B521008F9F0F /* Frameworks */,
+				E11F1FAE1EE1B521008F9F0F /* Resources */,
+				E11F1FD21EE1B55B008F9F0F /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = demo;
-			productName = demo;
-			productReference = E11F1F9E1EE1B3B4008F9F0F /* demo */;
+			name = demo_iPhone;
+			productName = demo_iPhone;
+			productReference = E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E11F1FD81EE1B5A2008F9F0F /* demo_mac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "demo_mac" */;
+			buildPhases = (
+				E11F1FD51EE1B5A2008F9F0F /* Sources */,
+				E11F1FD61EE1B5A2008F9F0F /* Frameworks */,
+				E11F1FD71EE1B5A2008F9F0F /* CopyFiles */,
+				E11F1FF31EE1BA82008F9F0F /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = demo_mac;
+			productName = demo_mac;
+			productReference = E11F1FD91EE1B5A2008F9F0F /* demo_mac */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -92,7 +227,12 @@
 				LastUpgradeCheck = 0830;
 				ORGANIZATIONNAME = "Nicholas Mosier";
 				TargetAttributes = {
-					E11F1F9D1EE1B3B4008F9F0F = {
+					E11F1FAF1EE1B521008F9F0F = {
+						CreatedOnToolsVersion = 8.3.2;
+						DevelopmentTeam = P4K2URYK54;
+						ProvisioningStyle = Automatic;
+					};
+					E11F1FD81EE1B5A2008F9F0F = {
 						CreatedOnToolsVersion = 8.3.2;
 						DevelopmentTeam = P4K2URYK54;
 						ProvisioningStyle = Automatic;
@@ -105,27 +245,84 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = E11F1F951EE1B3B4008F9F0F;
 			productRefGroup = E11F1F9F1EE1B3B4008F9F0F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E11F1F9D1EE1B3B4008F9F0F /* demo */,
+				E11F1FAF1EE1B521008F9F0F /* demo_iPhone */,
+				E11F1FD81EE1B5A2008F9F0F /* demo_mac */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E11F1FAE1EE1B521008F9F0F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E11F1FBD1EE1B521008F9F0F /* LaunchScreen.storyboard in Resources */,
+				E11F1FBA1EE1B521008F9F0F /* Assets.xcassets in Resources */,
+				E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
-		E11F1F9A1EE1B3B4008F9F0F /* Sources */ = {
+		E11F1FAC1EE1B521008F9F0F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E11F1FA21EE1B3B4008F9F0F /* main.swift in Sources */,
+				E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */,
+				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,
+				E11F1FFA1EE1BBD7008F9F0F /* CameraService.swift in Sources */,
+				E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */,
+				E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */,
+				E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */,
+				E11F1FF91EE1BBD7008F9F0F /* CameraPermissions.swift in Sources */,
+				E11F1FFB1EE1BBD7008F9F0F /* PhotoSender.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E11F1FD51EE1B5A2008F9F0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E11F1FEB1EE1B7C1008F9F0F /* FullscreenWindow.swift in Sources */,
+				E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */,
+				E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
+				E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */,
+				E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */,
+				E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */,
+				E11F1FF21EE1B90F008F9F0F /* Timing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		E11F1FB61EE1B521008F9F0F /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E11F1FB71EE1B521008F9F0F /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E11F1FBC1EE1B521008F9F0F /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		E11F1FA31EE1B3B4008F9F0F /* Debug */ = {
@@ -218,19 +415,70 @@
 			};
 			name = Release;
 		};
-		E11F1FA61EE1B3B4008F9F0F /* Debug */ = {
+		E11F1FCB1EE1B521008F9F0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = P4K2URYK54;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = demo_iPhone/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.demo-iPhone";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		E11F1FCC1EE1B521008F9F0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = P4K2URYK54;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = demo_iPhone/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.demo-iPhone";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E11F1FDE1EE1B5A2008F9F0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = P4K2URYK54;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
-		E11F1FA71EE1B3B4008F9F0F /* Release */ = {
+		E11F1FDF1EE1B5A2008F9F0F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = P4K2URYK54;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -248,11 +496,19 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E11F1FA51EE1B3B4008F9F0F /* Build configuration list for PBXNativeTarget "demo" */ = {
+		E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "demo_iPhone" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E11F1FA61EE1B3B4008F9F0F /* Debug */,
-				E11F1FA71EE1B3B4008F9F0F /* Release */,
+				E11F1FCB1EE1B521008F9F0F /* Debug */,
+				E11F1FCC1EE1B521008F9F0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "demo_mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E11F1FDE1EE1B5A2008F9F0F /* Debug */,
+				E11F1FDF1EE1B5A2008F9F0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};

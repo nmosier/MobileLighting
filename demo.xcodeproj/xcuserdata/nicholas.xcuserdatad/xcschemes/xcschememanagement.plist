@@ -9,10 +9,35 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>demo_iPhone.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>demo_mac.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>E11F1F9D1EE1B3B4008F9F0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E11F1FAF1EE1B521008F9F0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E11F1FC21EE1B521008F9F0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E11F1FD81EE1B5A2008F9F0F</key>
 		<dict>
 			<key>primary</key>
 			<true/>
