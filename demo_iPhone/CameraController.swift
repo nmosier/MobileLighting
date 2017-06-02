@@ -13,17 +13,43 @@ import Photos
 class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     //MARK: Properties
     var captureSession: AVCaptureSession!
+    var captureDevice: AVCaptureDevice!
     var capturePhotoOutput: AVCapturePhotoOutput!
     var photoSampleBuffers = [CMSampleBuffer]()
     var sessionPreset: String!
     
+    var minExposureDuration: CMTime {
+        get {
+            return self.captureDevice.activeFormat.minExposureDuration
+        }
+    }
+    var maxExposureDuration: CMTime {
+        get {
+            return self.captureDevice.activeFormat.maxExposureDuration
+        }
+    }
+    var photoBracketExposures: [Double]?
+    
     var photoBracketSettings: AVCapturePhotoBracketSettings {
         get {
-            let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
-                                   AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
-                                   AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
-            
-            return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
+            if let photoBracketExposures = self.photoBracketExposures {
+                // use specified exposure settings
+                var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
+                for exposure in photoBracketExposures {
+                    guard exposure >= minExposureDuration.seconds && exposure <= maxExposureDuration.seconds else {
+                        fatalError("Exposures not within allowed range.\nExposure must be between \(minExposureDuration) and \(maxExposureDuration).")
+                    }
+                    let exposureTime = CMTime(seconds: exposure, preferredTimescale: 1000000)   // magic number provided by maxExposureDuration property
+                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
+                }
+                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
+            } else {
+                // use default exposure settings
+                let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
+                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
+                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
+                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
+            }
         }
     }
     
@@ -51,8 +77,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     func configureNewSession(sessionPreset: String) {
         self.sessionPreset = sessionPreset
         
-        let videoCaptureDevice = defaultDevice()
-        guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
+        self.captureDevice = defaultDevice()
+        guard let videoInput = try? AVCaptureDeviceInput(device: self.captureDevice) else {
             print("Cannot get video input from camera.")
             return
         }

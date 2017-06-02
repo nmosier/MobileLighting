@@ -42,7 +42,8 @@ func captureNextBracket() {
     displayController.windows.first!.drawImage(image)
     
     let cameraInstruction = CameraInstruction.CapturePhotoBracket
-    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: cameraInstruction, captureSessionPreset: AVCaptureSessionPresetMedium)
+    let exposure = CMTime(seconds: 0.1, preferredTimescale: 1000000)
+    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, captureSessionPreset: AVCaptureSessionPresetPhoto, photoBracketExposures: [0.05, 0.1, 0.15])
     cameraServiceBrowser.sendPacket(cameraInstructionPacket)
     
     photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)", photoCount: 3, completionHandler: captureNextBracket)

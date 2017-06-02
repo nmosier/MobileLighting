@@ -114,15 +114,22 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
             self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
             break
+            
         case CameraInstruction.CapturePhotoBracket:
+            guard let exposureTimes = packet.photoBracketExposures else {
+                print("ERROR: exposure times not provided for bracketed photo sequence.")
+                break
+            }
+            self.cameraController.photoBracketExposures = exposureTimes
             self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
             let settings = self.cameraController.photoBracketSettings
-            print("SETTINGS: \(packet.captureSessionPreset)")
             self.cameraController.takePhoto(photoSettings: settings)
             break
+            
         case CameraInstruction.EndCaptureSession:
             self.cameraController.captureSession.stopRunning()
             print("Capture session ended.")
+            
         }
     }
 }
