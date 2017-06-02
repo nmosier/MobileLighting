@@ -156,6 +156,7 @@
 			children = (
 				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
 				E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */,
+				E11F1FE31EE1B730008F9F0F /* CameraController.swift */,
 				E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */,
 				E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */,
 				E11F1FB41EE1B521008F9F0F /* ViewController.swift */,
@@ -163,7 +164,6 @@
 				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
 				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
-				E11F1FE31EE1B730008F9F0F /* CameraController.swift */,
 			);
 			path = demo_iPhone;
 			sourceTree = "<group>";

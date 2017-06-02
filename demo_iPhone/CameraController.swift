@@ -15,6 +15,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     var captureSession: AVCaptureSession!
     var capturePhotoOutput: AVCapturePhotoOutput!
     var photoSampleBuffers = [CMSampleBuffer]()
+    var sessionPreset: String!
     
     var photoBracketSettings: AVCapturePhotoBracketSettings {
         get {
@@ -36,33 +37,35 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         checkCameraAuthorization(checkedCameraAuthorization(_:))
         checkPhotoLibraryAuthorization(checkedCameraAuthorization(_:))
         
-        // configure video input (?)
-        let videoCaptureDevice = defaultDevice()
-        guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
-            print("Cannot get video input from camera.")
-            return
-        }
+        // configure first capture session
+        configureNewSession(sessionPreset: AVCaptureSessionPresetLow)
         
-        // configure photo output
-        let capturePhotoOutput = AVCapturePhotoOutput()
-        capturePhotoOutput.isHighResolutionCaptureEnabled = true
-        capturePhotoOutput.isLivePhotoCaptureEnabled = capturePhotoOutput.isLivePhotoCaptureSupported
-        
-        // configure capture session
-        self.captureSession = AVCaptureSession()
-        self.captureSession.beginConfiguration()
-        self.captureSession.sessionPreset = AVCaptureSessionPresetPhoto
-        self.captureSession.addInput(videoInput)
-        self.captureSession.addOutput(capturePhotoOutput)
-        self.captureSession.commitConfiguration()
-        
-        self.capturePhotoOutput = capturePhotoOutput
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
         
         // set up photo sender service browser
         self.photoSender = PhotoSender()
         self.photoSender.startBrowsing()
+    }
+    
+    func configureNewSession(sessionPreset: String) {
+        let videoCaptureDevice = defaultDevice()
+        guard let videoInput = try? AVCaptureDeviceInput(device: videoCaptureDevice) else {
+            print("Cannot get video input from camera.")
+            return
+        }
+        
+        let capturePhotoOutput = AVCapturePhotoOutput()
+        capturePhotoOutput.isHighResolutionCaptureEnabled = true
+        capturePhotoOutput.isLivePhotoCaptureEnabled = false
+        
+        self.captureSession = AVCaptureSession()
+        self.captureSession.beginConfiguration()
+        self.captureSession.sessionPreset = sessionPreset
+        self.captureSession.addInput(videoInput)
+        self.captureSession.addOutput(capturePhotoOutput)
+        self.captureSession.commitConfiguration()
+        self.capturePhotoOutput = capturePhotoOutput
     }
     
     func takePhoto(photoSettings: AVCapturePhotoSettings) {
@@ -74,7 +77,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
-        print("Finished processing sample buffer.")
+        //print("Finished processing sample buffer.")
         self.photoSampleBuffers.append(photoSampleBuffer!)
     }
     
