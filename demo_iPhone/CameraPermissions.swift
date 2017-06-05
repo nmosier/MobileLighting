@@ -58,7 +58,6 @@ func checkPhotoLibraryAuthorization(_ completionHandler: @escaping ((_ authorize
         
     case .notDetermined:
         // Need to request access
-        PHPhotoLibrary.requestAuthorization(<#T##handler: (PHAuthorizationStatus) -> Void##(PHAuthorizationStatus) -> Void#>)
         PHPhotoLibrary.requestAuthorization({ status in
             completionHandler((status == .authorized))
         })

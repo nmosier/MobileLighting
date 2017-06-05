@@ -11,6 +11,20 @@ import CocoaAsyncSocket
 import AVFoundation
 
 class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
+    //MARK: constants
+    let resolutionToSessionPreset: [String : String] = [
+        "max"   : AVCaptureSessionPresetPhoto,
+        "high"  : AVCaptureSessionPresetHigh,
+        "medium": AVCaptureSessionPresetMedium,
+        "low"   : AVCaptureSessionPresetLow,
+        "352x288":AVCaptureSessionPreset352x288,
+        "640x480":AVCaptureSessionPreset640x480,
+        "1280x720":AVCaptureSessionPreset1280x720,
+        "1920x1080":AVCaptureSessionPreset1920x1080,
+        "3840x2160":AVCaptureSessionPreset3840x2160
+    ];
+    
+    
     //MARK: Properties
     var service: NetService?
     var services = [NetService]()
@@ -121,7 +135,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 break
             }
             self.cameraController.photoBracketExposures = exposureTimes
-            self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
+            guard let preset = resolutionToSessionPreset[packet.captureSessionPreset] else {
+                print("Error: resolution \(packet.captureSessionPreset) is not compatable with this device.")
+                return
+            }
+            self.cameraController.useCaptureSessionPreset(preset)
             let settings = self.cameraController.photoBracketSettings
             self.cameraController.takePhoto(photoSettings: settings)
             break

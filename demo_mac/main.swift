@@ -22,13 +22,19 @@ var displayController: DisplayController!
 let bracketCount = 10
 var bracketNumber = 0
 
-func createCGImage(filePath: String) -> CGImage {
-    let url = NSURL(fileURLWithPath: filePath)
-    let dataProvider = CGDataProvider(url: url)
-    return CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: false, intent: .defaultIntent)!
+func getBracketSpecs() {
+    print("Resolution:\t", terminator: "")
+    let sessionPreset = readLine(strippingNewline: true)!
+    print("Exposure settings:\t", terminator: "")
+    let exposureInput = readLine(strippingNewline: true)!
+    let photoCount = exposureInput.characters.split(separator: " ")
+    let exposures = photoCount.map {
+        Double(String($0))!
+    }
+    captureNextBracket(captureSessionPreset: sessionPreset, exposureTimes: exposures)
 }
 
-func captureNextBracket() {
+func captureNextBracket(captureSessionPreset: String, exposureTimes: [Double]) {
     guard cameraServiceBrowser.readyToSendPacket else {
         return
     }
@@ -37,48 +43,40 @@ func captureNextBracket() {
         return
     }
     
-    let image = createCGImage(filePath: "/Users/nicholas/Desktop/display_images/\(bracketNumber%2).jpg")
+    let image = displayController.createCGImage(filePath: "/Users/nicholas/Desktop/display_images/\(bracketNumber%2).jpg")
     displayController.windows.first!.image = image
     displayController.windows.first!.drawImage(image)
     
-    let cameraInstruction = CameraInstruction.CapturePhotoBracket
-    let exposure = CMTime(seconds: 0.1, preferredTimescale: 1000000)
-    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, captureSessionPreset: AVCaptureSessionPresetPhoto, photoBracketExposures: [0.05, 0.1, 0.15])
+    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, captureSessionPreset: captureSessionPreset, photoBracketExposures: exposureTimes)
     cameraServiceBrowser.sendPacket(cameraInstructionPacket)
     
-    photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)", photoCount: 3, completionHandler: captureNextBracket)
+    photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)", photoCount: exposureTimes.count, completionHandler: getBracketSpecs)
     bracketNumber += 1
 }
 
 
 
-func temp() {
-    displayController = DisplayController()
-    guard NSScreen.screens()!.count > 1  else {
-        print("Only one screen connected.")
-        return
-    }
-    for screen in NSScreen.screens()! {
-        if screen != NSScreen.main()! {
-            displayController.createNewWindow(on: screen)
-        }
-    }
-    
-    //displayController.windows.first!.image = createCGImage(filePath: "/Users/nicholas/Desktop/display_images/1.jpg")
-    
-    cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver()
-    
-    photoReceiver.startBroadcast()
-    cameraServiceBrowser.startBrowsing()
-    
-    let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue")
-    instructionInputQueue.async {
-        while !cameraServiceBrowser.readyToSendPacket {}
-        captureNextBracket()
+displayController = DisplayController()
+guard NSScreen.screens()!.count > 1  else {
+    print("Only one screen connected.")
+    fatalError()
+}
+for screen in NSScreen.screens()! {
+    if screen != NSScreen.main()! {
+        displayController.createNewWindow(on: screen)
     }
 }
 
-temp()
+cameraServiceBrowser = CameraServiceBrowser()
+photoReceiver = PhotoReceiver()
+
+photoReceiver.startBroadcast()
+cameraServiceBrowser.startBrowsing()
+
+let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue")
+instructionInputQueue.async {
+    while !cameraServiceBrowser.readyToSendPacket {}
+    getBracketSpecs()
+}
 
 NSApp.run()

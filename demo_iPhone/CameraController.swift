@@ -11,6 +11,9 @@ import AVFoundation
 import Photos
 
 class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
+    //MARK: constants
+    static let preferredExposureTimescale: CMTimeScale = 1000000 // magic number provided by maxExposureDuration property
+    
     //MARK: Properties
     var captureSession: AVCaptureSession!
     var captureDevice: AVCaptureDevice!
@@ -28,6 +31,11 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             return self.captureDevice.activeFormat.maxExposureDuration
         }
     }
+    var maxBracketedPhotoCount: Int {
+        get {
+            return capturePhotoOutput.maxBracketedCapturePhotoCount
+        }
+    }
     var photoBracketExposures: [Double]?
     
     var photoBracketSettings: AVCapturePhotoBracketSettings {
@@ -39,7 +47,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     guard exposure >= minExposureDuration.seconds && exposure <= maxExposureDuration.seconds else {
                         fatalError("Exposures not within allowed range.\nExposure must be between \(minExposureDuration) and \(maxExposureDuration).")
                     }
-                    let exposureTime = CMTime(seconds: exposure, preferredTimescale: 1000000)   // magic number provided by maxExposureDuration property
+                    let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
                     bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
                 }
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
@@ -104,9 +112,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func takePhoto(photoSettings: AVCapturePhotoSettings) {
+        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+            print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
+            return
+        }
         print("Capturing photo: \(self.capturePhotoOutput)")
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-        print("Started capturing photo.")
     }
     
     //MARK: AVCapturePhotoCaptureDelegate
