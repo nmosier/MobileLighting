@@ -96,6 +96,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             return
         }
         
+        printDeviceCapabilities(of: self.captureDevice)
+        
         self.capturePhotoOutput = AVCapturePhotoOutput()
         self.capturePhotoOutput.isHighResolutionCaptureEnabled = true
         self.capturePhotoOutput.isLivePhotoCaptureEnabled = false
@@ -189,5 +191,24 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         } else {
             fatalError("No capture device found.")
         }
+    }
+    
+    //MARK: Utility functions
+    
+    func printDeviceCapabilities(of device: AVCaptureDevice) {
+        print("CAPABILITIES OF CAPTURE DEVICE \(device.description):")
+        print("Focus point of interest supported: \(device.isFocusPointOfInterestSupported)")
+        print("-Focus modes:")
+        print("\tlocked: \(device.isFocusModeSupported(AVCaptureFocusMode.locked))")
+        print("\tauto focus: \(device.isFocusModeSupported(AVCaptureFocusMode.autoFocus))")
+        print("\tcontinuous auto focus: \(device.isFocusModeSupported(AVCaptureFocusMode.continuousAutoFocus))")
+        print("\tpoint of interest: \(device.isFocusPointOfInterestSupported)")
+        print("-Exposure modes")
+        print("\tlocked: \(device.isExposureModeSupported(AVCaptureExposureMode.locked))")
+        print("\tauto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.autoExpose))")
+        print("\tcontinuous auto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.continuousAutoExposure))")
+        print("-Has torch mode: \(device.hasTorch)")
+        
+        
     }
 }
