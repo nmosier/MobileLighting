@@ -117,11 +117,18 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             throw NSError()
         }
         
-        if sessionPreset != self.sessionPreset {
+        if self.sessionPreset == nil || sessionPreset != self.sessionPreset {
             // need to end current capture session
-            self.captureSession.stopRunning()
-            configureNewSession(sessionPreset: sessionPreset)
-            self.captureSession.startRunning()
+            //self.captureSession.stopRunning()
+            //configureNewSession(sessionPreset: sessionPreset)
+            //self.captureSession.startRunning()
+            
+            guard self.captureSession.canSetSessionPreset(sessionPreset) else {
+                throw NSError()
+            }
+            self.captureSession.beginConfiguration()
+            self.captureSession.sessionPreset = sessionPreset
+            self.captureSession.commitConfiguration()
         }
     }
     
