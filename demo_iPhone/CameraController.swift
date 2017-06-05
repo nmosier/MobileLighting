@@ -117,12 +117,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             throw NSError()
         }
         
-        if self.sessionPreset == nil || sessionPreset != self.sessionPreset {
-            // need to end current capture session
-            //self.captureSession.stopRunning()
-            //configureNewSession(sessionPreset: sessionPreset)
-            //self.captureSession.startRunning()
-            
+        if self.sessionPreset == nil {
+            configureNewSession(sessionPreset: sessionPreset)
+        } else if sessionPreset != self.sessionPreset {
             guard self.captureSession.canSetSessionPreset(sessionPreset) else {
                 throw NSError()
             }
@@ -215,7 +212,29 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         print("\tauto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.autoExpose))")
         print("\tcontinuous auto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.continuousAutoExposure))")
         print("-Has torch mode: \(device.hasTorch)")
+    }
+    
+    //MARK: Device configuration
+    func configureCaptureDevice(focusMode: AVCaptureFocusMode? = nil, exposureMode: AVCaptureExposureMode? = nil, flashMode: AVCaptureFlashMode? = nil,
+                                torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil) throws {
+        try self.captureDevice.lockForConfiguration()
         
+        if let focusMode = focusMode {
+            self.captureDevice.focusMode = focusMode
+        }
+        if let exposureMode = exposureMode {
+            self.captureDevice.exposureMode = exposureMode
+        }
+        if let flashMode = flashMode {
+            self.captureDevice.flashMode = flashMode    // deprecated, but including anyway (should be changed using AVCapturePhotoSettings.flashMode)
+        }
+        if let torchMode = torchMode {
+            self.captureDevice.torchMode = torchMode
+        }
+        if torchMode == .on, let torchLevel = torchLevel {
+            try self.captureDevice.setTorchModeOnWithLevel(torchLevel)
+        }
         
+        self.captureDevice.unlockForConfiguration()
     }
 }
