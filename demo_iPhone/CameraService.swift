@@ -125,7 +125,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         // handle camera instruction
         switch packet.cameraInstruction! {
         case CameraInstruction.CaptureStillImage:
-            self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
+            do {
+                try self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
+            } catch {
+                print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                return
+            }
             self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
             break
             
@@ -139,7 +145,15 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 print("Error: resolution \(packet.captureSessionPreset) is not compatable with this device.")
                 return
             }
-            self.cameraController.useCaptureSessionPreset(preset)
+            do {
+                try self.cameraController.useCaptureSessionPreset(preset)
+            } catch {
+                print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                for i in 0..<exposureTimes.count {
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                }
+                return
+            }
             let settings = self.cameraController.photoBracketSettings
             self.cameraController.takePhoto(photoSettings: settings)
             break

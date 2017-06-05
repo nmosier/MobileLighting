@@ -47,6 +47,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     guard exposure >= minExposureDuration.seconds && exposure <= maxExposureDuration.seconds else {
                         fatalError("Exposures not within allowed range.\nExposure must be between \(minExposureDuration) and \(maxExposureDuration).")
                     }
+                    
                     let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
                     bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
                 }
@@ -83,6 +84,10 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func configureNewSession(sessionPreset: String) {
+        if captureSession != nil && captureSession.isRunning {  // make sure capture session isn't running
+            captureSession.stopRunning()
+        }
+        
         self.sessionPreset = sessionPreset
         
         self.captureDevice = defaultDevice()
@@ -105,9 +110,16 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         print("New session configured.")
     }
     
-    func useCaptureSessionPreset(_ sessionPreset: String) {
+    func useCaptureSessionPreset(_ sessionPreset: String) throws {
+        guard self.captureDevice.supportsAVCaptureSessionPreset(sessionPreset) else {
+            throw NSError()
+        }
+        
         if sessionPreset != self.sessionPreset {
+            // need to end current capture session
+            self.captureSession.stopRunning()
             configureNewSession(sessionPreset: sessionPreset)
+            self.captureSession.startRunning()
         }
     }
     
@@ -127,7 +139,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         //print("Finished processing sample buffer.")
         guard let photoSampleBuffer = photoSampleBuffer else {
-            fatalError("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
+            print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
+            self.photoSender.sendPacket(PhotoDataPacket.error())  // send error
+            return
         }
         self.photoSampleBuffers.append(photoSampleBuffer)
     }

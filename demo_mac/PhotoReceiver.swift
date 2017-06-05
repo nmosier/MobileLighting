@@ -127,7 +127,12 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // -handles provided packet (saves it to file, e.g.)
     func handlePacket(_ packet: PhotoDataPacket) {
         guard let photoData = packet.photoData else {
-            print("Failed to unarchive photo data.")
+            print("PhotoReceiver: failed to unarchive photo data.")
+            return
+        }
+        
+        guard !packet.encounteredError else {
+            print("PhotoReceiver: encountered error in photo capture/delivery.")
             return
         }
         
