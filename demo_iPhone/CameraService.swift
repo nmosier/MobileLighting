@@ -122,46 +122,68 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func handlePacket(_ packet: CameraInstructionPacket) {
         print("Received camera instruction: \(packet.cameraInstruction!)")
         
+        if let pointOfFocus = packet.pointOfFocus, self.cameraController.captureDevice.isFocusPointOfInterestSupported {
+            do {
+                try cameraController.configureCaptureDevice(focusMode: AVCaptureFocusMode.autoFocus, focusPointOfInterest: pointOfFocus)
+                print("Adjusting point of focus.")
+            } catch {
+                print("Could not change point of focus.")
+            }
+            //cameraController.captureDevice.focusPointOfInterest = pointOfFocus
+            // sleep(1)
+            print("adjustingFocus: \(cameraController.captureDevice.isAdjustingFocus)")
+            //sleep(1)
+            
+            //self.cameraController.captureDevice.addObserver(self, forKeyPath: "adjustingFocus", options: [.new], context: nil)
+        }
+        
         // handle camera instruction
-        switch packet.cameraInstruction! {
-        case CameraInstruction.CaptureStillImage:
-            do {
-                try self.cameraController.useCaptureSessionPreset(packet.captureSessionPreset)
-            } catch {
-                print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
-                self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
-                return
-            }
-            self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
-            break
+        // use dispatch queue (async task) -> need to wait for camera adjustment
+        
+        let handleInstructionQueue = DispatchQueue(label: "com.CameraService.handleInstructionQueue")
+        handleInstructionQueue.async {
+            while (self.cameraController.captureDevice.isAdjustingFocus) {}
             
-        case CameraInstruction.CapturePhotoBracket:
-            guard let exposureTimes = packet.photoBracketExposures else {
-                print("ERROR: exposure times not provided for bracketed photo sequence.")
-                break
-            }
-            self.cameraController.photoBracketExposures = exposureTimes
-            guard let preset = resolutionToSessionPreset[packet.captureSessionPreset] else {
-                print("Error: resolution \(packet.captureSessionPreset) is not compatable with this device.")
-                return
-            }
-            do {
-                try self.cameraController.useCaptureSessionPreset(preset)
-            } catch {
-                print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
-                for i in 0..<exposureTimes.count {
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+            switch packet.cameraInstruction! {
+            case CameraInstruction.CaptureStillImage:
+                do {
+                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.captureSessionPreset]!)
+                } catch {
+                    print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    return
                 }
-                return
+                self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
+                break
+                
+            case CameraInstruction.CapturePhotoBracket:
+                guard let exposureTimes = packet.photoBracketExposures else {
+                    print("ERROR: exposure times not provided for bracketed photo sequence.")
+                    break
+                }
+                self.cameraController.photoBracketExposures = exposureTimes
+                guard let preset = self.resolutionToSessionPreset[packet.captureSessionPreset] else {
+                    print("Error: resolution \(packet.captureSessionPreset) is not compatable with this device.")
+                    return
+                }
+                do {
+                    try self.cameraController.useCaptureSessionPreset(preset)
+                } catch {
+                    print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                    for i in 0..<exposureTimes.count {
+                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                    }
+                    return
+                }
+                let settings = self.cameraController.photoBracketSettings
+                self.cameraController.takePhoto(photoSettings: settings)
+                break
+                
+            case CameraInstruction.EndCaptureSession:
+                self.cameraController.captureSession.stopRunning()
+                print("Capture session ended.")
+                
             }
-            let settings = self.cameraController.photoBracketSettings
-            self.cameraController.takePhoto(photoSettings: settings)
-            break
-            
-        case CameraInstruction.EndCaptureSession:
-            self.cameraController.captureSession.stopRunning()
-            print("Capture session ended.")
-            
         }
     }
 }

@@ -215,10 +215,13 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     //MARK: Device configuration
-    func configureCaptureDevice(focusMode: AVCaptureFocusMode? = nil, exposureMode: AVCaptureExposureMode? = nil, flashMode: AVCaptureFlashMode? = nil,
+    func configureCaptureDevice(focusMode: AVCaptureFocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureExposureMode? = nil, flashMode: AVCaptureFlashMode? = nil,
                                 torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil) throws {
         try self.captureDevice.lockForConfiguration()
         
+        if let focusPointOfInterest = focusPointOfInterest {
+            self.captureDevice.focusPointOfInterest = focusPointOfInterest
+        }
         if let focusMode = focusMode {
             self.captureDevice.focusMode = focusMode
         }
@@ -228,11 +231,10 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         if let flashMode = flashMode {
             self.captureDevice.flashMode = flashMode    // deprecated, but including anyway (should be changed using AVCapturePhotoSettings.flashMode)
         }
-        if let torchMode = torchMode {
-            self.captureDevice.torchMode = torchMode
-        }
         if torchMode == .on, let torchLevel = torchLevel {
             try self.captureDevice.setTorchModeOnWithLevel(torchLevel)
+        } else if let torchMode = torchMode {
+            self.captureDevice.torchMode = torchMode
         }
         
         self.captureDevice.unlockForConfiguration()

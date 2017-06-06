@@ -54,7 +54,28 @@ func captureNextBracket(captureSessionPreset: String, exposureTimes: [Double]) {
     bracketNumber += 1
 }
 
-
+var focusCount = 0
+var focusLimit = 10
+func captureNextFocus() {
+    guard cameraServiceBrowser.readyToSendPacket else {
+        return
+    }
+    
+    if focusCount >= focusLimit {
+        return
+    }
+    
+    let image = displayController.createCGImage(filePath: "/Users/nicholas/Desktop/display_images/\(bracketNumber%2).jpg")
+    displayController.windows.first!.image = image
+    displayController.windows.first!.drawImage(image)
+    
+    let pointOfFocus = CGPoint(x: Double(focusCount+1)/Double(focusLimit+1), y: Double(focusCount+1)/Double(focusLimit+1))
+    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, captureSessionPreset: "high", pointOfFocus: pointOfFocus)
+    cameraServiceBrowser.sendPacket(packet)
+    
+    photoReceiver.receivePhotoBracket(name: "focus\(focusCount)", photoCount: 1, completionHandler: captureNextFocus)
+    focusCount += 1
+}
 
 displayController = DisplayController()
 guard NSScreen.screens()!.count > 1  else {
@@ -73,10 +94,12 @@ photoReceiver = PhotoReceiver()
 photoReceiver.startBroadcast()
 cameraServiceBrowser.startBrowsing()
 
+
 let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue")
 instructionInputQueue.async {
     while !cameraServiceBrowser.readyToSendPacket {}
-    getBracketSpecs()
+    
+    captureNextFocus()
 }
 
 NSApp.run()
