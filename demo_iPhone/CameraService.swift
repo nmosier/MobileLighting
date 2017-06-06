@@ -129,14 +129,12 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             } catch {
                 print("Could not change point of focus.")
             }
-            //cameraController.captureDevice.focusPointOfInterest = pointOfFocus
-            // sleep(1)
-            print("adjustingFocus: \(cameraController.captureDevice.isAdjustingFocus)")
-            //sleep(1)
-            
-            //self.cameraController.captureDevice.addObserver(self, forKeyPath: "adjustingFocus", options: [.new], context: nil)
         }
-        
+        do {
+            try self.cameraController.configureCaptureDevice(torchMode: packet.torchMode, torchLevel: packet.torchLevel)    // if not provided, already defaults to nil
+        } catch {
+            print("Could not change torch mode settings. Using defaults.")
+        }
         // handle camera instruction
         // use dispatch queue (async task) -> need to wait for camera adjustment
         

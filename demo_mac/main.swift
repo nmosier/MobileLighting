@@ -70,7 +70,7 @@ func captureNextFocus() {
     displayController.windows.first!.drawImage(image)
     
     let pointOfFocus = CGPoint(x: Double(focusCount+1)/Double(focusLimit+1), y: Double(focusCount+1)/Double(focusLimit+1))
-    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, captureSessionPreset: "high", pointOfFocus: pointOfFocus)
+    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, captureSessionPreset: "high", pointOfFocus: pointOfFocus, torchMode: .on, torchLevel: Float(focusCount+1)/Float(focusLimit+1))
     cameraServiceBrowser.sendPacket(packet)
     
     photoReceiver.receivePhotoBracket(name: "focus\(focusCount)", photoCount: 1, completionHandler: captureNextFocus)
