@@ -53,7 +53,7 @@ class FullscreenWindow: NSView {
         if let image = image {
             context.draw(image, in: self.frame)
         } else if let codeDrawer = codeDrawer, let currentCodeBit = currentCodeBit, let currentSystem = currentSystem {
-            codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem)
+            codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem, positionLimit: (currentSystem == BinaryCodeSystem.MinStripeWidthCode) ? 1024 : nil)
         }
     }
     

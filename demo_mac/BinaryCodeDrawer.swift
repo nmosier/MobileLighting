@@ -56,10 +56,13 @@ class BinaryCodeDrawer {
     }
     
     
-    func drawCode(forBit bit: UInt, system: BinaryCodeSystem, horizontally: Bool = false, inverted: Bool = false) {
+    func drawCode(forBit bit: UInt, system: BinaryCodeSystem, horizontally: Bool = false, inverted: Bool = false, positionLimit: UInt? = nil) {
         NSGraphicsContext.setCurrent(self.context)
         let context = self.context.cgContext
-        let nPositions = UInt(horizontally ? frame.size.height: frame.size.width)   // nPositions = # of diff. gray codes
+        var nPositions = UInt(horizontally ? frame.size.height: frame.size.width)   // nPositions = # of diff. gray codes
+        if positionLimit != nil && nPositions > positionLimit! {
+            nPositions = positionLimit!
+        }
         
         let bitArray: [Bool]
         switch system {
@@ -75,10 +78,16 @@ class BinaryCodeDrawer {
                     return
                 }
             }
-            // call fn
-            // placeholder:
+            guard Int(bit) < BinaryCodeDrawer.minStripeWidthCodeBitArrays!.count else {
+                print("BinaryCodeDrawer: ERROR — specified bit for code too large.")
+                return
+            }
             let fullBitArray = BinaryCodeDrawer.minStripeWidthCodeBitArrays![Int(bit)]
             bitArray = Array<Bool>(fullBitArray.prefix(Int(horizontally ? height : width)))
+            guard Int(nPositions) <= bitArray.count else {
+                print("BinaryCodeDrawer: ERROR — cannot display min stripe width code, number of stripes too large.")
+                return
+            }
             break
         }
         
