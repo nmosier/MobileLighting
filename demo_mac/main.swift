@@ -82,11 +82,18 @@ guard NSScreen.screens()!.count > 1  else {
     print("Only one screen connected.")
     fatalError()
 }
+
 for screen in NSScreen.screens()! {
     if screen != NSScreen.main()! {
         displayController.createNewWindow(on: screen)
     }
 }
+
+displayController.windows.first!.displayBitCode(forBit: 0, system: .GrayCode)
+print("Tried to draw gray code for bit 0.")
+displayController.windows.first!.displayBitCode(forBit: 3, system: .MinStripeWidthCode)
+print("Tried to draw min stripe width code for bit 3.")
+// test drawing bitmap
 
 cameraServiceBrowser = CameraServiceBrowser()
 photoReceiver = PhotoReceiver()

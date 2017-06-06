@@ -33,6 +33,7 @@
 		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
+		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -95,6 +96,8 @@
 		E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
+		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,12 +174,14 @@
 		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
 			isa = PBXGroup;
 			children = (
+				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
 				E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */,
 				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
 				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
 				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
+				E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */,
 			);
 			path = demo_mac;
 			sourceTree = "<group>";
@@ -298,6 +303,7 @@
 				E11F1FEB1EE1B7C1008F9F0F /* FullscreenWindow.swift in Sources */,
 				E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */,
 				E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */,
 				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
 				E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */,

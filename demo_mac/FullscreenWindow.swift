@@ -14,6 +14,9 @@ class FullscreenWindow: NSView {
     var fullscreenWindow: NSWindow!
     var screen: NSScreen!
     var image: CGImage?
+    var codeDrawer: BinaryCodeDrawer?
+    var currentCodeBit: UInt?
+    var currentSystem: BinaryCodeSystem?
     
     init(on screen: NSScreen) {
         super.init(frame: screen.frame)
@@ -28,6 +31,7 @@ class FullscreenWindow: NSView {
         
         self.fullscreenWindow = window
         self.screen = screen
+        self.codeDrawer = BinaryCodeDrawer(context: self.fullscreenWindow.graphicsContext!, frame: screen.frame)
     }
     
     required init?(coder: NSCoder) {
@@ -45,11 +49,11 @@ class FullscreenWindow: NSView {
         }
         
         let context: CGContext = graphicsContext.cgContext
-        context.setFillColor(CGColor.white)
-        context.fill(self.frame)
         
         if let image = image {
             context.draw(image, in: self.frame)
+        } else if let codeDrawer = codeDrawer, let currentCodeBit = currentCodeBit, let currentSystem = currentSystem {
+            codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem)
         }
     }
     
@@ -58,6 +62,25 @@ class FullscreenWindow: NSView {
         NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
         let context = self.fullscreenWindow.graphicsContext!.cgContext
         context.draw(image, in: self.frame)
+        self.setNeedsDisplay(self.frame)
+    }
+    
+    func displayBitCode(forBit bit: UInt, system: BinaryCodeSystem) {
+        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
+        
+        currentCodeBit = bit
+        currentSystem = system
+        self.setNeedsDisplay(self.frame)
+    }
+    
+    func displayGrayCode(forBit bit: UInt) {
+        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
+        guard let graphicsContext = NSGraphicsContext.current() else {
+            Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
+            return
+        }
+        
+        currentCodeBit = bit
         self.setNeedsDisplay(self.frame)
     }
 }
