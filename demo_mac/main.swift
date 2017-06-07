@@ -88,9 +88,14 @@ for screen in NSScreen.screens()! {
         displayController.createNewWindow(on: screen)
     }
 }
+
+let binaryCodeQueue = DispatchQueue(label: "test")
 displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
-displayController.windows.first!.displayBinaryCode(forBit: 0, system: .GrayCode)
-// displayController.windows.first!.displayBinaryCode(forBit: 3, system: .MinStripeWidthCode)
+displayController.windows.first!.displayBinaryCode(forBit: 8, system: .GrayCode)
+//displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
+
+
+
 // test drawing bitmap
 
 cameraServiceBrowser = CameraServiceBrowser()
@@ -106,5 +111,4 @@ instructionInputQueue.async {
     
     captureNextFocus()
 }
-
 NSApp.run()
