@@ -88,11 +88,9 @@ for screen in NSScreen.screens()! {
         displayController.createNewWindow(on: screen)
     }
 }
-
-displayController.windows.first!.displayBitCode(forBit: 0, system: .GrayCode)
-print("Tried to draw gray code for bit 0.")
-displayController.windows.first!.displayBitCode(forBit: 3, system: .MinStripeWidthCode)
-print("Tried to draw min stripe width code for bit 3.")
+displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
+displayController.windows.first!.displayBinaryCode(forBit: 0, system: .GrayCode)
+// displayController.windows.first!.displayBinaryCode(forBit: 3, system: .MinStripeWidthCode)
 // test drawing bitmap
 
 cameraServiceBrowser = CameraServiceBrowser()

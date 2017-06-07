@@ -14,6 +14,7 @@ class FullscreenWindow: NSView {
     var fullscreenWindow: NSWindow!
     var screen: NSScreen!
     var image: CGImage?
+    
     var codeDrawer: BinaryCodeDrawer?
     var currentCodeBit: UInt?
     var currentSystem: BinaryCodeSystem?
@@ -65,7 +66,16 @@ class FullscreenWindow: NSView {
         self.setNeedsDisplay(self.frame)
     }
     
-    func displayBitCode(forBit bit: UInt, system: BinaryCodeSystem) {
+    func configureDisplaySettings(horizontal: Bool = false, inverted: Bool = false) {
+        guard let codeDrawer = codeDrawer else {
+            Swift.print("FullscreenWindow: cannot configure display settings — binary code drawer not yet configured.")
+            return
+        }
+        
+        (codeDrawer.drawHorizontally, codeDrawer.drawInverted) = (horizontal, inverted)
+    }
+    
+    func displayBinaryCode(forBit bit: UInt, system: BinaryCodeSystem) {
         NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
         
         currentCodeBit = bit
