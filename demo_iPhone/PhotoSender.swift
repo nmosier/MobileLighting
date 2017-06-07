@@ -130,9 +130,6 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
         //var dataToSend = Data(bytes: [UInt8(packetDataLength/256), UInt8(packetDataLength%256)])    // first two bytes (packet head) indicate size of packet body
         dataToSend.append(packetData)   // append packet body
         
-        // test if can unarchive packet  data
-        let testPacket = NSKeyedUnarchiver.unarchiveObject(with: packetData) as! PhotoDataPacket
-        
         // send data
         socket.write(dataToSend, withTimeout: -1, tag: 0)   // send packet to Mac
         self.readyToSendPacket = false

@@ -145,9 +145,9 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             switch packet.cameraInstruction! {
             case CameraInstruction.CaptureStillImage:
                 do {
-                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.captureSessionPreset]!)
+                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution]!)
                 } catch {
-                    print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                    print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
                     self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
@@ -160,14 +160,14 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     break
                 }
                 self.cameraController.photoBracketExposures = exposureTimes
-                guard let preset = self.resolutionToSessionPreset[packet.captureSessionPreset] else {
-                    print("Error: resolution \(packet.captureSessionPreset) is not compatable with this device.")
+                guard let preset = self.resolutionToSessionPreset[packet.resolution] else {
+                    print("Error: resolution \(packet.resolution) is not compatable with this device.")
                     return
                 }
                 do {
                     try self.cameraController.useCaptureSessionPreset(preset)
                 } catch {
-                    print("CameraService: error — capture session preset \(packet.captureSessionPreset) not supported by device.")
+                    print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
                     for i in 0..<exposureTimes.count {
                         self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }

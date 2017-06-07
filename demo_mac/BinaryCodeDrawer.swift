@@ -96,9 +96,7 @@ class BinaryCodeDrawer {
             break
         }
         
-        // create raw buffer
-        let bufferLength = width*height*4       // 4 bytes for each pixel: 0-R, 1-G, 2-B, 4-alpha
-        
+        // create raw buffer        
         struct Pixel {
             var r: UInt8
             var g: UInt8

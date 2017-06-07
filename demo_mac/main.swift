@@ -24,17 +24,17 @@ var bracketNumber = 0
 
 func getBracketSpecs() {
     print("Resolution:\t", terminator: "")
-    let sessionPreset = readLine(strippingNewline: true)!
+    let resolution = readLine(strippingNewline: true)!
     print("Exposure settings:\t", terminator: "")
     let exposureInput = readLine(strippingNewline: true)!
     let photoCount = exposureInput.characters.split(separator: " ")
     let exposures = photoCount.map {
         Double(String($0))!
     }
-    captureNextBracket(captureSessionPreset: sessionPreset, exposureTimes: exposures)
+    captureNextBracket(resolution: resolution, exposureTimes: exposures)
 }
 
-func captureNextBracket(captureSessionPreset: String, exposureTimes: [Double]) {
+func captureNextBracket(resolution: String, exposureTimes: [Double]) {
     guard cameraServiceBrowser.readyToSendPacket else {
         return
     }
@@ -47,7 +47,7 @@ func captureNextBracket(captureSessionPreset: String, exposureTimes: [Double]) {
     displayController.windows.first!.image = image
     displayController.windows.first!.drawImage(image)
     
-    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, captureSessionPreset: captureSessionPreset, photoBracketExposures: exposureTimes)
+    let cameraInstructionPacket = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposureTimes)
     cameraServiceBrowser.sendPacket(cameraInstructionPacket)
     
     photoReceiver.receivePhotoBracket(name: "bracket\(bracketNumber)", photoCount: exposureTimes.count, completionHandler: getBracketSpecs)
@@ -70,11 +70,37 @@ func captureNextFocus() {
     displayController.windows.first!.drawImage(image)
     
     let pointOfFocus = CGPoint(x: Double(focusCount+1)/Double(focusLimit+1), y: Double(focusCount+1)/Double(focusLimit+1))
-    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, captureSessionPreset: "high", pointOfFocus: pointOfFocus, torchMode: .on, torchLevel: Float(focusCount+1)/Float(focusLimit+1))
+    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high", pointOfFocus: pointOfFocus, torchMode: .on, torchLevel: Float(focusCount+1)/Float(focusLimit+1))
     cameraServiceBrowser.sendPacket(packet)
     
     photoReceiver.receivePhotoBracket(name: "focus\(focusCount)", photoCount: 1, completionHandler: captureNextFocus)
     focusCount += 1
+}
+
+var currentCodeBit = 0
+var codeBitCount = 10   // 2^10 = 1024
+func captureNextBinaryCode() {
+    guard cameraServiceBrowser.readyToSendPacket else {
+        return
+    }
+    
+    if currentCodeBit >= codeBitCount {
+        return
+    }
+    
+    displayController.windows.first!.configureDisplaySettings(horizontal: true, inverted: false)
+    displayController.windows.first!.displayBinaryCode(forBit: UInt(currentCodeBit), system: .MinStripeWidthCode)
+    
+    let waitForDisplay = DispatchQueue(label: "waitForDisplay")
+    waitForDisplay.async {
+        while displayController.windows.first!.needsDisplay {}
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: [0.01, 0.05, 0.1, 0.15])
+        cameraServiceBrowser.sendPacket(packet)
+        
+        photoReceiver.receivePhotoBracket(name: "minsw-\(currentCodeBit)", photoCount: 4, completionHandler: captureNextBinaryCode)
+    }
+    
+    currentCodeBit += 1
 }
 
 displayController = DisplayController()
@@ -109,6 +135,6 @@ let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue
 instructionInputQueue.async {
     while !cameraServiceBrowser.readyToSendPacket {}
     
-    captureNextFocus()
+    captureNextBinaryCode()
 }
 NSApp.run()
