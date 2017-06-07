@@ -130,6 +130,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 print("Could not change point of focus.")
             }
         }
+        
         do {
             try self.cameraController.configureCaptureDevice(torchMode: packet.torchMode, torchLevel: packet.torchLevel)    // if not provided, already defaults to nil
         } catch {
@@ -143,9 +144,23 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             while (self.cameraController.captureDevice.isAdjustingFocus) {}
             
             switch packet.cameraInstruction! {
+            case .SetLensPosition:
+                guard let lensPosition = packet.lensPosition else {
+                    print("CameraService: error — lens position is nil, cannot be set.")
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    return
+                }
+                
+                // completion handler function -> sends packet PhotoDataPacket confirming completion
+                func didSetLensPosition(time: CMTime) {
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                }
+                
+                self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(packet.lensPosition!, completionHandler: didSetLensPosition(time:))
+                break
             case CameraInstruction.CaptureStillImage:
                 do {
-                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution]!)
+                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)
                 } catch {
                     print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
                     self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
@@ -160,7 +175,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     break
                 }
                 self.cameraController.photoBracketExposures = exposureTimes
-                guard let preset = self.resolutionToSessionPreset[packet.resolution] else {
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
                     print("Error: resolution \(packet.resolution) is not compatable with this device.")
                     return
                 }

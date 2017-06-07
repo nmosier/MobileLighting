@@ -19,6 +19,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var bracketedPhotosComing: Int?
     var receivingBracket: Bool = false
     var bracketCompletionHandler: (()->Void)?
+    
+    var readyToReceive: Bool = false
 
     
     // startBroadcast: sets up PhotoReceiver service on new socket
@@ -53,6 +55,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         print("Accepted new socket.")
         socket = newSocket
         socket.delegate = self
+        self.readyToReceive = true
         
         readPacket()
     }
@@ -110,6 +113,9 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     self.bracketCompletionHandler = nil
                     
                     if let handler = handler {
+                        
+                        print("4: calling handler - \(timestampToString(date: Date()))")
+
                         handler()
                     }
                 }
@@ -126,6 +132,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // handlePacket(PhotoDataPacket)
     // -handles provided packet (saves it to file, e.g.)
     func handlePacket(_ packet: PhotoDataPacket) {
+        print("3: handling packet - \(timestampToString(date: Date()))")
+        
         guard let photoData = packet.photoData else {
             print("PhotoReceiver: failed to unarchive photo data.")
             return

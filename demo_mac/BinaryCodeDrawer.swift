@@ -14,6 +14,15 @@ enum BinaryCodeSystem {
     case GrayCode, MinStripeWidthCode
 }
 
+struct Pixel {
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+    var a: UInt8
+}
+let blackPixel = Pixel(r: 0, g: 0, b: 0, a: 255)
+let whitePixel = Pixel(r: 255, g: 255, b: 255, a: 255)
+
 class BinaryCodeDrawer {
     // static properties
     static var minStripeWidthCodeBitArrays: [[Bool]]?   // contains minstripewidth code bit arrays from minsSWcode.dat
@@ -43,6 +52,62 @@ class BinaryCodeDrawer {
         }
     }
     
+    static func getBitmap(forBit bit: UInt, system: BinaryCodeSystem, width: UInt, height: UInt, horizontally: Bool = false, inverted: Bool = false, positionLimit: UInt? = nil) -> CGImage {
+        var nPositions = UInt(horizontally ? height: width)   // nPositions = # of diff. gray codes
+        if positionLimit != nil && nPositions > positionLimit! {
+            nPositions = positionLimit!
+        }
+        
+        let bitArray: [Bool]
+        switch system {
+        case .GrayCode:
+            bitArray = grayCodeArray(forBit: bit, size: nPositions)
+            break
+        case .MinStripeWidthCode:
+            if BinaryCodeDrawer.minStripeWidthCodeBitArrays == nil {
+                do {
+                    try BinaryCodeDrawer.loadMinStripeWidthCodes()
+                } catch {
+                    print("BinaryCodeDrawer: unable to load min strip width codes from data file.")
+                }
+            }
+            guard Int(bit) < BinaryCodeDrawer.minStripeWidthCodeBitArrays!.count else {
+                fatalError("BinaryCodeDrawer: ERROR — specified bit for code too large.")
+            }
+            let fullBitArray = BinaryCodeDrawer.minStripeWidthCodeBitArrays![Int(bit)]
+            bitArray = Array<Bool>(fullBitArray.prefix(Int(horizontally ? height : width)))
+            guard Int(nPositions) <= bitArray.count else {
+                fatalError("BinaryCodeDrawer: ERROR — cannot display min stripe width code, number of stripes too large.")
+            }
+            break
+        }
+        
+        var bitmap: Array<Pixel> = Array<Pixel>(repeating: blackPixel, count: Int(width*height))
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                let index = Int(width*y + x)
+                let barVal: Bool
+                if (horizontally ? y : x) >= nPositions {
+                    barVal = false
+                } else {
+                    barVal = bitArray[Int(horizontally ? y : x)]
+                }
+                bitmap[index] = (barVal == inverted) ? blackPixel : whitePixel   // (barVal == inverted) <=> barVal ^ inverted
+            }
+        }
+        
+        print("A1: finished generating bitmap - \(timestampToString(date: Date()))")
+        
+        let provider = CGDataProvider(data: NSData(bytes: &bitmap, length: bitmap.count * 4))
+        let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+        let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+        let image = CGImage(width: Int(width), height: Int(height),
+                            bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*Int(width), space: colorspace, bitmapInfo: info, provider: provider!,
+                            decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+        return image!
+    }
+    
     let context: NSGraphicsContext
     let frame: CGRect
     let width: UInt
@@ -50,16 +115,39 @@ class BinaryCodeDrawer {
     var drawHorizontally: Bool = false
     var drawInverted: Bool = false
     
+    var bitmaps: [CGImage] = [CGImage]()
+    var bitmaps_inverted: [CGImage] = [CGImage]()
+    var bitmap: Array<Pixel>
+    
     init(context: NSGraphicsContext, frame: CGRect) {
         self.context = context
         self.frame = frame
         self.width = UInt(frame.width)
         self.height = UInt(frame.height)
+        
+        bitmap = Array<Pixel>(repeating: blackPixel, count: Int(width*height))
+    }
+    
+    func generateBitmaps(system: BinaryCodeSystem, horizontally: Bool = false) {
+        let nBits: Int = Int(log2(Double(horizontally ? height : width)))
+        
+        for bit in 0..<nBits {
+            bitmaps.append(BinaryCodeDrawer.getBitmap(forBit: UInt(bit), system: system, width: width, height: height))
+        }
+        
     }
     
     func drawCode(forBit bit: UInt, system: BinaryCodeSystem, horizontally: Bool? = nil, inverted: Bool? = nil, positionLimit: UInt? = nil) {
+        print("A: starting to draw code - \(timestampToString(date: Date()))")
+        
         NSGraphicsContext.setCurrent(self.context)
         let context = self.context.cgContext
+        
+        
+        context.draw(bitmaps[Int(bit)], in: CGRect(x: 0, y: 0, width: Int(width), height: Int(height)))
+        
+        return
+
         
         let horizontally = horizontally ?? self.drawHorizontally
         let inverted = inverted ?? self.drawInverted       // temporarily use this configuration; does not change instance's settings
@@ -96,51 +184,40 @@ class BinaryCodeDrawer {
             break
         }
         
-        // create raw buffer        
-        struct Pixel {
-            var r: UInt8
-            var g: UInt8
-            var b: UInt8
-            var a: UInt8
-        }
-        
-        let blackPixel = Pixel(r: 0, g: 0, b: 0, a: 255)
-        let whitePixel = Pixel(r: 255, g: 255, b: 255, a: 255)
+        // create raw buffer
         
         // var data = Data(count: Int(bufferLength))
         
         
         //var data = Array<Pixel>(repeating: Pixel(r: 0, g: 0, b: 0, a: 255), count: Int(width*height))
-        var data: Array<Pixel> = [Pixel]()
-        data.reserveCapacity(Int(width*height))
+        
+        print("A0: starting to go thru loop - \(timestampToString(date: Date()))")
         
         for y in 0..<height {
             for x in 0..<width {
-                /*
-                if x >= Int(nPositions) || y >= Int(nPositions) {
-                    break
-                } */
-                
-                //let index = Int(width)*y + x
+                let index = Int(width*y + x)
                 let barVal: Bool
                 if (horizontally ? y : x) >= nPositions {
                     barVal = false
                 } else {
                     barVal = bitArray[Int(horizontally ? y : x)]
                 }
-                data.append((barVal == inverted) ? blackPixel : whitePixel)    // (barVal == inverted) <=> barVal ^ inverted
+                bitmap[index] = (barVal == inverted) ? blackPixel : whitePixel   // (barVal == inverted) <=> barVal ^ inverted
             }
         }
         
-
+        print("A1: finished generating bitmap - \(timestampToString(date: Date()))")
         
-        let provider = CGDataProvider(data: NSData(bytes: &data, length: data.count * 4))
+        let provider = CGDataProvider(data: NSData(bytes: &bitmap, length: bitmap.count * 4))
         let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+        let space = CGColorSpaceCreateDeviceGray()
         let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
         let image = CGImage(width: Int(width), height: Int(height),
                             bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*Int(width), space: colorspace, bitmapInfo: info, provider: provider!,
                             decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
         context.draw(image!, in: CGRect(x: 0, y: 0, width: Int(width), height: Int(height)))
+        
+        print("B: finished drawing code - \(timestampToString(date: Date()))")
     }
     
     

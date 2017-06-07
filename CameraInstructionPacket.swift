@@ -12,12 +12,13 @@ import AVFoundation
 @objc(CameraInstructionPacket)
 class CameraInstructionPacket: NSObject, NSCoding {
     var cameraInstruction: CameraInstruction!
-    var resolution: String!   // for setting photo resolution (use constants "AVCaptureSessionPreset...")
+    var resolution: String?   // for setting photo resolution (use constants "AVCaptureSessionPreset...")
     var photoBracketExposures: [Double]?   // optional b/c only used for bracketed photo sequences -> in seconds
                                             // implicitly contains number of photos in bracket (= # items in array)
     var pointOfFocus: CGPoint?  // point of focus: represents where to focus in field of view
     var torchMode: AVCaptureTorchMode?
     var torchLevel: Float?
+    var lensPosition: Float?
     
     //MARK: Initialization
     
@@ -34,10 +35,11 @@ class CameraInstructionPacket: NSObject, NSCoding {
             self.torchMode = nil
         }
         self.torchLevel = decoder.decodeObject(forKey: "torchLevel") as! Float?
+        self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
     }
     
     // for standard initialization
-    convenience init(cameraInstruction: CameraInstruction, resolution: String = AVCaptureSessionPresetPhoto, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -45,6 +47,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.pointOfFocus = pointOfFocus
         self.torchMode = torchMode
         self.torchLevel = torchLevel
+        self.lensPosition = lensPosition
     }
     
     //MARK: Encoding/decoding
@@ -56,11 +59,13 @@ class CameraInstructionPacket: NSObject, NSCoding {
         //coder.encode(self.torchMode, forKey: "torchMode")
         coder.encode(self.torchMode?.rawValue ?? nil, forKey: "torchMode")  // encodes optional Int
         coder.encode(self.torchLevel, forKey: "torchLevel")
+        coder.encode(self.lensPosition, forKey: "lensPosition")
     }
     
 }
 
 enum CameraInstruction: Int {
+    case SetLensPosition
     case CaptureStillImage
     case CapturePhotoBracket
     case EndCaptureSession

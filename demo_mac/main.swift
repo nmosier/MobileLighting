@@ -88,19 +88,24 @@ func captureNextBinaryCode() {
         return
     }
     
+    print("0: configuring settings - \(timestampToString(date: Date()))")
+    
     displayController.windows.first!.configureDisplaySettings(horizontal: true, inverted: false)
+    
+    print("0.5: displaying image - \(timestampToString(date: Date()))")
+    
     displayController.windows.first!.displayBinaryCode(forBit: UInt(currentCodeBit), system: .MinStripeWidthCode)
     
-    let waitForDisplay = DispatchQueue(label: "waitForDisplay")
-    waitForDisplay.async {
-        while displayController.windows.first!.needsDisplay {}
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: [0.01, 0.05, 0.1, 0.15])
-        cameraServiceBrowser.sendPacket(packet)
-        
-        photoReceiver.receivePhotoBracket(name: "minsw-\(currentCodeBit)", photoCount: 4, completionHandler: captureNextBinaryCode)
-    }
+    print("1: sending instruction - \(timestampToString(date: Date()))")
+    
+    let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: [0.01])
+    cameraServiceBrowser.sendPacket(packet)
     
     currentCodeBit += 1
+    
+    print("2: waiting to receive data - \(timestampToString(date: Date()))")
+    
+    photoReceiver.receivePhotoBracket(name: "minsw-\(currentCodeBit-1)", photoCount: 1, completionHandler: captureNextBinaryCode)
 }
 
 displayController = DisplayController()
@@ -117,7 +122,10 @@ for screen in NSScreen.screens()! {
 
 let binaryCodeQueue = DispatchQueue(label: "test")
 displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
-displayController.windows.first!.displayBinaryCode(forBit: 8, system: .GrayCode)
+//displayController.windows.first!.displayBinaryCode(forBit: 2, system: .GrayCode)
+
+displayController.windows.first!.codeDrawer!.generateBitmaps(system: .GrayCode)
+
 //displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
 
 
@@ -134,6 +142,7 @@ cameraServiceBrowser.startBrowsing()
 let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue")
 instructionInputQueue.async {
     while !cameraServiceBrowser.readyToSendPacket {}
+    while !photoReceiver.readyToReceive {}
     
     captureNextBinaryCode()
 }

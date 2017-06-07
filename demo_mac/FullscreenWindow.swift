@@ -80,7 +80,8 @@ class FullscreenWindow: NSView {
         
         currentCodeBit = bit
         currentSystem = system
-        self.setNeedsDisplay(self.frame)
+        //self.setNeedsDisplay(self.frame)
+        self.display()
     }
     
     func displayGrayCode(forBit bit: UInt) {
@@ -91,6 +92,9 @@ class FullscreenWindow: NSView {
         }
         
         currentCodeBit = bit
-        self.setNeedsDisplay(self.frame)
+        
+        
+        //self.setNeedsDisplay(self.frame)
+        self.display()
     }
 }

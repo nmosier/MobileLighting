@@ -142,6 +142,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     func capture(_ captureOutput: AVCapturePhotoOutput, willBeginCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
     }
     
+    func capture(_ captureOutput: AVCapturePhotoOutput, willCapturePhotoForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
+    }
+    
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         //print("Finished processing sample buffer.")
         guard let photoSampleBuffer = photoSampleBuffer else {
@@ -154,9 +157,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
         print("Finished capture.")
-        //saveSampleBufferToPhotoLibrary(self.photoSampleBuffer!)
         
         // send to Mac using PhotoSender
+        
         for index in 0..<photoSampleBuffers.count {
             let photoSampleBuffer = photoSampleBuffers[index]
             let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)

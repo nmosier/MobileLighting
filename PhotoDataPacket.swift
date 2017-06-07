@@ -24,7 +24,7 @@ class PhotoDataPacket: NSObject, NSCoding {
         self.bracketedPhotoID = decoder.decodeObject(forKey: "bracketedPhotoID") as! Int?
     }
     
-    convenience init(photoData: Data, bracketedPhotoID: Int? = nil) {
+    convenience init(photoData: Data, bracketedPhotoID: Int? = nil, lensPosition: Float? = nil) {
         self.init()
         self.encounteredError = false
         self.photoData = photoData
