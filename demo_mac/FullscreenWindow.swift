@@ -16,7 +16,7 @@ class FullscreenWindow: NSView {
     var image: CGImage?
     
     var codeDrawer: BinaryCodeDrawer?
-    var currentCodeBit: UInt?
+    var currentCodeBit: Int?
     var currentSystem: BinaryCodeSystem?
     
     init(on screen: NSScreen) {
@@ -75,7 +75,7 @@ class FullscreenWindow: NSView {
         (codeDrawer.drawHorizontally, codeDrawer.drawInverted) = (horizontal, inverted)
     }
     
-    func displayBinaryCode(forBit bit: UInt, system: BinaryCodeSystem) {
+    func displayBinaryCode(forBit bit: Int, system: BinaryCodeSystem) {
         NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
         
         currentCodeBit = bit
@@ -84,7 +84,7 @@ class FullscreenWindow: NSView {
         self.display()
     }
     
-    func displayGrayCode(forBit bit: UInt) {
+    func displayGrayCode(forBit bit: Int) {
         NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
         guard let graphicsContext = NSGraphicsContext.current() else {
             Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")

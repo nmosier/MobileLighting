@@ -94,7 +94,7 @@ func captureNextBinaryCode() {
     
     print("0.5: displaying image - \(timestampToString(date: Date()))")
     
-    displayController.windows.first!.displayBinaryCode(forBit: UInt(currentCodeBit), system: .MinStripeWidthCode)
+    displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: .MinStripeWidthCode)
     
     print("1: sending instruction - \(timestampToString(date: Date()))")
     
