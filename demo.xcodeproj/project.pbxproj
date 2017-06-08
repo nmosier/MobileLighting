@@ -34,6 +34,7 @@
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
+		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -98,6 +99,7 @@
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
+		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +184,7 @@
 				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
 				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
 				E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */,
+				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 			);
 			path = demo_mac;
 			sourceTree = "<group>";
@@ -300,6 +303,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */,
 				E11F1FEB1EE1B7C1008F9F0F /* FullscreenWindow.swift in Sources */,
 				E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */,

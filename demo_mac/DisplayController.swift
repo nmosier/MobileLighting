@@ -12,6 +12,7 @@ import CoreGraphics
 class DisplayController: NSWindowController {
     //MARK: Properties
     var windows = [FullscreenWindow]()  // windows currently being displayed
+    var currentWindow: FullscreenWindow?
     
     //MARK: Static functions
     
@@ -33,5 +34,27 @@ class DisplayController: NSWindowController {
     func createNewWindow(on screen: NSScreen) {
         let newWindow = FullscreenWindow(on: screen)
         windows.append(newWindow)
+    }
+    
+    func setCurrentScreen(withID: Int) {
+        currentWindow = windows[withID]
+    }
+    
+    func configureDisplaySettings(horizontal: Bool = false, inverted: Bool = false, screenID: Int? = nil) {
+        let window: FullscreenWindow
+        if let screenID = screenID {
+            window = windows[screenID]
+        } else {
+            window = currentWindow!
+        }
+        window.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
+    }
+    
+    func displayBinaryCode(forBit bit: Int, system: BinaryCodeSystem) {
+        guard let currentWindow = currentWindow else {
+            print("DisplayController: could not display binary code; no current window set.")
+            return
+        }
+        currentWindow.displayBinaryCode(forBit: bit, system: system)
     }
 }
