@@ -124,9 +124,9 @@ let binaryCodeQueue = DispatchQueue(label: "test")
 displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
 //displayController.windows.first!.displayBinaryCode(forBit: 2, system: .GrayCode)
 
-displayController.windows.first!.codeDrawer!.generateBitmaps(system: .GrayCode)
+//displayController.windows.first!.codeDrawer!.generateBitmaps(system: .GrayCode)
 
-//displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
+displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
 
 
 

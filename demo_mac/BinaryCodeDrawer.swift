@@ -119,6 +119,8 @@ class BinaryCodeDrawer {
     var bitmaps_inverted: [CGImage] = [CGImage]()
     var bitmap: Array<Pixel>
     
+    let blackHorizontalBar: Array<Pixel>
+    let whiteHorizontalBar: Array<Pixel>
     init(context: NSGraphicsContext, frame: CGRect) {
         self.context = context
         self.frame = frame
@@ -126,6 +128,8 @@ class BinaryCodeDrawer {
         self.height = UInt(frame.height)
         
         bitmap = Array<Pixel>(repeating: blackPixel, count: Int(width*height))
+        blackHorizontalBar = Array<Pixel>(repeating: blackPixel, count: Int(width))
+        whiteHorizontalBar = Array<Pixel>(repeating: whitePixel, count: Int(width))
     }
     
     func generateBitmaps(system: BinaryCodeSystem, horizontally: Bool = false) {
@@ -144,9 +148,11 @@ class BinaryCodeDrawer {
         let context = self.context.cgContext
         
         
+        /*
         context.draw(bitmaps[Int(bit)], in: CGRect(x: 0, y: 0, width: Int(width), height: Int(height)))
         
         return
+        */
 
         
         let horizontally = horizontally ?? self.drawHorizontally
@@ -193,6 +199,10 @@ class BinaryCodeDrawer {
         
         print("A0: starting to go thru loop - \(timestampToString(date: Date()))")
         
+        
+        // bitmap array is already initialized to save time
+        
+        /*
         for y in 0..<height {
             for x in 0..<width {
                 let index = Int(width*y + x)
@@ -204,13 +214,62 @@ class BinaryCodeDrawer {
                 }
                 bitmap[index] = (barVal == inverted) ? blackPixel : whitePixel   // (barVal == inverted) <=> barVal ^ inverted
             }
+        } */
+ 
+        
+        // generate bars before hand
+        
+        var horizontalBar: Array<Pixel> = (inverted ? whiteHorizontalBar : blackHorizontalBar)
+        let max: Int
+        
+        //var bitmap2 = Data(count: Int(width*height*4))
+        //var bitmap2 = UnsafeMutablePointer<UInt8>(malloc(Int(width*height*4))!)
+        var bitmap2 = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(width*height*4))
+        
+        if !horizontally {
+            // vertically
+            max = Int(nPositions)
+            var barVal: Bool
+            for index in 0..<max {
+                barVal = bitArray[index]
+                horizontalBar[index] = (barVal == inverted) ? blackPixel : whitePixel
+            }
+            let data = Data(bytes: &horizontalBar, count: Int(width*4))
+            for row in 0..<Int(height) {
+                data.copyBytes(to: bitmap2.advanced(by: row*Int(width)*4), count: Int(width)*4)
+                //bitmap.replaceSubrange(row*Int(width)..<row*Int(width+1), with: horizontalBar)
+            }
+        } else {
+            // horizontally
+            max = Int(width)
+            for row in 0..<Int(height) {
+                let bar = (row < Int(nPositions)) ? ((bitArray[row] == inverted) ? blackHorizontalBar : whiteHorizontalBar) : (inverted ? whiteHorizontalBar : blackHorizontalBar)
+                let data = Data(bytes: bar, count: Int(width*4))
+                data.copyBytes(to: bitmap2.advanced(by: row*Int(width)*4), count: Int(width)*4)
+                //bitmap.replaceSubrange(row*Int(width)..<row*Int(width+1), with:  (row < Int(nPositions)) ? ((bitArray[row] == inverted) ? blackHorizontalBar : whiteHorizontalBar) : (inverted ? whiteHorizontalBar : blackHorizontalBar)  )
+            }
         }
         
-        print("A1: finished generating bitmap - \(timestampToString(date: Date()))")
         
-        let provider = CGDataProvider(data: NSData(bytes: &bitmap, length: bitmap.count * 4))
+        /*
+        var index = 0
+        let max = Int(height*width)
+        while index < max {
+            let (x, y) = (index % Int(width), index / Int(width))
+            let barVal: Bool
+            if (horizontally ? y : x) >= Int(nPositions) {
+                barVal = false
+            } else {
+                barVal = bitArray[Int(horizontally ? y : x)]
+            }
+            bitmap[index] = (barVal == inverted) ? blackPixel : whitePixel
+            
+            index += 1
+        }*/
+ 
+        print("A1: finished generating bitmap - \(timestampToString(date: Date()))")
+        let provider = CGDataProvider(data: NSData(bytes: bitmap2, length: bitmap.count * 4))
         let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
-        let space = CGColorSpaceCreateDeviceGray()
         let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
         let image = CGImage(width: Int(width), height: Int(height),
                             bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*Int(width), space: colorspace, bitmapInfo: info, provider: provider!,
