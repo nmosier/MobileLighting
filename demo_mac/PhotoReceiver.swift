@@ -19,6 +19,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var bracketedPhotosComing: Int?
     var receivingBracket: Bool = false
     var bracketCompletionHandler: (()->Void)?
+    var receivingLensPosition: Bool = false
+    var lensPositionCompletionHandler: ((Float)->Void)?
     
     var readyToReceive: Bool = false
 
@@ -99,7 +101,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             handlePacket(photoDataPacket)
             
-            if receivingBracket {
+           if receivingBracket {
                 guard let bracketedPhotosComing = bracketedPhotosComing else {
                     break
                 }
@@ -132,6 +134,17 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // handlePacket(PhotoDataPacket)
     // -handles provided packet (saves it to file, e.g.)
     func handlePacket(_ packet: PhotoDataPacket) {
+        
+        if receivingLensPosition {
+            if let handler = lensPositionCompletionHandler {
+                print("PhotoReceiver: calling lens position completion handler.")
+                handler(packet.lensPosition!)
+            }
+            receivingLensPosition = false
+            return
+        }
+        
+        
         print("3: handling packet - \(timestampToString(date: Date()))")
         
         guard let photoData = packet.photoData else {
@@ -143,6 +156,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             print("PhotoReceiver: encountered error in photo capture/delivery.")
             return
         }
+        
+        print("PhotoReceiver: focus for photo: \(packet.lensPosition ?? -1.0)")
         
         let fileURL: URL
         
@@ -174,6 +189,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         receivingBracket = true
         
         //readPacket()
+    }
+    
+    func receiveLensPosition(completionHandler: @escaping (Float) -> Void) {
+        receivingLensPosition = true
+        lensPositionCompletionHandler = completionHandler
     }
     
 }

@@ -14,6 +14,7 @@ class PhotoDataPacket: NSObject, NSCoding {
     var encounteredError: Bool!
     var photoData: Data!
     var bracketedPhotoID: Int?
+    var lensPosition: Float?
     
     //MARK: Initialization
     required convenience init?(coder decoder: NSCoder) {
@@ -22,6 +23,7 @@ class PhotoDataPacket: NSObject, NSCoding {
         self.encounteredError = decoder.decodeObject(forKey: "encounteredError") as! Bool
         self.photoData = decoder.decodeObject(forKey: "photoData") as? Data
         self.bracketedPhotoID = decoder.decodeObject(forKey: "bracketedPhotoID") as! Int?
+        self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
     }
     
     convenience init(photoData: Data, bracketedPhotoID: Int? = nil, lensPosition: Float? = nil) {
@@ -29,6 +31,7 @@ class PhotoDataPacket: NSObject, NSCoding {
         self.encounteredError = false
         self.photoData = photoData
         self.bracketedPhotoID = bracketedPhotoID
+        self.lensPosition = lensPosition
     }
     
     //MARK: predefined packets
@@ -43,5 +46,6 @@ class PhotoDataPacket: NSObject, NSCoding {
         coder.encode(encounteredError, forKey: "encounteredError")
         coder.encode(photoData, forKey: "photoData")
         coder.encode(bracketedPhotoID, forKey: "bracketedPhotoID")
+        coder.encode(lensPosition, forKey: "lensPosition")
     }
 }

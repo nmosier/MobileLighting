@@ -77,6 +77,30 @@ func captureNextFocus() {
     focusCount += 1
 }
 
+func setLensPosition(_ lensPosition: Float) -> Float {
+    guard lensPosition <= 1.0 && lensPosition >= 0.0 else {
+        fatalError("Lens position not in range.")
+    }
+    
+    let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
+    cameraServiceBrowser.sendPacket(packet)
+    
+    var received = false
+    var lensPos: Float = -1.0
+    
+    func handler(_ lensPosition: Float) {
+        lensPos = lensPosition
+        received = true
+    }
+    
+    photoReceiver.receiveLensPosition(completionHandler: handler)
+    
+    while !received {}
+    return lensPos
+    
+    // receive message
+}
+
 var currentCodeBit = 0
 var codeBitCount = 10   // 2^10 = 1024
 func captureNextBinaryCode() {
@@ -143,6 +167,9 @@ let instructionInputQueue = DispatchQueue(label: "com.demo.instructionInputQueue
 instructionInputQueue.async {
     while !cameraServiceBrowser.readyToSendPacket {}
     while !photoReceiver.readyToReceive {}
+    
+    let response = setLensPosition(0.5)
+    print("Lens position set: \(response)")
     
     captureNextBinaryCode()
 }

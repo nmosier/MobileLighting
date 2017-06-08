@@ -80,21 +80,7 @@ class FullscreenWindow: NSView {
         
         currentCodeBit = bit
         currentSystem = system
-        //self.setNeedsDisplay(self.frame)
-        self.display()
-    }
-    
-    func displayGrayCode(forBit bit: Int) {
-        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
-        guard let graphicsContext = NSGraphicsContext.current() else {
-            Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
-            return
-        }
         
-        currentCodeBit = bit
-        
-        
-        //self.setNeedsDisplay(self.frame)
         self.display()
     }
 }

@@ -56,7 +56,6 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.resolution, forKey: "captureSessionPreset")
         coder.encode(self.photoBracketExposures, forKey: "photoBracketExposures")
         coder.encode(self.pointOfFocus, forKey: "pointOfFocus")
-        //coder.encode(self.torchMode, forKey: "torchMode")
         coder.encode(self.torchMode?.rawValue ?? nil, forKey: "torchMode")  // encodes optional Int
         coder.encode(self.torchLevel, forKey: "torchLevel")
         coder.encode(self.lensPosition, forKey: "lensPosition")

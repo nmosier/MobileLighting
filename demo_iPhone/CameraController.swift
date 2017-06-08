@@ -19,6 +19,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     var captureDevice: AVCaptureDevice!
     var capturePhotoOutput: AVCapturePhotoOutput!
     var photoSampleBuffers = [CMSampleBuffer]()
+    var lensPositions =  [Float]()
     var sessionPreset: String!
     
     var minExposureDuration: CMTime {
@@ -147,12 +148,14 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         //print("Finished processing sample buffer.")
+        print("CameraController: FOCUS pos: \(self.captureDevice.lensPosition)")
         guard let photoSampleBuffer = photoSampleBuffer else {
             print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
             self.photoSender.sendPacket(PhotoDataPacket.error())  // send error
             return
         }
         self.photoSampleBuffers.append(photoSampleBuffer)
+        self.lensPositions.append(self.captureDevice.lensPosition)
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
@@ -163,10 +166,11 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         for index in 0..<photoSampleBuffers.count {
             let photoSampleBuffer = photoSampleBuffers[index]
             let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)
-            let photoPacket = PhotoDataPacket(photoData: jpegData!, bracketedPhotoID: index)
+            let photoPacket = PhotoDataPacket(photoData: jpegData!, bracketedPhotoID: index, lensPosition: lensPositions[index])
             self.photoSender.sendPacket(photoPacket)
         }
         self.photoSampleBuffers.removeAll()
+        self.lensPositions.removeAll()
     }
     
     func saveSampleBufferToPhotoLibrary(_ sampleBuffer: CMSampleBuffer) {
