@@ -33,6 +33,14 @@ func initializeIPhoneCommunications() {
     cameraServiceBrowser.startBrowsing()
 }
 
+// waits for both photo receiver & camera service browser communications
+// to be established
+// NOTE: only call if you're sure it won't seize control of the program, e.g. it should be executed within a DispatchQueue!
+func waitForEstablishedCommunications() {
+    while !cameraServiceBrowser.readyToSendPacket {}
+    while !photoReceiver.readyToReceive {}
+}
+
 func configureDisplays() -> Bool {
     displayController = DisplayController()
     guard NSScreen.screens()!.count > 1  else {
@@ -51,11 +59,10 @@ func configureDisplays() -> Bool {
 }
 
 
-
 //MARK: execution body
 
 sceneName = "scene"
-exposures = [0.01]
+exposures = [0.01, 0.02]
 
 initializeIPhoneCommunications()
 
@@ -71,9 +78,7 @@ mainQueue.async {
     displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
     displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
     
-    while !cameraServiceBrowser.readyToSendPacket {}
-    while !photoReceiver.readyToReceive {}
-    
+    waitForEstablishedCommunications()
     
     let response = setLensPosition(0.5)
     print("Lens position set: \(response)")

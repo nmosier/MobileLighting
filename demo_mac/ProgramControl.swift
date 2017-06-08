@@ -50,7 +50,7 @@ func captureScene(using system: BinaryCodeSystem) {
         }
         
         displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "max", photoBracketExposures: exposures)
         cameraServiceBrowser.sendPacket(packet)
         photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
         currentCodeBit += 1
@@ -85,5 +85,6 @@ func captureScene(using system: BinaryCodeSystem) {
     
     while currentCodeBit < codeBitCount {}
     */
+    
     
 }

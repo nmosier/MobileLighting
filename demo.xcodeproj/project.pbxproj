@@ -178,12 +178,12 @@
 			children = (
 				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
 				E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */,
-				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
 				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
 				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
 				E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */,
+				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 			);
 			path = demo_mac;
