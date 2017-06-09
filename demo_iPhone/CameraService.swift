@@ -145,10 +145,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             switch packet.cameraInstruction! {
             case .SetLensPosition:
-                guard let lensPosition = packet.lensPosition else {
+                guard var lensPosition = packet.lensPosition else {
                     print("CameraService: error — lens position is nil, cannot be set.")
                     self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
                     return
+                }
+                if lensPosition < 0.0 || lensPosition > 1.0 {
+                    lensPosition = AVCaptureLensPositionCurrent
                 }
                 
                 // completion handler function -> sends packet PhotoDataPacket confirming completion
@@ -160,8 +163,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 } catch {
                     fatalError("unable to lock for configuration")
                 }
-                print("TRIED TO SET LENS POSITION: \(packet.lensPosition!)")
-                self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(packet.lensPosition!, completionHandler: nil)
+                print("TRIED TO SET LENS POSITION: \(lensPosition)")
+                self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
                 //self.cameraController.captureDevice.unlockForConfiguration()
                 
                 let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")

@@ -14,11 +14,16 @@ import AVFoundation
 
 let app = NSApplication.shared()
 
+
+//MARK: global configuration variables
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!
+
 var sceneName: String
 var exposures: [Double]
+var lensPosition: Float
+var binaryCodeSystem: BinaryCodeSystem
 
 
 
@@ -61,6 +66,7 @@ func configureDisplays() -> Bool {
 
 //MARK: execution body
 
+binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
 exposures = [0.01, 0.02]
 
@@ -76,11 +82,14 @@ let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
     
     displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
+    
+    
+    
     displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
     
     waitForEstablishedCommunications()
     
-    let response = setLensPosition(0.5)
+    let response = setLensPosition(-1.0)
     print("Lens position set: \(response)")
     
     captureScene(using: BinaryCodeSystem.GrayCode)

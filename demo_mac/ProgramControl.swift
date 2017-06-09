@@ -3,6 +3,70 @@
 
 import Foundation
 
+//MARK: Input utility functions
+
+enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for determining an exhaustive switch statement)
+    case help   // 'h'
+    case quit   // 'q'
+    case take   // 't'
+    case connect    // 'c'
+    case calibrate  // 'x'
+}
+
+
+// nextCommand: prompts for next command at command line, then handles command
+// -Return value -> true if program should continue, false if should exit
+func nextCommand() -> Bool {
+    
+    guard let input = readLine(strippingNewline: true) else {
+        // if input empty, simply return & continue execution
+        return true
+    }
+    
+    var nextToken = 0
+    let tokens = input.components(separatedBy: " ")
+    guard let command = Command(rawValue: tokens.first ?? "") else { // "" is invalid token, automatically rejected
+        // if input contains no valid commands, return
+        return true
+    }
+    
+    nextToken += 1
+    switch command {
+    case .help:
+        // to be implemented
+        print("help")
+    case .quit:
+        return false
+    case .take:
+        // optionally followed by "ambient" token
+        if nextToken >= tokens.count {
+            // capture scene with current configuration (all exposures & binary patterns)
+            captureScene(using: binaryCodeSystem)
+        } else if tokens[nextToken] == "ambient" {
+            nextToken += 1
+            if nextToken >= tokens.count || tokens[nextToken] == "single" {
+                // take single
+                
+            } else if tokens[nextToken] == "full" {
+                // full ambient take
+            }
+        }
+    case .connect:
+        if nextToken >= tokens.count || tokens[nextToken] == "iphone" {
+            // set up PhotoReceiver & CameraServiceBrowser
+            initializeIPhoneCommunications()
+            // wait for completion
+            waitForEstablishedCommunications()
+            
+        }
+    case .calibrate:
+        // implement later
+        break
+    }
+    return true
+}
+
+
 
 
 
@@ -11,9 +75,11 @@ import Foundation
 //      - lensPosition: Float -> what to set the camera's lens position to
 // -Return value: Float -> camera's lens position directly after done adjusting focus (may not agree with given pos?)
 func setLensPosition(_ lensPosition: Float) -> Float {
+    /*
     guard lensPosition <= 1.0 && lensPosition >= 0.0 else {
         fatalError("Lens position not in range.")
     }
+ */
     
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
@@ -50,7 +116,7 @@ func captureScene(using system: BinaryCodeSystem) {
         }
         
         displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "max", photoBracketExposures: exposures)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
         cameraServiceBrowser.sendPacket(packet)
         photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
         currentCodeBit += 1

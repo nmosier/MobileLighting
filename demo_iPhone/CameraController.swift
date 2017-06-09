@@ -52,13 +52,19 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
                     bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
                 }
-                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
+                let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: kCVPixelFormatType_32BGRA)]
+                guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: kCVPixelFormatType_32BGRA)) else {
+                    fatalError("Does not contain kCVPixelFormatType_32BGRA")
+                }
+                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
             } else {
                 // use default exposure settings
                 let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
-                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: [AVVideoCodecKey : AVVideoCodecJPEG], bracketedSettings: bracketSettings)
+                let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecJPEG,
+                                       AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.0)]]
+                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: processedFormat, bracketedSettings: bracketSettings)
             }
         }
     }
@@ -165,8 +171,24 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         for index in 0..<photoSampleBuffers.count {
             let photoSampleBuffer = photoSampleBuffers[index]
-            let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)
-            let photoPacket = PhotoDataPacket(photoData: jpegData!, bracketedPhotoID: index, lensPosition: lensPositions[index])
+            
+            let desc = CMSampleBufferGetFormatDescription(photoSampleBuffer)
+            print("DESC: \(desc!)")
+            
+            guard let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else { fatalError("COULD NOT GET PIXEL BUFFER") }
+            let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
+            let colorspace = CGColorSpaceCreateDeviceRGB()
+            
+            
+            //guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace) else { fatalError("COULD NOT GET JPEG DATA") }
+            guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
+ 
+            /*
+            guard let tiffData = CIContext().tiffRepresentation(of: im, format: kCIFormatBGRA8, colorSpace: colorspace) else { fatalError("Could not get TIFF data") } */
+            
+            //let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)
+            
+            let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
             self.photoSender.sendPacket(photoPacket)
         }
         self.photoSampleBuffers.removeAll()
@@ -175,6 +197,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     func saveSampleBufferToPhotoLibrary(_ sampleBuffer: CMSampleBuffer) {
         let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: sampleBuffer, previewPhotoSampleBuffer: nil)
+        
         
         func completionHandler(_ success: Bool, _ error: Error?) {
             if success {
