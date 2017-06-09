@@ -52,9 +52,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
                     bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
                 }
-                let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: kCVPixelFormatType_32BGRA)]
-                guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: kCVPixelFormatType_32BGRA)) else {
-                    fatalError("Does not contain kCVPixelFormatType_32BGRA")
+                let pixelFormat = kCVPixelFormatType_32BGRA
+                let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
+                print("Available types: \(capturePhotoOutput.availablePhotoPixelFormatTypes)")
+                
+                guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: pixelFormat)) else {
+                    fatalError("Does not contain \(pixelFormat)")
                 }
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
             } else {
@@ -176,18 +179,18 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             print("DESC: \(desc!)")
             
             guard let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else { fatalError("COULD NOT GET PIXEL BUFFER") }
+            
+            processPixelBufferPair(normal: imageBuffer, inverted: imageBuffer)
+            
             let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
             let colorspace = CGColorSpaceCreateDeviceRGB()
-            
             
             //guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace) else { fatalError("COULD NOT GET JPEG DATA") }
             guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
  
             /*
             guard let tiffData = CIContext().tiffRepresentation(of: im, format: kCIFormatBGRA8, colorSpace: colorspace) else { fatalError("Could not get TIFF data") } */
-            
-            //let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)
-            
+                        
             let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
             self.photoSender.sendPacket(photoPacket)
         }

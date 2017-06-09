@@ -20,6 +20,9 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var torchLevel: Float?
     var lensPosition: Float?
     
+    var binaryCodeBit: Int?         // bit of binary code being displayed
+    var binaryCodeInverted: Bool?   // if binary code is inverted
+    
     //MARK: Initialization
     
     // for decoding packet
@@ -36,10 +39,13 @@ class CameraInstructionPacket: NSObject, NSCoding {
         }
         self.torchLevel = decoder.decodeObject(forKey: "torchLevel") as! Float?
         self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
+        
+        self.binaryCodeBit = decoder.decodeObject(forKey: "binaryCodeBit") as! Int?
+        self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
     }
     
     // for standard initialization
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeInverted: Bool? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -48,6 +54,9 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.torchMode = torchMode
         self.torchLevel = torchLevel
         self.lensPosition = lensPosition
+        
+        self.binaryCodeBit = binaryCodeBit
+        self.binaryCodeInverted = binaryCodeInverted
     }
     
     //MARK: Encoding/decoding
@@ -59,6 +68,9 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.torchMode?.rawValue ?? nil, forKey: "torchMode")  // encodes optional Int
         coder.encode(self.torchLevel, forKey: "torchLevel")
         coder.encode(self.lensPosition, forKey: "lensPosition")
+        
+        coder.encode(self.binaryCodeBit, forKey: "binaryCodeBit")
+        coder.encode(self.binaryCodeInverted, forKey: "binaryCodeInverted")
     }
     
 }

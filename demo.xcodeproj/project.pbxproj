@@ -34,6 +34,7 @@
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
+		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 /* End PBXBuildFile section */
 
@@ -99,6 +100,7 @@
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
+		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -165,6 +167,7 @@
 				E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */,
 				E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */,
 				E11F1FB41EE1B521008F9F0F /* ViewController.swift */,
+				E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */,
 				E11F1FB61EE1B521008F9F0F /* Main.storyboard */,
 				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
@@ -289,6 +292,7 @@
 			files = (
 				E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */,
 				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,
 				E11F1FFA1EE1BBD7008F9F0F /* CameraService.swift in Sources */,
 				E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */,

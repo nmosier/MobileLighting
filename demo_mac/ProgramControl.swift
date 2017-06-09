@@ -103,6 +103,8 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 func captureScene(using system: BinaryCodeSystem) {
     var currentCodeBit: Int
     let codeBitCount: Int = 10
+    var inverted = false
+    var horizontal = false
     var fileNamePrefix: String
     
     // captureNextBinaryCode used as handler for self
@@ -115,35 +117,46 @@ func captureScene(using system: BinaryCodeSystem) {
             return
         }
         
+        displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
         displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
         let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
-        currentCodeBit += 1
+        photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
+        
+        if inverted {
+            currentCodeBit += 1
+        }
+        inverted = !inverted
     }
     
     fileNamePrefix = "\(sceneName)_v"
-    displayController.configureDisplaySettings(horizontal: false, inverted: false)
+    horizontal = false
     currentCodeBit = 0  // reset to 0
+    inverted = false
     captureNextBinaryCode()
     
     while currentCodeBit < codeBitCount {}  // wait til finished
     
+    /*
     fileNamePrefix = "\(sceneName)_vi"
     displayController.configureDisplaySettings(horizontal: false, inverted: true)
     currentCodeBit = 0
     captureNextBinaryCode()
     
     while currentCodeBit < codeBitCount {}
+    */
     
-    /*
+    
     fileNamePrefix = "\(sceneName)_h"
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
+    inverted = false
+    horizontal = true
     captureNextBinaryCode()
     
     while currentCodeBit < codeBitCount {}
     
+    /*
     fileNamePrefix = "\(sceneName)_hi"
     displayController.configureDisplaySettings(horizontal: true, inverted: true)
     currentCodeBit = 0
