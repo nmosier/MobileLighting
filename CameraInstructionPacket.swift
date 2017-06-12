@@ -79,6 +79,7 @@ enum CameraInstruction: Int {
     case SetLensPosition
     case CaptureStillImage
     case CapturePhotoBracket
+    case CaptureNormalInvertedPair, FinishCapturePair
     case EndCaptureSession
 }
 

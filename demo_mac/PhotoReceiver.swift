@@ -17,10 +17,16 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // for receiving bracketed photo sequences
     var bracketName: String?
     var bracketedPhotosComing: Int?
+    
+    // handlers for diff. requests of packet types
     var receivingBracket: Bool = false
     var bracketCompletionHandler: (()->Void)?
+    
     var receivingLensPosition: Bool = false
     var lensPositionCompletionHandler: ((Float)->Void)?
+    
+    var receivingStatusUpdate: Bool = false
+    var statusUpdateCompletionHandler: ((CameraStatusUpdate)->Void)?
     
     var readyToReceive: Bool = false
 
@@ -142,6 +148,14 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             }
             receivingLensPosition = false
             return
+        } else if receivingStatusUpdate {
+            if let handler = statusUpdateCompletionHandler {
+                print("PhotoReceiver: calling status update completion handler.")
+                handler(packet.statusUpdate)
+            }
+            
+            receivingStatusUpdate = false
+            return
         }
         
         
@@ -194,6 +208,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func receiveLensPosition(completionHandler: @escaping (Float) -> Void) {
         receivingLensPosition = true
         lensPositionCompletionHandler = completionHandler
+    }
+    
+    func receiveStatusUpdate(completionHandler: @escaping (CameraStatusUpdate)->Void) {
+        receivingStatusUpdate = true
+        statusUpdateCompletionHandler = completionHandler
     }
     
 }
