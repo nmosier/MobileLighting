@@ -10,6 +10,8 @@ import Foundation
 import AVFoundation
 import CoreImage
 
+let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
+
 struct Pixel {
     var r: UInt8
     var g: UInt8
@@ -17,7 +19,54 @@ struct Pixel {
     var a: UInt8
 }
 
+func processPixelBufferPair2(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
+    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
+    CVPixelBufferLockBaseAddress(normal, lockFlags)
+    CVPixelBufferLockBaseAddress(inverted, lockFlags)
+    
+    var imNormal: CIImage = CIImage(cvPixelBuffer: normal)
+    var imInverted: CIImage = CIImage(cvPixelBuffer: inverted)
+    
+    // apply gray monochrome filter to colors
+    let colorMonochromeFilter = CIFilter(name: "CIColorMonochrome")!
+    colorMonochromeFilter.setValue(CIColor.gray(), forKey: kCIInputColorKey)
+    
+    colorMonochromeFilter.setValue(imNormal, forKey: kCIInputImageKey)
+    imNormal = colorMonochromeFilter.outputImage!
+    colorMonochromeFilter.setValue(imInverted, forKey: kCIInputImageKey)
+    imInverted = colorMonochromeFilter.outputImage!
+    
+    // invert colors for image of inverted pattern
+    let colorInvertFilter = CIFilter(name: "CIColorInvert")!
+    colorInvertFilter.setValue(imInverted, forKey: kCIInputImageKey)
+    imInverted = colorInvertFilter.outputImage!
+    
+    // scale exposures by 0.5
+    var exposureAdjustFilter = CIFilter(name: "CIExposureAdjust")!
+    exposureAdjustFilter.setValue(-1.0, forKey: kCIInputEVKey)
+    exposureAdjustFilter.setValue(imNormal, forKey: kCIInputImageKey)
+    imNormal = exposureAdjustFilter.outputImage!
+    
+    exposureAdjustFilter.setValue(imInverted, forKey: kCIInputImageKey)
+    imInverted = exposureAdjustFilter.outputImage!
+    
+    // add imNormal and imInverted together
+    let additionCompositingFilter = CIFilter(name: "CIAdditionCompositing")!
+    additionCompositingFilter.setValue(imNormal, forKey: kCIInputImageKey)
+    additionCompositingFilter.setValue(imInverted, forKey: kCIInputBackgroundImageKey)
+    
+    let resultingImage = additionCompositingFilter.outputImage!
+    context.render(resultingImage, to: normal)
+    return normal
+}
+
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
+    return processPixelBufferPair2(normal: normal, inverted: inverted)
+    
+    ///
+    ///
+    ///
+    
     print("Image Processor: width of buffer \(CVPixelBufferGetWidth(normal)), height of buffer \(CVPixelBufferGetHeight(normal))")
     
     print("ImageProcessor: processing pixel buffer pair")
@@ -71,20 +120,9 @@ func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> C
         
     }
     
-    /*
-    for curCol in 0..<normal.width {
-        for curRow in 0..<normal.height {
-            let offset = normal.bytesPerRow*curRow + curCol*4
-            let newVal = normal.baseAddress!.load(fromByteOffset: offset, as: UInt8.self)
-            normal.baseAddress!.storeBytes(of: 255 - newVal, toByteOffset: offset, as: UInt8.self)
-        }
-    }
- */
-    
     CVPixelBufferUnlockBaseAddress(normal, lockFlags)
     CVPixelBufferUnlockBaseAddress(inverted, lockFlags)
     
-    //placeholder
     return normal
 }
 
