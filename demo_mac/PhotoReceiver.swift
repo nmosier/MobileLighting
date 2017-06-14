@@ -106,7 +106,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             let photoDataPacket = NSKeyedUnarchiver.unarchiveObject(with: data) as! PhotoDataPacket
             
             handlePacket(photoDataPacket)
-            
+    
            if receivingBracket {
                 guard let bracketedPhotosComing = bracketedPhotosComing else {
                     break
@@ -202,6 +202,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         bracketCompletionHandler = completionHandler
         receivingBracket = true
         
+        print("RECEIVING PHOTO BRACKET WITH PHOTOCOUNT \(photoCount)")
         //readPacket()
     }
     

@@ -165,7 +165,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 print("TRIED TO SET LENS POSITION: \(lensPosition)")
                 self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
-                //self.cameraController.captureDevice.unlockForConfiguration()
+                
+                self.cameraController.captureDevice.unlockForConfiguration()
                 
                 let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
                 queueFinishFocus.async {
@@ -178,7 +179,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 do {
                     try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)
                 } catch {
-                    print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
+                    print("CameraService: error — capture session preset \(String(describing: packet.resolution)) not supported by device.")
                     self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
@@ -207,6 +208,62 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 let settings = self.cameraController.photoBracketSettings
                 self.cameraController.takePhoto(photoSettings: settings)
                 break
+               
+            // main case for capturing normal inverted pair instruction
+            case CameraInstruction.CaptureNormalInvertedPair:
+                print("CameraService: CAPTURING PAIR. \(timestampToString(date: Date()))")
+                guard let exposureTimes = packet.photoBracketExposures else {
+                    print("ERROR: exposure times not provided for bracketed photo sequence.")
+                    break
+                }
+                self.cameraController.photoBracketExposures = exposureTimes
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
+                    print("Error: resolution \(packet.resolution) is not compatable with this device.")
+                    return
+                }
+                do {
+                    try self.cameraController.useCaptureSessionPreset(preset)
+                } catch {
+                    print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
+                    for i in 0..<exposureTimes.count {
+                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                    }
+                    return
+                }
+                let settings = self.cameraController.photoBracketSettings
+                self.cameraController.takeNormalInvertedPair(settings: settings)
+                break
+            // "sister" case for capturing inverted bracket of normal-inverted pair
+            case CameraInstruction.FinishCapturePair:
+                print("CameraService: FINISHING CAPTURE PAIR. \(timestampToString(date: Date()))")
+                guard let exposureTimes = packet.photoBracketExposures else {
+                    print("ERROR: exposure times not provided for bracketed photo sequence.")
+                    break
+                }
+                self.cameraController.photoBracketExposures = exposureTimes
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
+                    print("Error: resolution \(packet.resolution) is not compatable with this device.")
+                    return
+                }
+                do {
+                    try self.cameraController.useCaptureSessionPreset(preset)
+                } catch {
+                    print("CameraService: error — capture session preset \(packet.resolution) not supported by device.")
+                    for i in 0..<exposureTimes.count {
+                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                    }
+                    return
+                }
+                let settings = self.cameraController.photoBracketSettings
+                /*
+                self.cameraController.takeNormalInvertedPair(settings: settings)
+                break
+                */
+                
+                
+                self.cameraController.resumeWithTakingInverted(settings: settings)
+                break
+                
                 
             case CameraInstruction.EndCaptureSession:
                 self.cameraController.captureSession.stopRunning()

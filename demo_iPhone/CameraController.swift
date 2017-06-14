@@ -22,6 +22,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     var lensPositions =  [Float]()
     var sessionPreset: String!
     
+    // properties for capturing normal/inverted pairs
+    var pixelBuffers_normal = [CVPixelBuffer]()
+    var pixelBuffers_inverted = [CVPixelBuffer]()
+    var capturingNormalInvertedPair = false
+    var capturingInverted: Bool = false
+    
     var minExposureDuration: CMTime {
         get {
             return self.captureDevice.activeFormat.minExposureDuration
@@ -139,16 +145,68 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
     }
     
+    //MARK: Entry-point capture functions
+    
     func takePhoto(photoSettings: AVCapturePhotoSettings) {
         guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
             print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
             return
         }
+        
+        /*
+        guard !capturingNormalInvertedPair else {
+            print("CameraController: cannot take photo: currently capturing normal-inverted image pair.")
+            let packet = PhotoDataPacket.error()
+            photoSender.sendPacket(packet)
+            return
+        } */
+        
         print("Capturing photo: \(self.capturePhotoOutput)")
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
+    // main function for capturing normal-inverted pair
+    func takeNormalInvertedPair(settings: AVCapturePhotoSettings) {
+        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+            print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
+            return
+        }
+        print("CameraController: initiating capture of photo bracket pair.")
+        
+        capturingNormalInvertedPair = true
+        capturingInverted = false
+        pixelBuffers_normal.removeAll()
+        pixelBuffers_inverted.removeAll()
+        
+        self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+        
+        // need to add more?
+    }
+    
+    // sister function for capturing inverted bracket in normal-inverted pair
+    func resumeWithTakingInverted(settings: AVCapturePhotoSettings) {
+        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+            print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
+            return
+        }
+        guard capturingNormalInvertedPair else {
+            print("CameraController: ERROR - cannot call resumeWithTakingInverted(settings:) without first calling takeNormalInvertedPair(settings:).")
+            return
+        }
+        print("CameraController: capturing inverted bracket of normal-inverted pair.")
+        
+        //configureNewSession(sessionPreset: AVCaptureSessionPresetHigh)
+        //self.captureSession.startRunning()
+        
+        //capturingNormalInvertedPair = true
+        capturingInverted = true
+        
+        self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+    }
+    
+    
     //MARK: AVCapturePhotoCaptureDelegate
+    
     func capture(_ captureOutput: AVCapturePhotoOutput, willBeginCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
     }
     
@@ -156,46 +214,114 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
-        //print("Finished processing sample buffer.")
-        print("CameraController: FOCUS pos: \(self.captureDevice.lensPosition)")
         guard let photoSampleBuffer = photoSampleBuffer else {
             print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
-            self.photoSender.sendPacket(PhotoDataPacket.error())  // send error
+            //print("PRESET SETTINGS: \(captureSession.sessionPreset)")
+            //print("BRACKET SETTINGS: \(bracketSettings!)")
+            print("ERROR: \(error!.localizedDescription)")
+            // self.photoSender.sendPacket(PhotoDataPacket.error())  // send error
+            
             return
         }
-        self.photoSampleBuffers.append(photoSampleBuffer)
-        self.lensPositions.append(self.captureDevice.lensPosition)
+        print("CameraController: lens position is \(self.captureDevice.lensPosition)")
+        
+        if capturingNormalInvertedPair {
+            // select correct buffer array (normal/inverted)
+            guard var pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else {
+                print("CameraController: could not get pixel buffer from photo sample buffer.")
+                let packet = PhotoDataPacket.error()
+                photoSender.sendPacket(packet)
+                return
+            }
+            
+            pixelBuffer = pixelBuffer.deepcopy()!
+            
+            
+            if capturingInverted {
+                pixelBuffers_inverted.append(pixelBuffer)
+            } else {
+                pixelBuffers_normal.append(pixelBuffer)
+            }
+            
+            
+            
+        } else {
+            self.photoSampleBuffers.append(photoSampleBuffer)
+            self.lensPositions.append(self.captureDevice.lensPosition)
+        }
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
-        print("Finished capture.")
-        
-        // send to Mac using PhotoSender
-        
-        for index in 0..<photoSampleBuffers.count {
-            let photoSampleBuffer = photoSampleBuffers[index]
-            
-            let desc = CMSampleBufferGetFormatDescription(photoSampleBuffer)
-            print("DESC: \(desc!)")
-            
-            guard let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else { fatalError("COULD NOT GET PIXEL BUFFER") }
-            
-            processPixelBufferPair(normal: imageBuffer, inverted: imageBuffer)
-            
-            let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
-            let colorspace = CGColorSpaceCreateDeviceRGB()
-            
-            //guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace) else { fatalError("COULD NOT GET JPEG DATA") }
-            guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
- 
-            /*
-            guard let tiffData = CIContext().tiffRepresentation(of: im, format: kCIFormatBGRA8, colorSpace: colorspace) else { fatalError("Could not get TIFF data") } */
-                        
-            let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
-            self.photoSender.sendPacket(photoPacket)
+        guard error == nil else {
+            print("ERROR: \(error!.localizedDescription)")
+            //self.capturePhotoOutput.capturePhoto(with: photoBracketSettings, delegate: self)
+            return
         }
-        self.photoSampleBuffers.removeAll()
-        self.lensPositions.removeAll()
+        
+        if capturingNormalInvertedPair {
+            if capturingInverted {
+                // process images
+                guard pixelBuffers_normal.count == pixelBuffers_inverted.count else {
+                    print("CameraController: ERROR - mismatch in normal-inverted bracket pair sample buffer count.")
+                    let packet = PhotoDataPacket.error()
+                    photoSender.sendPacket(packet)
+                    return
+                }
+                
+                var intensityBuffers = [CVPixelBuffer]()   // store intermediate buffers provided by processPixelBufferPair() for later combination
+                for i in 0..<pixelBuffers_normal.count {
+                    let normalBuffer = pixelBuffers_normal[i]
+                    let invertedBuffer = pixelBuffers_inverted[i]
+                    
+                    let intensityBuffer = processPixelBufferPair(normal: normalBuffer, inverted: invertedBuffer)
+                    intensityBuffers.append(intensityBuffer)
+                }
+                pixelBuffers_normal.removeAll()
+                pixelBuffers_inverted.removeAll()
+                
+                let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers)
+                
+                let intensityImage = CIImage(cvPixelBuffer: combinedIntensityBuffer)
+                
+                let colorspace = CGColorSpaceCreateDeviceRGB()
+                guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
+                
+                
+                let packet = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: 0)
+                photoSender.sendPacket(packet)
+                
+                capturingNormalInvertedPair = false
+            } else {
+                // notify Mac phone is ready to capture inverted image set
+                let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .CapturedNormalBinaryCode)
+                photoSender.sendPacket(packet)
+            }
+            capturingInverted = !capturingInverted
+        } else {
+        
+            // send to Mac using PhotoSender
+            
+            for index in 0..<photoSampleBuffers.count {
+                let photoSampleBuffer = photoSampleBuffers[index]
+                guard let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else { fatalError("COULD NOT GET PIXEL BUFFER") }
+                
+                //processPixelBufferPair(normal: imageBuffer, inverted: imageBuffer)
+                
+                let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
+                let colorspace = CGColorSpaceCreateDeviceRGB()
+                
+                //guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace) else { fatalError("COULD NOT GET JPEG DATA") }
+                guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
+                
+                /*
+                 guard let tiffData = CIContext().tiffRepresentation(of: im, format: kCIFormatBGRA8, colorSpace: colorspace) else { fatalError("Could not get TIFF data") } */
+                
+                let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
+                self.photoSender.sendPacket(photoPacket)
+            }
+            self.photoSampleBuffers.removeAll()
+            self.lensPositions.removeAll()
+        }
     }
     
     func saveSampleBufferToPhotoLibrary(_ sampleBuffer: CMSampleBuffer) {

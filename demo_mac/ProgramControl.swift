@@ -41,7 +41,7 @@ func nextCommand() -> Bool {
         // optionally followed by "ambient" token
         if nextToken >= tokens.count {
             // capture scene with current configuration (all exposures & binary patterns)
-            captureScene(using: binaryCodeSystem)
+            captureScene(system: binaryCodeSystem, ordering: BinaryCodeOrdering.NormalThenInverted)
         } else if tokens[nextToken] == "ambient" {
             nextToken += 1
             if nextToken >= tokens.count || tokens[nextToken] == "single" {
@@ -100,62 +100,85 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 
 
 // captureFullTake: captures a 'full' take of the scene with structured lighting
-func captureScene(using system: BinaryCodeSystem) {
+
+func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
-    //var inverted = false
+    var inverted = false
     var horizontal = false
     var fileNamePrefix: String
     
     // captureNextBinaryCode used as handler for self
     func captureNextBinaryCode() {
+        print("CURRENT CODE BIT: \(currentCodeBit)")
+        
+        
         guard cameraServiceBrowser.readyToSendPacket else {
+            print("Program Control: error - camera service browser not ready to send packet.")
             return
         }
-        
+ 
         if currentCodeBit >= codeBitCount {
             return
         }
         
-        // configure capture of normal photo bracket for current code bit
-        displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
-        displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
-        cameraServiceBrowser.sendPacket(packet)
+        switch ordering {
+        case .NormalInvertedPairs:
+            // configure capture of normal photo bracket for current code bit
+            displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
+            displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
+            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+            cameraServiceBrowser.sendPacket(packet)
+            
+            //while !cameraServiceBrowser.readyToSendPacket {}
+            
+            // receive CameraStatusUpdate that normal photo bracket capture finished
+            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
+            
+            break
         
-        // receive CameraStatusUpdate that normal photo bracket capture finished
-        photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
-        
-        
-        /*
-        displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
-        displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
-        cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
-        
-        if inverted {
+        case .NormalThenInverted:
+            //displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
+            displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
+            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
+            cameraServiceBrowser.sendPacket(packet)
+            
+            //while !cameraServiceBrowser.readyToSendPacket {}
+            
+            photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
+            
             currentCodeBit += 1
+            
+            break
         }
-        inverted = !inverted
-         */
     }
     
     func captureInvertedBinaryCode(statusUpdate: CameraStatusUpdate) {
+        
+        
         guard cameraServiceBrowser.readyToSendPacket else {
+            print("Program Control: error - camera service browser not ready to send packet.")
             return
         }
-        
+ 
         if currentCodeBit >= codeBitCount {
             return
         }
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
+        displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
         let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        
+        //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+
+        
         cameraServiceBrowser.sendPacket(packet)
         
         // now receive bracket
+        
+        // while !cameraServiceBrowser.readyToSendPacket {}
+        
         photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: 1, completionHandler: captureNextBinaryCode)
         
         currentCodeBit += 1
@@ -169,14 +192,15 @@ func captureScene(using system: BinaryCodeSystem) {
     
     while currentCodeBit < codeBitCount {}  // wait til finished
     
-    /*
-    fileNamePrefix = "\(sceneName)_vi"
-    displayController.configureDisplaySettings(horizontal: false, inverted: true)
-    currentCodeBit = 0
-    captureNextBinaryCode()
-    
-    while currentCodeBit < codeBitCount {}
-    */
+    // only need to
+    if ordering == .NormalThenInverted {
+        fileNamePrefix = "\(sceneName)_v"
+        displayController.configureDisplaySettings(horizontal: false, inverted: true)
+        currentCodeBit = 0
+        captureNextBinaryCode()
+        
+        while currentCodeBit < codeBitCount {}
+    }
     
     
     fileNamePrefix = "\(sceneName)_h"
@@ -188,14 +212,14 @@ func captureScene(using system: BinaryCodeSystem) {
     
     while currentCodeBit < codeBitCount {}
     
-    /*
-    fileNamePrefix = "\(sceneName)_hi"
-    displayController.configureDisplaySettings(horizontal: true, inverted: true)
-    currentCodeBit = 0
-    captureNextBinaryCode()
-    
-    while currentCodeBit < codeBitCount {}
-    */
+    if ordering == .NormalThenInverted {
+        fileNamePrefix = "\(sceneName)_h"
+        displayController.configureDisplaySettings(horizontal: true, inverted: true)
+        currentCodeBit = 0
+        captureNextBinaryCode()
+        
+        while currentCodeBit < codeBitCount {}
+    }
     
     
 }

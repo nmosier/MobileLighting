@@ -6,6 +6,11 @@ enum BinaryCodeSystem {
     case GrayCode, MinStripeWidthCode
 }
 
+enum BinaryCodeOrdering {
+    case NormalInvertedPairs
+    case NormalThenInverted
+}
+
 struct Pixel {
     var r: UInt8
     var g: UInt8
