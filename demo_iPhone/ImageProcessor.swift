@@ -19,7 +19,7 @@ struct Pixel {
     var a: UInt8
 }
 
-func processPixelBufferPair2(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
+func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(normal, lockFlags)
     CVPixelBufferLockBaseAddress(inverted, lockFlags)
@@ -60,13 +60,7 @@ func processPixelBufferPair2(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> 
     return normal
 }
 
-func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
-    return processPixelBufferPair2(normal: normal, inverted: inverted)
-    
-    ///
-    ///
-    ///
-    
+func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     print("Image Processor: width of buffer \(CVPixelBufferGetWidth(normal)), height of buffer \(CVPixelBufferGetHeight(normal))")
     
     print("ImageProcessor: processing pixel buffer pair")
