@@ -175,6 +175,32 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 
                 break
+                
+            case .LockWhiteBalance:
+                guard self.cameraController.captureDevice.isWhiteBalanceModeSupported(.locked) else {
+                    print("CameraService: error - cannot auto focus & lock: one mode is not supported.")
+                    return
+                }
+                
+                do {
+                    try self.cameraController.captureDevice.lockForConfiguration()
+                } catch {
+                    print("CameraService: error - could not lock capture device for configuration.")
+                    return
+                }
+                
+                self.cameraController.captureDevice.whiteBalanceMode = .locked
+                self.cameraController.captureDevice.unlockForConfiguration()
+                
+                let queueFinishWhiteBalance = DispatchQueue(label: "queueFinishWhiteBalance")
+                queueFinishWhiteBalance.async {
+                    while self.cameraController.captureDevice.isAdjustingWhiteBalance {}
+                    let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .LockedWhiteBalance)
+                    self.cameraController.photoSender.sendPacket(packet)
+                }
+                
+                break
+                
             case CameraInstruction.CaptureStillImage:
                 do {
                     try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)

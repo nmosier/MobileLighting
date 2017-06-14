@@ -12,13 +12,6 @@ import CoreImage
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
-struct Pixel {
-    var r: UInt8
-    var g: UInt8
-    var b: UInt8
-    var a: UInt8
-}
-
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(normal, lockFlags)
@@ -42,7 +35,7 @@ func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> C
     imInverted = colorInvertFilter.outputImage!
     
     // scale exposures by 0.5
-    var exposureAdjustFilter = CIFilter(name: "CIExposureAdjust")!
+    let exposureAdjustFilter = CIFilter(name: "CIExposureAdjust")!
     exposureAdjustFilter.setValue(-1.0, forKey: kCIInputEVKey)
     exposureAdjustFilter.setValue(imNormal, forKey: kCIInputImageKey)
     imNormal = exposureAdjustFilter.outputImage!

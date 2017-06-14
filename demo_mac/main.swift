@@ -92,8 +92,14 @@ mainQueue.async {
     let response = setLensPosition(-1.0)
     print("Lens position set: \(response)")
     
-    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    /*
+     let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
+    cameraServiceBrowser.sendPacket(packet)
+
     
+    photoReceiver.receiveStatusUpdate(completionHandler: captureSceneHandlerWrapper) */
+    
+    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 
