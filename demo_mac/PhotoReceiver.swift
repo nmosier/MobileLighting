@@ -111,7 +111,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 guard let bracketedPhotosComing = bracketedPhotosComing else {
                     break
                 }
-                self.bracketedPhotosComing = bracketedPhotosComing-1
                 if self.bracketedPhotosComing! == 0 {
                     // finished receiving bracket, clean up properties & call handler
                     self.bracketedPhotosComing = nil
@@ -127,6 +126,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                         handler()
                     }
                 }
+                self.bracketedPhotosComing = bracketedPhotosComing-1
             }
             
             readPacket()
