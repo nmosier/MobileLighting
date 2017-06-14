@@ -211,6 +211,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, willCapturePhotoForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
+        print("CameraController: TEST — willCapturePhotoForResolvedSettings — \(timestampToString(date: Date()))")
     }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {

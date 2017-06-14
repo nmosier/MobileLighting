@@ -120,7 +120,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     // called when packet has been fully received
     func handlePacket(_ packet: CameraInstructionPacket) {
-        print("Received camera instruction: \(packet.cameraInstruction!)")
+        print("CameraService: received camera instruction: \(packet.cameraInstruction!) — \(timestampToString(date: Date()))")
         
         if let pointOfFocus = packet.pointOfFocus, self.cameraController.captureDevice.isFocusPointOfInterestSupported {
             do {

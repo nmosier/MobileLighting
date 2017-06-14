@@ -129,12 +129,14 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
             displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
             displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
             let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
-            cameraServiceBrowser.sendPacket(packet)
             
-            //while !cameraServiceBrowser.readyToSendPacket {}
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             
-            // receive CameraStatusUpdate that normal photo bracket capture finished
-            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
+                cameraServiceBrowser.sendPacket(packet)
+            
+                // receive CameraStatusUpdate that normal photo bracket capture finished
+                photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
+            }
             
             break
         
@@ -142,14 +144,14 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
             //displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
             displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
             let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
-            cameraServiceBrowser.sendPacket(packet)
             
-            //while !cameraServiceBrowser.readyToSendPacket {}
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
+                cameraServiceBrowser.sendPacket(packet)
             
-            photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
+                photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
             
-            currentCodeBit += 1
-            
+                currentCodeBit += 1
+            }
             break
         }
     }
@@ -171,17 +173,22 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
         
         //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
+            
+            
+            cameraServiceBrowser.sendPacket(packet)
+            
+            photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: 1, completionHandler: captureNextBinaryCode)
+            
+            currentCodeBit += 1
+            
+            print("MAIN DISPATCH: EXECUTED COMMAND")
 
+            
+        }
         
-        cameraServiceBrowser.sendPacket(packet)
         
-        // now receive bracket
-        
-        // while !cameraServiceBrowser.readyToSendPacket {}
-        
-        photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: 1, completionHandler: captureNextBinaryCode)
-        
-        currentCodeBit += 1
     }
     
     fileNamePrefix = "\(sceneName)_v"
@@ -213,6 +220,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     while currentCodeBit < codeBitCount {}
     
     if ordering == .NormalThenInverted {
+        inverted = true
         fileNamePrefix = "\(sceneName)_h"
         displayController.configureDisplaySettings(horizontal: true, inverted: true)
         currentCodeBit = 0

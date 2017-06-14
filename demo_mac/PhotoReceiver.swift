@@ -96,7 +96,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 data_tmp.removeLast()
             }
             print("packetDataLength: \(packetDataLength)")
-            //let packetDataLength = UInt(data[0])*256 + UInt(data[1])    // convert 2 bytes of header to UInt16
             
             // now read packet body (contains the CameraInstruction)
             socket.readData(toLength: UInt(packetDataLength), withTimeout: -1, tag: 2) // tag = 2 to indicate packet body
@@ -106,12 +105,16 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             let photoDataPacket = NSKeyedUnarchiver.unarchiveObject(with: data) as! PhotoDataPacket
             
             handlePacket(photoDataPacket)
-    
+            
            if receivingBracket {
-                guard let bracketedPhotosComing = bracketedPhotosComing else {
+                guard var bracketedPhotosComing = bracketedPhotosComing else {
                     break
                 }
-                if self.bracketedPhotosComing! == 0 {
+            
+                //print("PhotoReceiver: handled packet, # bracketed photos coming: \(bracketedPhotosComing)")
+            
+                bracketedPhotosComing -= 1
+                if bracketedPhotosComing == 0 {
                     // finished receiving bracket, clean up properties & call handler
                     self.bracketedPhotosComing = nil
                     self.bracketName = nil
@@ -126,7 +129,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                         handler()
                     }
                 }
-                self.bracketedPhotosComing = bracketedPhotosComing-1
+                self.bracketedPhotosComing = bracketedPhotosComing
             }
             
             readPacket()

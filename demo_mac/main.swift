@@ -92,7 +92,7 @@ mainQueue.async {
     let response = setLensPosition(-1.0)
     print("Lens position set: \(response)")
     
-    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalThenInverted)
     
 }
 
