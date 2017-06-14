@@ -182,13 +182,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
             photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: 1, completionHandler: captureNextBinaryCode)
             
             currentCodeBit += 1
-            
-            print("MAIN DISPATCH: EXECUTED COMMAND")
-
-            
         }
-        
-        
     }
     
     fileNamePrefix = "\(sceneName)_v"
