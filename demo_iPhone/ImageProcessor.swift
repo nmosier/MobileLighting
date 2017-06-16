@@ -13,6 +13,25 @@ import CoreImage
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
+    // test intensity difference filter
+    let imageN = CIImage(cvPixelBuffer: normal)
+    let imageI = CIImage(cvPixelBuffer: inverted)
+    let filter = IntensityDifferenceFilter()
+    filter.setValue(imageN, forKey: kCIInputImageKey)
+    filter.setValue(imageI, forKey: kCIInputBackgroundImageKey)
+    let imageDiff = filter.outputImage!
+    
+    let grayscaleFilter = GrayscaleFilter()
+    grayscaleFilter.setValue(imageDiff, forKey: kCIInputImageKey)
+    grayscaleFilter.setValue([1.0/3, 1.0/3, 1.0/3] as [Float], forKey: GrayscaleFilter.kCIRGBWeightsKey)
+    let imageGray = grayscaleFilter.outputImage!
+    context.render(imageGray, to: normal)
+    
+    return normal
+    
+}
+
+func processPixelBufferPair_builtInFilters(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(normal, lockFlags)
     CVPixelBufferLockBaseAddress(inverted, lockFlags)
@@ -97,11 +116,6 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
             rowData_intensity[col*4+2] = value
             rowData_intensity[col*4+3] = 255    // A
         }
-        
-        
-        //rowData_intensity.copyBytes(to: rowPtr_normal, count: bytesPerRow)
-        //rowPtr_normal.copyBytes(from: rowData_intensity, count: bytesPerRow)
-        //rowPtr_normal.storeBytes(of: rowData_intensity, as: Data.self)
         let temp_nsData = rowData_intensity as NSData
         rowPtr_normal.copyBytes(from: temp_nsData.bytes, count: bytesPerRow)
         
@@ -114,10 +128,29 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
 }
 
 func combineIntensityBuffers(_ buffers: [CVPixelBuffer]) -> CVPixelBuffer {
-    // NEEDS TO BE IMPLEMENTED
+    guard buffers.count > 0 else {
+        fatalError("ImageProcessor: fatal error — number of buffers supplied must be >= 1.")
+    }
     
-    //placeholder
-    return buffers.first!
+    if buffers.count == 1 {
+        return buffers[0]
+    }
+    
+    var inputImages: [CIImage] = buffers.map { (buffer: CVPixelBuffer) -> CIImage in
+        return CIImage(cvPixelBuffer: buffer)
+    }
+    
+    let extremeIntensitiesFilter = ExtremeIntensitiesFilter()
+    extremeIntensitiesFilter.setValue(inputImages[0], forKey: kCIInputImageKey)
+    
+    var resultImage = CIImage()
+    for i in 1..<inputImages.count {
+        extremeIntensitiesFilter.setValue(inputImages[i], forKey: kCIInputBackgroundImageKey)
+        resultImage = extremeIntensitiesFilter.outputImage!
+    }
+    
+    context.render(resultImage, to: buffers[0])
+    return buffers[0]
 }
 
 extension CVPixelBuffer {

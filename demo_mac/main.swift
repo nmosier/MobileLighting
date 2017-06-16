@@ -68,7 +68,7 @@ func configureDisplays() -> Bool {
 
 binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
-exposures = [0.01, 0.02]
+exposures = [0.005, 0.01, 0.02, 0.05]
 
 initializeIPhoneCommunications()
 

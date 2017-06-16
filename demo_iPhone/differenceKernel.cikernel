@@ -1,0 +1,8 @@
+kernel vec4 difference( sampler imageN, sampler imageI ) {
+	vec4 pixN = sample(imageN, samplerCoord(imageN));
+	vec4 pixI = sample(imageI, samplerCoord(imageI));
+	vec4 pixDiff;
+	pixDiff.rgb = clamp(pixN.rgb - pixI.rgb + 0.5, 0.0, 1.0);
+    pixDiff.a = 1.0;
+	return pixDiff;
+}
