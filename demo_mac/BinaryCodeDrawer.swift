@@ -2,7 +2,7 @@ import Foundation
 import Cocoa
 import CoreGraphics
 
-let monitorTimeDelay: DispatchTimeInterval = .milliseconds(17)
+let monitorTimeDelay: DispatchTimeInterval = .milliseconds(30)
 
 enum BinaryCodeSystem {
     case GrayCode, MinStripeWidthCode

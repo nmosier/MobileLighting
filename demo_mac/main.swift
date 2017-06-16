@@ -68,7 +68,7 @@ func configureDisplays() -> Bool {
 
 binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
-exposures = [0.005, 0.01, 0.02, 0.05]
+exposures = [0.01, 0.02]
 
 initializeIPhoneCommunications()
 
@@ -92,13 +92,13 @@ mainQueue.async {
     let response = setLensPosition(-1.0)
     print("Lens position set: \(response)")
     
-    /*
-     let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
+    // lock white balance before capture
+    let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
     cameraServiceBrowser.sendPacket(packet)
+    var receivedUpdate = false
+    photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+    while !receivedUpdate {}
 
-    
-    photoReceiver.receiveStatusUpdate(completionHandler: captureSceneHandlerWrapper) */
-    
     captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
