@@ -12,6 +12,8 @@ import CoreImage
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
+let threshold: UInt8 = 115
+
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     // test intensity difference filter
     let imageN = CIImage(cvPixelBuffer: normal)
@@ -127,7 +129,7 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
     return normal
 }
 
-func combineIntensityBuffers(_ buffers: [CVPixelBuffer]) -> CVPixelBuffer {
+func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: UInt8 = threshold) -> CVPixelBuffer {
     guard buffers.count > 0 else {
         fatalError("ImageProcessor: fatal error — number of buffers supplied must be >= 1.")
     }
@@ -149,7 +151,13 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer]) -> CVPixelBuffer {
         resultImage = extremeIntensitiesFilter.outputImage!
     }
     
-    context.render(resultImage, to: buffers[0])
+    // testing threshold kernel
+    let thresholdFilter = ThresholdFilter()
+    thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
+    //thresholdFilter.setValue(threshold, forKey: ThresholdFilter.kCIInputThresholdKey)
+    let thresheldImage = thresholdFilter.outputImage!
+    
+    context.render(thresheldImage, to: buffers[0])
     return buffers[0]
 }
 

@@ -39,12 +39,22 @@ class CustomKernelStrings {
         "pix.a = 1.0;" +
         "return pix;" +
         "}"
+    
+    static let Threshold = "kernel vec4 threshold ( sampler imIn, float thresh ) {" +
+        "vec4 pix = sample(imIn, samplerCoord(imIn));" +
+        "if (pix.r < thresh) pix.r = 0.0;" +
+        "else if (pix.r + thresh > 1.0) pix.r = 1.0;" +
+        "else pix.r = 0.5;" +
+        "pix.g = pix.b = pix.r;" +
+        "return pix;" +
+        "}"
 }
 
 //MARK: Custom kernels
 let ExtremeIntensityKernel = CIColorKernel(string: CustomKernelStrings.ExtremeIntensities)!
 let IntensityDifferenceKernel = CIColorKernel(string: CustomKernelStrings.IntensityDifference)!
 let GrayscaleKernel = CIColorKernel(string: CustomKernelStrings.Grayscale)!
+let ThresholdKernel = CIColorKernel(string: CustomKernelStrings.Threshold)!
 
 //MARK: Custom filters
 
@@ -149,6 +159,40 @@ class GrayscaleFilter: CIFilter {
                     args = [inputImage as Any, CIVector(x: 1.0/3, y: 1.0/3, z: 1.0/3) as Any]
                 }
                 return GrayscaleKernel.apply(withExtent: inputImage.extent, arguments: args)
+            } else {
+                return nil
+            }
+        }
+    }
+}
+
+class ThresholdFilter: CIFilter {
+    static let kCIInputThresholdKey = "inputThresholdGrayscale"
+    var inputImage: CIImage?
+    var inputThresholdGrayscale: UInt8?
+    
+    override var attributes: [String : Any] {
+        return [
+            kCIAttributeFilterDisplayName : "ThresholdFilter" as Any,
+            kCIInputImageKey : [
+                kCIAttributeIdentity : 0,
+                kCIAttributeClass : "CIImage",
+                kCIAttributeDisplayName : "Image",
+                kCIAttributeType : kCIAttributeTypeImage],
+            ThresholdFilter.kCIInputThresholdKey : [
+                kCIAttributeIdentity : 1,
+                kCIAttributeClass: "UInt8",
+                kCIAttributeDisplayName : "Threshold",
+                kCIAttributeType : kCIAttributeTypeInteger]
+        ]
+    }
+    
+    override public var outputImage: CIImage? {
+        get {
+            if let inputImage = self.inputImage {
+                let threshold_float = Float(threshold) / 256
+                let args = [inputImage as Any, threshold_float as Any]
+                return ThresholdKernel.apply(withExtent: inputImage.extent, arguments: args)
             } else {
                 return nil
             }

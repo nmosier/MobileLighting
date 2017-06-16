@@ -1,34 +1,15 @@
 kernel vec4 extremes( sampler im1, sampler im2 ) {
-vec4 pix1, pix2, pixD;
-pix1 = sample(im1, samplerCoord(im1));
-pix2 = sample(im2, samplerCoord(im2));
-pix1.r = pix1.r - 0.5;
-pix2.r = pix2.r - 0.5;
-if (abs(pix1.r) >= abs(pix2.r)) {
-pixD.r = pix1.r + 0.5;
-} else {
-pixD.r = pix2.r + 0.5;
-}
-pixD.g = pixD.b = pixD.r;
-pixD.a = 1.0;
-return pixD;
-}
-
-
-
-// OLD kernel:
-kernel vec4 extremes( sampler im1, sampler im2 ) {
-	vec4 pix1, pix2, pixD;
-	pix1 = sample(im1, samplerCoord(im1));
-	pix2 = sample(im2, samplerCoord(im2));
-	pix1.r = pix1.r - 0.5;
-	pix2.r = pix2.r - 0.5;
-	if (pix1.r * pix2.r >= 0.0) {
-		pixD.r = pixD.g = pixD.b = max(abs(pix1.r), abs(pix2.r))*sign(pix1.r) + 0.5;
-		pixD.a = 1.0;
-	} else {
-		pixD.r = pixD.g = pixD.b = 0.5;
-		pixD.a = 1.0;
-	}
-	return pixD;
+    vec4 pix1, pix2, pixD;
+    pix1 = sample(im1, samplerCoord(im1));
+    pix2 = sample(im2, samplerCoord(im2));
+    pix1.r = pix1.r - 0.5;
+    pix2.r = pix2.r - 0.5;
+    if (abs(pix1.r) >= abs(pix2.r)) {
+        pixD.r = pix1.r + 0.5;
+    } else {
+        pixD.r = pix2.r + 0.5;
+    }
+    pixD.g = pixD.b = pixD.r;
+    pixD.a = 1.0;
+    return pixD;
 }
