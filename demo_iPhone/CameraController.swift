@@ -113,6 +113,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
         
         printDeviceCapabilities(of: self.captureDevice)
+        do { try configureCaptureDevice(focusMode: AVCaptureFocusMode.locked, exposureMode: AVCaptureExposureMode.locked, flashMode: AVCaptureFlashMode.off, torchMode: AVCaptureTorchMode.off) } catch { print("Error: could not properly configure capture device.") }
         
         self.capturePhotoOutput = AVCapturePhotoOutput()
         self.capturePhotoOutput.isHighResolutionCaptureEnabled = true
@@ -304,19 +305,16 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             
             for index in 0..<photoSampleBuffers.count {
                 let photoSampleBuffer = photoSampleBuffers[index]
-                guard let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else { fatalError("COULD NOT GET PIXEL BUFFER") }
+                let jpegData: Data
                 
-                //processPixelBufferPair(normal: imageBuffer, inverted: imageBuffer)
+                if let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) {
+                    let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
+                    let colorspace = CGColorSpaceCreateDeviceRGB()
                 
-                let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
-                let colorspace = CGColorSpaceCreateDeviceRGB()
-                
-                //guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace) else { fatalError("COULD NOT GET JPEG DATA") }
-                guard let jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
-                
-                /*
-                 guard let tiffData = CIContext().tiffRepresentation(of: im, format: kCIFormatBGRA8, colorSpace: colorspace) else { fatalError("Could not get TIFF data") } */
-                
+                    jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9])!
+                } else {
+                    jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
+                }
                 let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
                 self.photoSender.sendPacket(photoPacket)
             }

@@ -144,15 +144,31 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             while (self.cameraController.captureDevice.isAdjustingFocus) {}
             
             switch packet.cameraInstruction! {
+            case .GetLensPosition:
+                let pos: Float = self.cameraController.captureDevice.lensPosition
+                let packet = PhotoDataPacket(photoData: Data(), lensPosition: pos)
+                self.cameraController.photoSender.sendPacket(packet)
+            
+            case .LockLensPosition:
+                do {
+                    try self.cameraController.captureDevice.lockForConfiguration()
+                    self.cameraController.captureDevice.focusMode = .locked
+                } catch {
+                    fatalError("Unable to lock capture device for configuration.")
+                }
+                self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                
             case .SetLensPosition:
                 guard var lensPosition = packet.lensPosition else {
                     print("CameraService: error — lens position is nil, cannot be set.")
                     self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
+                
+                /*
                 if lensPosition < 0.0 || lensPosition > 1.0 {
                     lensPosition = AVCaptureLensPositionCurrent
-                }
+                } */
                 
                 // completion handler function -> sends packet PhotoDataPacket confirming completion
                 func didSetLensPosition(time: CMTime) {
@@ -164,7 +180,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     fatalError("unable to lock for configuration")
                 }
                 print("TRIED TO SET LENS POSITION: \(lensPosition)")
-                self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
+                if lensPosition < 0.0 || lensPosition > 1.0 {
+                    self.cameraController.captureDevice.focusMode = .autoFocus
+                } else {
+                    self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
+                }
                 
                 self.cameraController.captureDevice.unlockForConfiguration()
                 

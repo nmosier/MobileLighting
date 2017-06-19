@@ -11,13 +11,15 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case take   // 't'
     case connect    // 'c'
     case calibrate  // 'x'
+    case readfocus, autofocus, setfocus, lockfocus
 }
 
+
+var processingCommand: Bool = false
 
 // nextCommand: prompts for next command at command line, then handles command
 // -Return value -> true if program should continue, false if should exit
 func nextCommand() -> Bool {
-    
     guard let input = readLine(strippingNewline: true) else {
         // if input empty, simply return & continue execution
         return true
@@ -29,6 +31,8 @@ func nextCommand() -> Bool {
         // if input contains no valid commands, return
         return true
     }
+    
+    processingCommand = true
     
     nextToken += 1
     switch command {
@@ -60,9 +64,53 @@ func nextCommand() -> Bool {
             
         }
     case .calibrate:
-        // implement later
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
+        if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
+            for i in 0..<nPhotos {
+                var receivedCalibrationImage = false
+                
+                cameraServiceBrowser.sendPacket(packet)
+                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true})
+                while !receivedCalibrationImage {}
+            }
+        }
+        
         break
+    
+    case .readfocus:
+        let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
+        cameraServiceBrowser.sendPacket(packet)
+        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
+            print("Lens position:\t\(pos)")
+            processingCommand = false
+        })
+        
+    
+    case .autofocus:
+        let readPos = setLensPosition(-1.0)
+        processingCommand = false
+    
+    case .lockfocus:
+        let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
+        cameraServiceBrowser.sendPacket(packet)
+        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
+            print("Lens position:\t\(pos)")
+            processingCommand = false
+        })
+        
+    case .setfocus:
+        guard nextToken < tokens.count else {
+            print("\tUSAGE: 'setfocus <lensPosition>', where 0.0 <= lensPosition <= 1.0")
+            break
+        }
+        guard let pos = Float(tokens[nextToken]) else {
+            print("ERROR: Could not parse float value for lens position.")
+            break
+        }
+        let readPos = setLensPosition(pos)
+        processingCommand = false
     }
+    
     return true
 }
 

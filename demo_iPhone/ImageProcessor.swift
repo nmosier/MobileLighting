@@ -10,9 +10,9 @@ import Foundation
 import AVFoundation
 import CoreImage
 
-let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
-
 let threshold: UInt8 = 115
+
+let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     // test intensity difference filter

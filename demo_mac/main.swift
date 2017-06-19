@@ -20,7 +20,8 @@ var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!
 
-var sceneName: String
+var workingDirectory = "/Users/nicholas/Desktop/scenes"
+var sceneName: String = "test"
 var exposures: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
@@ -32,7 +33,7 @@ var binaryCodeSystem: BinaryCodeSystem
 
 func initializeIPhoneCommunications() {
     cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver()
+    photoReceiver = PhotoReceiver(workingDirectory)
     
     photoReceiver.startBroadcast()
     cameraServiceBrowser.startBrowsing()
@@ -90,7 +91,7 @@ mainQueue.async {
     waitForEstablishedCommunications()
     
     let response = setLensPosition(-1.0)
-    print("Lens position set: \(response)")
+    //print("Lens position set: \(response)")
     
     // lock white balance before capture
     let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
@@ -99,6 +100,8 @@ mainQueue.async {
     photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
     while !receivedUpdate {}
 
+    //while nextCommand() {}
+    
     captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 

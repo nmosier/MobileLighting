@@ -14,6 +14,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var service: NetService?
     var socket: GCDAsyncSocket!
     
+    var workingDirectory: String
+    
     // for receiving bracketed photo sequences
     var bracketName: String?
     var bracketedPhotosComing: Int?
@@ -28,8 +30,15 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var receivingStatusUpdate: Bool = false
     var statusUpdateCompletionHandler: ((CameraStatusUpdate)->Void)?
     
+    var receivingCalibrationImage = false
+    var calibrationImageID: Int?
+    var calibrationImageCompletionHandler: (()->Void)?
+    
     var readyToReceive: Bool = false
 
+    init(_ workingDirectory: String) {
+        self.workingDirectory = workingDirectory
+    }
     
     // startBroadcast: sets up PhotoReceiver service on new socket
     // -causes netServiceDidPublish() to be called if service successfully published
@@ -178,17 +187,24 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         let fileURL: URL
         
-        if let bracketedPhotoID = packet.bracketedPhotoID {
+        if receivingCalibrationImage {
+            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/img\(calibrationImageID ?? 0).jpg")
+            receivingCalibrationImage = false
+            if let handler = calibrationImageCompletionHandler {
+                handler()
+            }
+        } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
             if let bracketName = bracketName {
-                fileURL = URL(fileURLWithPath: "/Users/nicholas/Desktop/photos/\(bracketName)-\(bracketedPhotoID).jpg")
+                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/\(bracketName)-\(bracketedPhotoID).jpg")
             } else {
-                fileURL = URL(fileURLWithPath: "/Users/nicholas/Desktop/photos/PHOTO_DATA-\(bracketedPhotoID).jpg")
+                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/PHOTO_DATA-\(bracketedPhotoID).jpg")
             }
         } else {
-            fileURL = URL(fileURLWithPath: "/Users/nicholas/Desktop/PHOTO_DATA.jpg")
+            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO-DATA.jpg")
         }
         
+        print("FILEURL: \(fileURL.description)")
         do {
             try photoData.write(to: fileURL, options: .atomic)
             print("Successfully saved photo data to file \(fileURL).")
@@ -217,6 +233,12 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func receiveStatusUpdate(completionHandler: @escaping (CameraStatusUpdate)->Void) {
         receivingStatusUpdate = true
         statusUpdateCompletionHandler = completionHandler
+    }
+    
+    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void) {
+        receivingCalibrationImage = true
+        calibrationImageID = ID
+        calibrationImageCompletionHandler = completionHandler
     }
     
 }

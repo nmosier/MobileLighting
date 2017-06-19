@@ -12,6 +12,7 @@ enum CameraStatusUpdate: Int {
     case None
     case LockedWhiteBalance
     case CapturedNormalBinaryCode
+    case CurrentLensPosition
 }
 
 @objc(PhotoDataPacket)

@@ -76,7 +76,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
 }
 
 enum CameraInstruction: Int {
-    case SetLensPosition
+    case SetLensPosition, GetLensPosition, LockLensPosition
     case LockWhiteBalance
     case CaptureStillImage
     case CapturePhotoBracket
