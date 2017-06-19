@@ -100,9 +100,9 @@ mainQueue.async {
     photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
     while !receivedUpdate {}
 
-    //while nextCommand() {}
+    while nextCommand() {}
     
-    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    //captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 

@@ -72,6 +72,10 @@ func nextCommand() -> Bool {
                 cameraServiceBrowser.sendPacket(packet)
                 photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true})
                 while !receivedCalibrationImage {}
+                
+                guard let _ = readLine() else {
+                    fatalError("Unexpected error in reading stdin.")
+                }
             }
         }
         
