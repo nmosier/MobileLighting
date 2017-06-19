@@ -208,3 +208,66 @@ extension CVPixelBuffer {
         return pixelBufferCopyOptional
     }
 }
+
+//MARK: Decoder class
+class Decoder {
+    // properties
+    var valueArray: [Int32] // use Int32 so masking works properly
+    var unknownArray: [Int32]
+    let width: Int
+    let height: Int
+    //var pfmData: Data?
+    
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        self.valueArray = Array<Int32>(repeating: 0, count: width*height)
+        self.unknownArray = Array<Int32>(repeating: 0, count: width*height)
+    }
+    
+    func decodeThreshold(_ thresholdBuffer: CVPixelBuffer, forBit bit: Int) {
+        guard width == thresholdBuffer.width &&
+            height == thresholdBuffer.height else {
+                print("ImageProcessor Decoder: ERROR — mismatch in dimensions of provided threshold image with existing decoder pixel array.")
+                return
+        }
+        
+        CVPixelBufferLockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        var threshPtr = CVPixelBufferGetBaseAddress(thresholdBuffer)!.bindMemory(to: UInt8.self, capacity: width*height*4)
+        
+        for i in 0..<width*height {
+            let threshval = threshPtr.pointee
+            if threshval == 128 {
+                unknownArray[i] |= Int32(1.bigEndian << bit)
+            } else if threshval == 255 {
+                valueArray[i] |= Int32(1.bigEndian << bit)
+            }
+            
+            threshPtr = threshPtr.advanced(by: 4)
+        }
+        
+        CVPixelBufferUnlockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        
+    }
+    
+    
+    // STILL IN PROGRESS
+    
+    /*
+    func getPFMData() -> Data {
+        let pfmHeader = "Pf\n\(width) \(height)\n1\n"
+        var pfmHeaderData = Data(base64Encoded: pfmHeader)
+        var pfmBodyData = Data(repeating: 0, count: width*height*4)
+        
+        
+        
+        let data = Data(bytesNoCopy: UnsafeMutableRawPointer, count: width*height*4, deallocator: Data.Deallocator.free)
+        
+        for i in 0..<width*height {
+            valueArray.
+        }
+        pfmData.append(contentsOf: <#T##Sequence#>)
+    }
+    */
+    
+}
