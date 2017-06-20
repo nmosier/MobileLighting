@@ -227,6 +227,15 @@ class Decoder {
         self.height = height
         self.valueArray = Array<UInt32>(repeating: 0, count: width*height)
         self.unknownArray = Array<UInt32>(repeating: 0, count: width*height)
+        
+        if minSW_codeToPos == nil {
+            do {
+                let filepath = Bundle.main.resourcePath! + "/minSW.dat" 
+                try loadMinSWCodes(filepath: filepath)
+            } catch {
+                print("Decoder: failed to load minSWcodes for processing.")
+            }
+        }
     }
     
     func decodeThreshold(_ thresholdBuffer: CVPixelBuffer, forBit bit: Int) {
@@ -265,7 +274,8 @@ class Decoder {
             let val: Float
             if (unknownArray[i] == 0) {
                 let code = valueArray[i]
-                let pos = decodeGrayCode(of: code)
+                //let pos = decodeGrayCode(of: code)
+                let pos = minSW_codeToPos![Int(code)]
                 val = Float(exactly: pos)!
             } else {
                 val = Float.infinity

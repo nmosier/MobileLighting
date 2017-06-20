@@ -103,7 +103,7 @@ mainQueue.async {
     nextCommand()
     nextCommand()
     
-    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    captureScene(system: BinaryCodeSystem.MinStripeWidthCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 

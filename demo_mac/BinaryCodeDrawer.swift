@@ -22,35 +22,7 @@ struct Pixel {
 let blackPixel = Pixel(r: 0, g: 0, b: 0, a: 255)
 let whitePixel = Pixel(r: 255, g: 255, b: 255, a: 255)
 
-class BinaryCodeDrawer {
-    // static properties
-    static var minStripeWidthCodeBitArrays: [[Bool]]?   // contains minstripewidth code bit arrays from minsSWcode.dat
-    
-    // static utility functions
-    static func loadMinStripeWidthCodes(filepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/demo-mobile-scene-capture/demo_mac/minStripeWidthCodes.dat", codeCount: Int = 10, codeLength: Int = 1024) throws {
-        let fileURL = URL(fileURLWithPath: filepath)
-        let codeData = try Data(contentsOf: fileURL)
-        
-        print("BinaryCodeDrawer: successfully loaded bit code data.")
-        
-        minStripeWidthCodeBitArrays = [[Bool]]()
-        minStripeWidthCodeBitArrays?.reserveCapacity(codeCount)
-        
-        var dataIndex = 0;
-        for _ in 0..<codeCount {
-            var codeArray = [Bool]()
-            codeArray.reserveCapacity(codeLength)
-            
-            for _ in 0..<codeLength {
-                let codeBool = (codeData[dataIndex] == 0xFF)
-                codeArray.append(codeBool)
-                
-                dataIndex += 1
-            }
-            minStripeWidthCodeBitArrays!.append(codeArray)
-        }
-    }
-    
+class BinaryCodeDrawer {    
     let context: NSGraphicsContext
     let frame: CGRect
     let width: Int
@@ -95,19 +67,19 @@ class BinaryCodeDrawer {
             bitArray = grayCodeArray(forBit: bit, size: nPositions)
             break
         case .MinStripeWidthCode:
-            if BinaryCodeDrawer.minStripeWidthCodeBitArrays == nil {
+            if minStripeWidthCodeBitArrays == nil {
                 do {
-                    try BinaryCodeDrawer.loadMinStripeWidthCodes()
+                    try loadMinStripeWidthCodes()
                 } catch {
                     print("BinaryCodeDrawer: unable to load min strip width codes from data file.")
                     return
                 }
             }
-            guard Int(bit) < BinaryCodeDrawer.minStripeWidthCodeBitArrays!.count else {
+            guard Int(bit) < minStripeWidthCodeBitArrays!.count else {
                 print("BinaryCodeDrawer: ERROR — specified bit for code too large.")
                 return
             }
-            let fullBitArray = BinaryCodeDrawer.minStripeWidthCodeBitArrays![bit]
+            let fullBitArray = minStripeWidthCodeBitArrays![bit]
             bitArray = Array<Bool>(fullBitArray.prefix(Int(horizontally ? height : width)))
             guard nPositions <= bitArray.count else {
                 print("BinaryCodeDrawer: ERROR — cannot display min stripe width code, number of stripes too large.")

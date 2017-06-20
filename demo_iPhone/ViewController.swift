@@ -17,6 +17,19 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        /*
+        let fileManager = FileManager.default
+        
+        // Get contents in directory: '.' (current one)
+        
+        do {
+            let files = try fileManager.contentsOfDirectory(atPath: Bundle.main.resourcePath!)
+            print(files)
+        }
+        catch let error as NSError {
+            print("Ooops! Something went wrong: \(error)")
+        } */
+        
         cameraService = CameraService()
         
         cameraService.startBroadcast()
