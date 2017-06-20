@@ -161,6 +161,8 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     var horizontal = false
     var fileNamePrefix: String
     
+    var done: Bool = false
+    
     // captureNextBinaryCode used as handler for self
     func captureNextBinaryCode() {
         print("CURRENT CODE BIT: \(currentCodeBit)")
@@ -172,7 +174,10 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         }
  
         if currentCodeBit >= codeBitCount {
+            done = true
             return
+        } else {
+            done = false
         }
         
         switch ordering {
@@ -195,7 +200,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         case .NormalThenInverted:
             //displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
             displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures)
+            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
             
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
                 cameraServiceBrowser.sendPacket(packet)
@@ -217,6 +222,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         }
  
         if currentCodeBit >= codeBitCount {
+            done = true
             return
         }
         
@@ -241,11 +247,15 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     horizontal = false
     currentCodeBit = 0  // reset to 0
     //inverted = false
+    if ordering == .NormalInvertedPairs {
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull)
+        cameraServiceBrowser.sendPacket(packet)
+        while !cameraServiceBrowser.readyToSendPacket {}
+    }
     captureNextBinaryCode()
     
-    while currentCodeBit < codeBitCount {}  // wait til finished
+    while currentCodeBit < codeBitCount || !done {}  // wait til finished
     
-    // only need to
     if ordering == .NormalThenInverted {
         fileNamePrefix = "\(sceneName)_v"
         displayController.configureDisplaySettings(horizontal: false, inverted: true)
@@ -255,15 +265,27 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         while currentCodeBit < codeBitCount {}
     }
     
+    if ordering == .NormalInvertedPairs {
+        let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
+        cameraServiceBrowser.sendPacket(packet)
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {})
+        while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
+    }
+    
     
     fileNamePrefix = "\(sceneName)_h"
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
     //inverted = false
     horizontal = true
+    if ordering == .NormalInvertedPairs {
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull)
+        cameraServiceBrowser.sendPacket(packet)
+        while !cameraServiceBrowser.readyToSendPacket {}
+    }
     captureNextBinaryCode()
     
-    while currentCodeBit < codeBitCount {}
+    while currentCodeBit < codeBitCount || !done {}
     
     if ordering == .NormalThenInverted {
         inverted = true
@@ -275,5 +297,11 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         while currentCodeBit < codeBitCount {}
     }
     
+    if ordering == .NormalInvertedPairs {
+        let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
+        cameraServiceBrowser.sendPacket(packet)
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {})
+        while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
+    }
     
 }

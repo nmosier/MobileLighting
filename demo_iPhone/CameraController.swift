@@ -27,6 +27,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     var pixelBuffers_inverted = [CVPixelBuffer]()
     var capturingNormalInvertedPair = false
     var capturingInverted: Bool = false
+    var currentBinaryCodeBit: Int?
+    var decoder: Decoder?
     
     var minExposureDuration: CMTime {
         get {
@@ -176,6 +178,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         capturingNormalInvertedPair = true
         capturingInverted = false
+        //currentBinaryCodeBit = 0
         pixelBuffers_normal.removeAll()
         pixelBuffers_inverted.removeAll()
         
@@ -201,6 +204,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         //capturingNormalInvertedPair = true
         capturingInverted = true
+        //currentBinaryCodeBit = 0
         
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
     }
@@ -282,13 +286,13 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_inverted.removeAll()
                 
                 let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers)
-                
                 let intensityImage = CIImage(cvPixelBuffer: combinedIntensityBuffer)
+                
+                // decode threshold image for current bit using decoder
+                decoder!.decodeThreshold(combinedIntensityBuffer, forBit: currentBinaryCodeBit!)
                 
                 let colorspace = CGColorSpaceCreateDeviceRGB()
                 guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
-                
-                
                 let packet = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: 0)
                 photoSender.sendPacket(packet)
                 

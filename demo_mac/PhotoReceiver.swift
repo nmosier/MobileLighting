@@ -34,6 +34,10 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var calibrationImageID: Int?
     var calibrationImageCompletionHandler: (()->Void)?
     
+    var receivingDecodedImage = false
+    var decodedImageHorizontal = false
+    var decodedImageCompletionHandler: (()->Void)?
+    
     var readyToReceive: Bool = false
 
     init(_ workingDirectory: String) {
@@ -193,6 +197,13 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             if let handler = calibrationImageCompletionHandler {
                 handler()
             }
+        } else if receivingDecodedImage {
+            // save as PFM file
+            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")
+            receivingDecodedImage = false
+            if let handler = decodedImageCompletionHandler {
+                handler()
+            }
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
             if let bracketName = bracketName {
@@ -241,4 +252,9 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         calibrationImageCompletionHandler = completionHandler
     }
     
+    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping ()->Void) {
+        receivingDecodedImage = true
+        decodedImageHorizontal = horizontal
+        decodedImageCompletionHandler = completionHandler
+    }
 }

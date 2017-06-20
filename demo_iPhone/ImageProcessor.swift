@@ -212,8 +212,8 @@ extension CVPixelBuffer {
 //MARK: Decoder class
 class Decoder {
     // properties
-    var valueArray: [Int32] // use Int32 so masking works properly
-    var unknownArray: [Int32]
+    var valueArray: [UInt32] // use Int32 so masking works properly
+    var unknownArray: [UInt32]
     let width: Int
     let height: Int
     //var pfmData: Data?
@@ -221,8 +221,8 @@ class Decoder {
     init(width: Int, height: Int) {
         self.width = width
         self.height = height
-        self.valueArray = Array<Int32>(repeating: 0, count: width*height)
-        self.unknownArray = Array<Int32>(repeating: 0, count: width*height)
+        self.valueArray = Array<UInt32>(repeating: 0, count: width*height)
+        self.unknownArray = Array<UInt32>(repeating: 0, count: width*height)
     }
     
     func decodeThreshold(_ thresholdBuffer: CVPixelBuffer, forBit bit: Int) {
@@ -238,9 +238,9 @@ class Decoder {
         for i in 0..<width*height {
             let threshval = threshPtr.pointee
             if threshval == 128 {
-                unknownArray[i] |= Int32(1.bigEndian << bit)
+                unknownArray[i] |= UInt32(1 << bit)
             } else if threshval == 255 {
-                valueArray[i] |= Int32(1.bigEndian << bit)
+                valueArray[i] |= UInt32(1 << bit)
             }
             
             threshPtr = threshPtr.advanced(by: 4)
@@ -250,24 +250,27 @@ class Decoder {
         
     }
     
-    
-    // STILL IN PROGRESS
-    
-    /*
     func getPFMData() -> Data {
-        let pfmHeader = "Pf\n\(width) \(height)\n1\n"
-        var pfmHeaderData = Data(base64Encoded: pfmHeader)
-        var pfmBodyData = Data(repeating: 0, count: width*height*4)
+        let pfmHeaderStr: NSString = "Pf\n\(width) \(height)\n-1\n" as NSString
+        var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
         
-        
-        
-        let data = Data(bytesNoCopy: UnsafeMutableRawPointer, count: width*height*4, deallocator: Data.Deallocator.free)
-        
+        var pfmBodyArray: [Float] = Array<Float>(repeating: 0.0, count: width*height)
         for i in 0..<width*height {
-            valueArray.
+            let val: Float
+            if (unknownArray[i] == 0) {
+                //val = Float(bitPattern: valueArray[i])
+                val = Float(exactly: valueArray[i])!
+            } else {
+                val = Float.infinity
+            }
+            pfmBodyArray[i] = val
         }
-        pfmData.append(contentsOf: <#T##Sequence#>)
+        
+        let pfmBodyData = Data(bytes: &pfmBodyArray, count: width*height*MemoryLayout<Float>.size)
+        pfmData.append(pfmBodyData)
+        
+        return pfmData
     }
-    */
+    
     
 }

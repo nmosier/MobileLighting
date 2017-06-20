@@ -81,6 +81,7 @@ enum CameraInstruction: Int {
     case CaptureStillImage
     case CapturePhotoBracket
     case CaptureNormalInvertedPair, FinishCapturePair
+    case StartStructuredLightingCaptureFull, EndStructuredLightingCaptureFull
     case EndCaptureSession
 }
 

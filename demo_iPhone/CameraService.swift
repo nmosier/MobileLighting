@@ -262,6 +262,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
                 }
+                self.cameraController.currentBinaryCodeBit = packet.binaryCodeBit
                 self.cameraController.photoBracketExposures = exposureTimes
                 guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
                     print("Error: resolution \(packet.resolution) is not compatable with this device.")
@@ -309,7 +310,19 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
                 self.cameraController.resumeWithTakingInverted(settings: settings)
                 break
-                
+            
+            
+            case .StartStructuredLightingCaptureFull:
+                // for now, specify hard-code in resolution
+                let resolutionStr = packet.resolution ?? AVCaptureSessionPresetPhoto
+                self.cameraController.decoder = Decoder(width: 1920, height: 1080)
+            
+            case .EndStructuredLightingCaptureFull:
+                // need to send off decoded image
+                let data = self.cameraController.decoder!.getPFMData()
+                let packet = PhotoDataPacket(photoData: data)
+                self.cameraController.photoSender.sendPacket(packet)
+                self.cameraController.decoder = nil
                 
             case CameraInstruction.EndCaptureSession:
                 self.cameraController.captureSession.stopRunning()
