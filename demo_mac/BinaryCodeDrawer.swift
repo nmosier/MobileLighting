@@ -158,21 +158,3 @@ class BinaryCodeDrawer {
     
     
 }
-
-func grayCodeArray(forBit bit: Int, size: Int) -> [Bool] {
-    var array = [Bool]()
-    array.reserveCapacity(Int(size))
-    
-    for i in 0..<size {
-        array.append(getBit(grayCode(of: i), bit: bit))
-    }
-    return array
-}
-
-func grayCode(of pos: Int) -> Int {
-    return pos ^ (pos >> 1)
-}
-
-func getBit(_ n: Int, bit: Int) -> Bool {
-    return (n & (1 << bit)) != 0
-}

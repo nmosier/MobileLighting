@@ -35,6 +35,8 @@
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
 		E19B513F1EF4703400FD0538 /* thresholdKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */; };
+		E1B6BAF31EF99CDC00E7531C /* GrayCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* GrayCode.swift */; };
+		E1B6BAF41EF99CDC00E7531C /* GrayCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* GrayCode.swift */; };
 		E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */; };
 		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
@@ -106,6 +108,7 @@
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = thresholdKernel.cikernel; sourceTree = "<group>"; };
+		E1B6BAF21EF99CDC00E7531C /* GrayCode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrayCode.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
@@ -137,6 +140,7 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
+				E1B6BAF21EF99CDC00E7531C /* GrayCode.swift */,
 				E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */,
 				E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */,
@@ -324,6 +328,7 @@
 				E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */,
 				E11F1FFA1EE1BBD7008F9F0F /* CameraService.swift in Sources */,
 				E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */,
+				E1B6BAF31EF99CDC00E7531C /* GrayCode.swift in Sources */,
 				E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */,
 				E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */,
 				E11F1FF91EE1BBD7008F9F0F /* CameraPermissions.swift in Sources */,
@@ -342,6 +347,7 @@
 				E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */,
 				E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */,
 				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
+				E1B6BAF41EF99CDC00E7531C /* GrayCode.swift in Sources */,
 				E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */,
 				E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */,
 				E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */,

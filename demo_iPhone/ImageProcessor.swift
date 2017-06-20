@@ -11,7 +11,8 @@ import AVFoundation
 import CoreImage
 
 let threshold: UInt8 = 115
-
+//let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull(), kCIContextHighQualityDownsample : NSNumber(booleanLiteral: true)])
+//let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull(), kCIContextOutputColorSpace : NSNull()])
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
@@ -145,7 +146,7 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: UInt8 = thre
     let extremeIntensitiesFilter = ExtremeIntensitiesFilter()
     extremeIntensitiesFilter.setValue(inputImages[0], forKey: kCIInputImageKey)
     
-    var resultImage = CIImage()
+    var resultImage: CIImage = CIImage()
     for i in 1..<inputImages.count {
         extremeIntensitiesFilter.setValue(inputImages[i], forKey: kCIInputBackgroundImageKey)
         resultImage = extremeIntensitiesFilter.outputImage!
@@ -157,7 +158,10 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: UInt8 = thre
     //thresholdFilter.setValue(threshold, forKey: ThresholdFilter.kCIInputThresholdKey)
     let thresheldImage = thresholdFilter.outputImage!
     
+    //thresheldImage.setValue(NSNull(), forKey: kCIImageColorSpace)
+    
     context.render(thresheldImage, to: buffers[0])
+    
     return buffers[0]
 }
 
@@ -241,6 +245,8 @@ class Decoder {
                 unknownArray[i] |= UInt32(1 << bit)
             } else if threshval == 255 {
                 valueArray[i] |= UInt32(1 << bit)
+            } else if threshval != 0 {
+                print ("ImageProcessor — WARNING, VALUE \(threshval) UNEXPECTED")
             }
             
             threshPtr = threshPtr.advanced(by: 4)
@@ -258,8 +264,9 @@ class Decoder {
         for i in 0..<width*height {
             let val: Float
             if (unknownArray[i] == 0) {
-                //val = Float(bitPattern: valueArray[i])
-                val = Float(exactly: valueArray[i])!
+                let code = valueArray[i]
+                let pos = decodeGrayCode(of: code)
+                val = Float(exactly: pos)!
             } else {
                 val = Float.infinity
             }
