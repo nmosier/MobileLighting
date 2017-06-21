@@ -81,13 +81,7 @@ if configureDisplays() {
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
-    
-    while nextCommand() {}
-    
     displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
-    
-    
-    
     displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     
     waitForEstablishedCommunications()
@@ -103,12 +97,9 @@ mainQueue.async {
     while !receivedUpdate {}
 
     
-    //while nextCommand() {}
-    
-    nextCommand()
-    nextCommand()
-    
-    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    while nextCommand() {}
+        
+    //captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 

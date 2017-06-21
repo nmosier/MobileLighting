@@ -11,6 +11,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case take   // 't'
     case connect    // 'c'
     case calibrate  // 'x'
+    case takefull
     case readfocus, autofocus, setfocus, lockfocus
     case cb     // displays checkerboard
 }
@@ -79,6 +80,27 @@ func nextCommand() -> Bool {
                 }
             }
         }
+        break
+        
+    case .takefull:
+        // optional arguments: [binary code system] [ordering]
+        let system: BinaryCodeSystem, ordering: BinaryCodeOrdering
+        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
+        let orderings: [String : BinaryCodeOrdering] = ["pairs" : .NormalInvertedPairs, "ntheni" : .NormalThenInverted]
+        if nextToken < tokens.count, let tmp_system = systems[tokens[nextToken]] {
+            system = tmp_system
+            nextToken += 1
+        } else {
+            system = .MinStripeWidthCode
+        }
+        if nextToken < tokens.count, let tmp_ordering = orderings[tokens[nextToken]] {
+            ordering = tmp_ordering
+            nextToken += 1
+        } else {
+            ordering = .NormalInvertedPairs
+        }
+        
+        captureScene(system: system, ordering: ordering)
         
         break
     
