@@ -84,6 +84,8 @@ mainQueue.async {
     displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
     displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     
+    //while nextCommand() {}
+    
     waitForEstablishedCommunications()
     
     let response = setLensPosition(-1.0)
@@ -95,11 +97,8 @@ mainQueue.async {
     var receivedUpdate = false
     photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
     while !receivedUpdate {}
-
     
     while nextCommand() {}
-        
-    //captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 

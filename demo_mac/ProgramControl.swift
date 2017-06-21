@@ -14,6 +14,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
     case cb     // displays checkerboard
+    case black, white
 }
 
 
@@ -148,6 +149,14 @@ func nextCommand() -> Bool {
         }
         displayController.windows.first!.displayCheckerboard(squareSize: size)
         break
+    
+    case .black:
+        displayController.windows.first!.displayBlack()
+        break
+    case .white:
+        displayController.windows.first!.displayWhite()
+        break
+    
     }
     return true
 }

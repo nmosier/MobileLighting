@@ -28,6 +28,18 @@ class FullscreenWindow: NSView {
     var currentCodeBit: Int?
     var currentSystem: BinaryCodeSystem?
     
+    var width: Int {
+        get {
+            return Int(screen.frame.width)
+        }
+    }
+    var height: Int {
+        get {
+            return Int(screen.frame.height)
+        }
+    }
+    let whitePix: UInt32 = 0xFFFFFFFF, blackPix: UInt32 = UInt32(0xFF000000)
+    
     init(on screen: NSScreen) {
         super.init(frame: screen.frame)
         
@@ -76,14 +88,12 @@ class FullscreenWindow: NSView {
             }
             break
             
-        case .Checkerboard(let squareSize):            
-            let width = Int(screen.frame.width), height = Int(screen.frame.height)
+        case .Checkerboard(let squareSize):
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
                 bitmapPtr.deallocate(capacity: width*height)
             }
             
-            let whitePix: UInt32 = 0xFFFFFFFF, blackPix: UInt32 = UInt32(0xFF000000)
             for row in 0..<height {
                 let rowPtr = bitmapPtr.advanced(by: row*width)
                 for col in 0..<width {
@@ -99,10 +109,45 @@ class FullscreenWindow: NSView {
             context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
             break
             
-        case .White:
+        case .White, .Black:
+            let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
+            defer {
+                bitmapPtr.deallocate(capacity: width*height)
+            }
+            
+            let pix: UInt32
+            switch displayContent {
+            case .White:
+                pix = whitePix
+            case .Black:
+                pix = blackPix
+            default:
+                pix = 0x00000000
+            }
+            bitmapPtr.initialize(to: pix, count: width*height)
+            let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
+            let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+            let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+            let image = CGImage(width: width, height: height,
+                                bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
+                                decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+            context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
             break
             
         case .Black:
+            let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
+            defer {
+                bitmapPtr.deallocate(capacity: width*height)
+            }
+            
+            bitmapPtr.initialize(to: blackPix, count: width*height)
+            let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
+            let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+            let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+            let image = CGImage(width: width, height: height,
+                                bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
+                                decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+            context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
             break
         }
         
@@ -144,6 +189,16 @@ class FullscreenWindow: NSView {
     
     func displayCheckerboard(squareSize: Int = 2) {
         self.displayContent = .Checkerboard(squareSize)
+        self.display()
+    }
+    
+    func displayBlack() {
+        self.displayContent = .Black
+        self.display()
+    }
+    
+    func displayWhite() {
+        self.displayContent = .White
         self.display()
     }
 }
