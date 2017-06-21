@@ -13,6 +13,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case calibrate  // 'x'
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
+    case focuspoint
     case cb     // displays checkerboard
     case black, white
 }
@@ -137,6 +138,25 @@ func nextCommand() -> Bool {
         }
         let readPos = setLensPosition(pos)
         processingCommand = false
+    
+    case .focuspoint:
+        // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
+        guard tokens.count >= 3 else {
+            print("focuspoint usage: focuspoint [x_coord] [y_coord]")
+            break
+        }
+        guard let x = Float(tokens[1]), let y = Float(tokens[2]) else {
+            
+            print("invalid x or y coordinate: must be on interval [0.0, 1.0]")
+            break
+        }
+        let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+        let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+        cameraServiceBrowser.sendPacket(packet)
+        photoReceiver.receiveLensPosition(completionHandler: { (_: Float) in
+                processingCommand = false
+        })
+        break
         
     case .cb:
         // display checkerboard pattern

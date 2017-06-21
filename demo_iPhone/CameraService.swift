@@ -195,6 +195,32 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 
                 break
+            
+            case .SetPointOfFocus:
+                guard self.cameraController.captureDevice.isFocusPointOfInterestSupported else {
+                    print("CameraService: error - cannot set focus point of interest; function not supported.")
+                    return
+                }
+                do {
+                    try self.cameraController.captureDevice.lockForConfiguration()
+                } catch {
+                    print("CameraService: error - could not lock capture device for configuration.")
+                    return
+                }
+                guard let pointOfFocus = packet.pointOfFocus else {
+                    print("CameraService: error - point of focus missing in packet.")
+                    return
+                }
+                self.cameraController.captureDevice.focusPointOfInterest = pointOfFocus
+                self.cameraController.captureDevice.focusMode = .autoFocus
+                self.cameraController.captureDevice.unlockForConfiguration()
+                
+                let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
+                queueFinishFocus.async {
+                    while self.cameraController.captureDevice.isAdjustingFocus {}
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                }
+                break
                 
             case .LockWhiteBalance:
                 guard self.cameraController.captureDevice.isWhiteBalanceModeSupported(.locked) else {
