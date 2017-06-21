@@ -11,8 +11,17 @@ import Foundation
 import CoreGraphics
 
 class FullscreenWindow: NSView {
+    enum DisplayContent {
+        case None
+        case Image
+        case BinaryCode
+        case Checkerboard(Int)  // can store square size
+        case White, Black
+    }
+    
     var fullscreenWindow: NSWindow!
     var screen: NSScreen!
+    var displayContent: DisplayContent = .None
     var image: CGImage?
     
     var codeDrawer: BinaryCodeDrawer?
@@ -51,14 +60,62 @@ class FullscreenWindow: NSView {
         
         let context: CGContext = graphicsContext.cgContext
         
+        switch displayContent {
+        case .None:
+            break
+            
+        case .Image:
+            if let image = image {
+                context.draw(image, in: self.frame)
+            }
+            break
+        
+        case .BinaryCode:
+            if let codeDrawer = codeDrawer, let currentCodeBit = currentCodeBit, let currentSystem = currentSystem {
+                codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem, positionLimit: (currentSystem == BinaryCodeSystem.MinStripeWidthCode) ? 1024 : nil)
+            }
+            break
+            
+        case .Checkerboard(let squareSize):            
+            let width = Int(screen.frame.width), height = Int(screen.frame.height)
+            let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
+            defer {
+                bitmapPtr.deallocate(capacity: width*height)
+            }
+            
+            let whitePix: UInt32 = 0xFFFFFFFF, blackPix: UInt32 = UInt32(0xFF000000)
+            for row in 0..<height {
+                let rowPtr = bitmapPtr.advanced(by: row*width)
+                for col in 0..<width {
+                    (rowPtr+col).pointee = ( ((col/squareSize) % 2) == ((row/squareSize) % 2) ) ? blackPix : whitePix
+                }
+            }
+            let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
+            let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
+            let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+            let image = CGImage(width: width, height: height,
+                                bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
+                                decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+            context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
+            break
+            
+        case .White:
+            break
+            
+        case .Black:
+            break
+        }
+        
+        /*
         if let image = image {
             context.draw(image, in: self.frame)
         } else if let codeDrawer = codeDrawer, let currentCodeBit = currentCodeBit, let currentSystem = currentSystem {
             codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem, positionLimit: (currentSystem == BinaryCodeSystem.MinStripeWidthCode) ? 1024 : nil)
-        }
+        } */
     }
     
     func drawImage(_ image: CGImage) {
+        self.displayContent = .Image
         self.image = image
         NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
         let context = self.fullscreenWindow.graphicsContext!.cgContext
@@ -81,6 +138,12 @@ class FullscreenWindow: NSView {
         currentCodeBit = bit
         currentSystem = system
         
+        self.displayContent = .BinaryCode
+        self.display()
+    }
+    
+    func displayCheckerboard(squareSize: Int = 2) {
+        self.displayContent = .Checkerboard(squareSize)
         self.display()
     }
 }

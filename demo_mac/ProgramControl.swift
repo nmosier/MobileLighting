@@ -12,6 +12,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case connect    // 'c'
     case calibrate  // 'x'
     case readfocus, autofocus, setfocus, lockfocus
+    case cb     // displays checkerboard
 }
 
 
@@ -113,8 +114,19 @@ func nextCommand() -> Bool {
         }
         let readPos = setLensPosition(pos)
         processingCommand = false
+        
+    case .cb:
+        // display checkerboard pattern
+        // optional parameter: side length of square (in pixels)
+        let size: Int
+        if nextToken < tokens.count, let customSize = Int(tokens[nextToken]) {
+            size = customSize
+        } else {
+            size = 2
+        }
+        displayController.windows.first!.displayCheckerboard(squareSize: size)
+        break
     }
-    
     return true
 }
 

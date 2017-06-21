@@ -69,7 +69,7 @@ func configureDisplays() -> Bool {
 
 binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
-exposures = [0.01, 0.02]
+exposures = [0.01, 0.02, 0.05, 0.1]
 
 initializeIPhoneCommunications()
 
@@ -81,6 +81,8 @@ if configureDisplays() {
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
+    
+    while nextCommand() {}
     
     displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
     
@@ -106,7 +108,7 @@ mainQueue.async {
     nextCommand()
     nextCommand()
     
-    captureScene(system: BinaryCodeSystem.MinStripeWidthCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
+    captureScene(system: BinaryCodeSystem.GrayCode, ordering: BinaryCodeOrdering.NormalInvertedPairs)
 }
 
 
