@@ -86,7 +86,7 @@ mainQueue.async {
     
     
     
-    displayController.windows.first!.displayBinaryCode(forBit: 9, system: .MinStripeWidthCode)
+    displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     
     waitForEstablishedCommunications()
     
@@ -100,6 +100,9 @@ mainQueue.async {
     photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
     while !receivedUpdate {}
 
+    
+    //while nextCommand() {}
+    
     nextCommand()
     nextCommand()
     

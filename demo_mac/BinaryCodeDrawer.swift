@@ -4,10 +4,6 @@ import CoreGraphics
 
 let monitorTimeDelay: DispatchTimeInterval = .milliseconds(30)
 
-enum BinaryCodeSystem {
-    case GrayCode, MinStripeWidthCode
-}
-
 enum BinaryCodeOrdering {
     case NormalInvertedPairs
     case NormalThenInverted
@@ -67,19 +63,19 @@ class BinaryCodeDrawer {
             bitArray = grayCodeArray(forBit: bit, size: nPositions)
             break
         case .MinStripeWidthCode:
-            if minStripeWidthCodeBitArrays == nil {
+            if minSWcodeBitDisplayArrays == nil {
                 do {
-                    try loadMinStripeWidthCodes()
+                    try loadMinStripeWidthCodesForDisplay()
                 } catch {
                     print("BinaryCodeDrawer: unable to load min strip width codes from data file.")
                     return
                 }
             }
-            guard Int(bit) < minStripeWidthCodeBitArrays!.count else {
+            guard Int(bit) < minSWcodeBitDisplayArrays!.count else {
                 print("BinaryCodeDrawer: ERROR — specified bit for code too large.")
                 return
             }
-            let fullBitArray = minStripeWidthCodeBitArrays![bit]
+            let fullBitArray = minSWcodeBitDisplayArrays![bit]
             bitArray = Array<Bool>(fullBitArray.prefix(Int(horizontally ? height : width)))
             guard nPositions <= bitArray.count else {
                 print("BinaryCodeDrawer: ERROR — cannot display min stripe width code, number of stripes too large.")

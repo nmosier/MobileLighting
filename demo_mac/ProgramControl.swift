@@ -248,7 +248,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     currentCodeBit = 0  // reset to 0
     //inverted = false
     if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull)
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeSystem: system)
         cameraServiceBrowser.sendPacket(packet)
         while !cameraServiceBrowser.readyToSendPacket {}
     }
@@ -279,7 +279,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     //inverted = false
     horizontal = true
     if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull)
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeSystem: system)
         cameraServiceBrowser.sendPacket(packet)
         while !cameraServiceBrowser.readyToSendPacket {}
     }

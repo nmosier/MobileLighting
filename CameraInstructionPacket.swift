@@ -20,6 +20,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var torchLevel: Float?
     var lensPosition: Float?
     
+    var binaryCodeSystem: BinaryCodeSystem?
     var binaryCodeBit: Int?         // bit of binary code being displayed
     var binaryCodeInverted: Bool?   // if binary code is inverted
     
@@ -40,12 +41,17 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.torchLevel = decoder.decodeObject(forKey: "torchLevel") as! Float?
         self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
         
+        if let binaryCodeSystemRaw = decoder.decodeObject(forKey: "binaryCodeSystem") as! Int? {
+            self.binaryCodeSystem = BinaryCodeSystem(rawValue: binaryCodeSystemRaw)
+        } else {
+            self.binaryCodeSystem = nil
+        }
         self.binaryCodeBit = decoder.decodeObject(forKey: "binaryCodeBit") as! Int?
         self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
     }
     
     // for standard initialization
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeInverted: Bool? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -57,6 +63,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         
         self.binaryCodeBit = binaryCodeBit
         self.binaryCodeInverted = binaryCodeInverted
+        self.binaryCodeSystem = binaryCodeSystem
     }
     
     //MARK: Encoding/decoding
@@ -69,6 +76,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.torchLevel, forKey: "torchLevel")
         coder.encode(self.lensPosition, forKey: "lensPosition")
         
+        coder.encode(self.binaryCodeSystem?.rawValue ?? nil, forKey: "binaryCodeSystem")
         coder.encode(self.binaryCodeBit, forKey: "binaryCodeBit")
         coder.encode(self.binaryCodeInverted, forKey: "binaryCodeInverted")
     }

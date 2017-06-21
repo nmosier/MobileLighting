@@ -216,22 +216,24 @@ extension CVPixelBuffer {
 //MARK: Decoder class
 class Decoder {
     // properties
+    let binaryCodeSystem: BinaryCodeSystem
     var valueArray: [UInt32] // use Int32 so masking works properly
     var unknownArray: [UInt32]
     let width: Int
     let height: Int
-    //var pfmData: Data?
     
-    init(width: Int, height: Int) {
+    init(width: Int, height: Int, binaryCodeSystem: BinaryCodeSystem) {
         self.width = width
         self.height = height
         self.valueArray = Array<UInt32>(repeating: 0, count: width*height)
         self.unknownArray = Array<UInt32>(repeating: 0, count: width*height)
         
-        if minSW_codeToPos == nil {
+        self.binaryCodeSystem = binaryCodeSystem
+        
+        if binaryCodeSystem == .MinStripeWidthCode && minSW_codeToPos == nil {
             do {
                 let filepath = Bundle.main.resourcePath! + "/minSW.dat" 
-                try loadMinSWCodes(filepath: filepath)
+                try loadMinSWCodesConversionArrays(filepath: filepath)
             } catch {
                 print("Decoder: failed to load minSWcodes for processing.")
             }
@@ -274,9 +276,19 @@ class Decoder {
             let val: Float
             if (unknownArray[i] == 0) {
                 let code = valueArray[i]
-                //let pos = decodeGrayCode(of: code)
-                let pos = minSW_codeToPos![Int(code)]
-                val = Float(exactly: pos)!
+                
+                switch binaryCodeSystem {
+                case .GrayCode:
+                    let pos = decodeGrayCode(of: code)
+                    val = Float(exactly: pos)!
+                case .MinStripeWidthCode:
+                    if code < UInt32(minSW_codeToPos!.count) {  // make sure codeToPos function defined for code
+                        let pos = minSW_codeToPos![Int(code)]
+                        val = Float(exactly: pos)!
+                    } else {
+                        val = Float.infinity
+                    }
+                }
             } else {
                 val = Float.infinity
             }

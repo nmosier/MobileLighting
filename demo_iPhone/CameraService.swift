@@ -315,7 +315,12 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             case .StartStructuredLightingCaptureFull:
                 // for now, specify hard-code in resolution
                 let resolutionStr = packet.resolution ?? AVCaptureSessionPresetPhoto
-                self.cameraController.decoder = Decoder(width: 1920, height: 1080)
+                guard let binaryCodeSystem = packet.binaryCodeSystem else {
+                    print("CameraService: error - binary code must be specified for StartStructuredLightingCaptureFull instruction.")
+                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    return
+                }
+                self.cameraController.decoder = Decoder(width: 1920, height: 1080, binaryCodeSystem: binaryCodeSystem)
             
             case .EndStructuredLightingCaptureFull:
                 // need to send off decoded image
