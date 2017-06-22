@@ -169,7 +169,8 @@ class GrayscaleFilter: CIFilter {
 class ThresholdFilter: CIFilter {
     static let kCIInputThresholdKey = "inputThresholdGrayscale"
     var inputImage: CIImage?
-    var inputThresholdGrayscale: UInt8?
+    var inputThresholdGrayscale: Float? // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
+                                        // 1.0 means [0, 127] -> 0, [128, 255] -> 1
     
     override var attributes: [String : Any] {
         return [
@@ -181,16 +182,17 @@ class ThresholdFilter: CIFilter {
                 kCIAttributeType : kCIAttributeTypeImage],
             ThresholdFilter.kCIInputThresholdKey : [
                 kCIAttributeIdentity : 1,
-                kCIAttributeClass: "UInt8",
+                kCIAttributeClass: "Float",
                 kCIAttributeDisplayName : "Threshold",
-                kCIAttributeType : kCIAttributeTypeInteger]
+                kCIAttributeType : kCIAttributeTypeScalar]
         ]
     }
     
     override public var outputImage: CIImage? {
         get {
             if let inputImage = self.inputImage {
-                let threshold_float = Float(threshold) / 256
+                // compute threshold_float, which is max val for black pixel (0)
+                let threshold_float = 0.5 - (inputThresholdGrayscale ?? thresholdDefault)*0.5
                 let args = [inputImage as Any, threshold_float as Any]
                 return ThresholdKernel.apply(withExtent: inputImage.extent, arguments: args)
             } else {

@@ -10,9 +10,9 @@ import Foundation
 import AVFoundation
 import CoreImage
 
-let threshold: UInt8 = 115
-//let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull(), kCIContextHighQualityDownsample : NSNumber(booleanLiteral: true)])
-//let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull(), kCIContextOutputColorSpace : NSNull()])
+// used by custom threshold filter as default when no input threshold specified
+let thresholdDefault: Float = 0.10
+
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
 func processPixelBufferPair(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
@@ -130,7 +130,7 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
     return normal
 }
 
-func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: UInt8 = threshold) -> CVPixelBuffer {
+func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thresholdDefault) -> CVPixelBuffer {
     guard buffers.count > 0 else {
         fatalError("ImageProcessor: fatal error — number of buffers supplied must be >= 1.")
     }
