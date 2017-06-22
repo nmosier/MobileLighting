@@ -10,6 +10,7 @@ import UIKit
 import AVFoundation
 
 class VideoPreviewView: UIView {
+    @IBOutlet weak var focusPointLabel: UILabel!
 
     var videoPreviewLayer: AVCaptureVideoPreviewLayer {
         return layer as! AVCaptureVideoPreviewLayer

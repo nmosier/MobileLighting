@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -20,14 +21,39 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="VideoPreviewView" customModule="demo_iPhone" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(x, y)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZbX-Aj-GCg">
+                                <rect key="frame" x="16" y="611" width="343" height="36"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <gestureRecognizers/>
+                        <constraints>
+                            <constraint firstItem="ZbX-Aj-GCg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="2gf-9u-fTa"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="ZbX-Aj-GCg" secondAttribute="bottom" constant="20" id="JaK-fY-4JF"/>
+                            <constraint firstItem="ZbX-Aj-GCg" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="pG4-IH-sZl"/>
+                        </constraints>
+                        <connections>
+                            <outlet property="focusPointLabel" destination="ZbX-Aj-GCg" id="zqa-kb-X3w"/>
+                            <outletCollection property="gestureRecognizers" destination="Q1t-qS-Pmt" appends="YES" id="wdo-MW-enV"/>
+                        </connections>
                     </view>
                     <connections>
+                        <outlet property="focusPointLabel" destination="ZbX-Aj-GCg" id="Vr8-Mv-KCg"/>
                         <outlet property="videoPreviewView" destination="8bC-Xf-vdC" id="eEq-yr-d0c"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="Q1t-qS-Pmt">
+                    <connections>
+                        <action selector="screenTapped:" destination="BYZ-38-t0r" id="JzR-nb-rc7"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
+            <point key="canvasLocation" x="52" y="49.025487256371818"/>
         </scene>
     </scenes>
 </document>
