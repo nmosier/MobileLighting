@@ -11,7 +11,7 @@ import AVFoundation
 import CoreImage
 
 // used by custom threshold filter as default when no input threshold specified
-let thresholdDefault: Float = 0.10
+let thresholdDefault: Float = 0.08
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
