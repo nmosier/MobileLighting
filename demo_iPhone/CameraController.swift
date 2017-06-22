@@ -91,7 +91,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         checkPhotoLibraryAuthorization(checkedCameraAuthorization(_:))
         
         // configure first capture session
-        configureNewSession(sessionPreset: AVCaptureSessionPresetPhoto)
+        configureNewSession(sessionPreset: AVCaptureSessionPresetHigh)  // use 'high' preset (not 'photo') so that preview layer fills entire screen
         
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
