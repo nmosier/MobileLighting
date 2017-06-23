@@ -8,11 +8,13 @@
 
 import Cocoa
 import CoreGraphics
+import SwitcherCtrl
 
 class DisplayController: NSWindowController {
     //MARK: Properties
     var windows = [FullscreenWindow]()  // windows currently being displayed
     var currentWindow: FullscreenWindow?
+    var switcher: Switcher!
     
     //MARK: Static functions
     
@@ -27,6 +29,43 @@ class DisplayController: NSWindowController {
     
     
     //MARK: Functions
+    
+    func configureSwitcher() {
+        switcher = Switcher()
+        switcher.startConnection()
+    }
+    
+    func turnOn(projector: Int) {
+        switcher.turnOn(projector)
+    }
+    
+    func turnOn(projectors: [Int]) {
+        for projector in projectors {
+            turnOn(projector: projector)
+        }
+    }
+    
+    func turnOnAllProjectors() {
+        for projector in 0..<8 {
+            turnOn(projector: projector)
+        }
+    }
+    
+    func turnOff(projector: Int) {
+        switcher.turnOff(projector)
+    }
+    
+    func turnOff(projectors: [Int]) {
+        for projector in projectors {
+            turnOff(projector: projector)
+        }
+    }
+    
+    func turnOffAllProjectors() {
+        for projector in 0..<8 {
+            turnOff(projector: projector)
+        }
+    }
     
     // createNewWindow(on:)
     //  -on: NSScreen -> screen to create new window on

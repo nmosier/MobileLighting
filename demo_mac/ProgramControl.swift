@@ -2,6 +2,8 @@
 // contains central functions to the program, i.e. setting the camera focus, etc
 
 import Foundation
+import VXMCtrl
+import SwitcherCtrl
 
 //MARK: Input utility functions
 
@@ -16,6 +18,10 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case focuspoint
     case cb     // displays checkerboard
     case black, white
+    
+    // serial control
+    case movearm
+    case proj
 }
 
 
@@ -59,14 +65,28 @@ func nextCommand() -> Bool {
                 // full ambient take
             }
         }
+    
+    // for connecting devices
     case .connect:
-        if nextToken >= tokens.count || tokens[nextToken] == "iphone" {
+        guard tokens.count >= 2 else {
+            print("usage: connect iphone|switcher|vxm")
+            break
+        }
+        switch tokens[1] {
+        case "iphone":
             // set up PhotoReceiver & CameraServiceBrowser
             initializeIPhoneCommunications()
             // wait for completion
             waitForEstablishedCommunications()
-            
+        case "switcher":
+            displayController.configureSwitcher()
+        case "vxm":
+            vxmController.startVXM()
+        default:
+            print("cannot connect: invalid device name.")
         }
+        
+        
     case .calibrate:
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
@@ -176,7 +196,40 @@ func nextCommand() -> Bool {
     case .white:
         displayController.windows.first!.displayWhite()
         break
+        
+    case .movearm:
+        guard tokens.count >= 2 else {
+            print("usage: movearm <int>/MAX/MIN")
+            break
+        }
+        let dist = tokens[1]
+        if let dist = Int(dist) {
+            vxmController.moveTo(dist: dist)
+        } else if dist == "MAX" {
+            vxmController.moveTo(dist: VXM_MAXDIST)
+        } else if dist == "MIN" {
+            vxmController.zero()
+        }
+        break
     
+    case .proj:
+        guard tokens.count >= 3 else {
+            print("usage: proj <proj #> [on|off]/[1|0]")
+            break
+        }
+        if let projector = Int(tokens[1]) {
+            switch tokens[2] {
+            case "on", "1":
+                displayController.switcher.turnOn(projector)
+            case "off", "0":
+                displayController.switcher.turnOff(projector)
+            default:
+                print("Unrecognized argument: \(tokens[2])")
+            }
+        } else {
+            print("Not a valid projector number: \(tokens[1])")
+        }
+        break
     }
     return true
 }

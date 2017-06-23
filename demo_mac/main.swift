@@ -24,6 +24,10 @@ var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!
 
+// serial interfaces
+var vxmController: VXMController!
+//var switcher: Switcher!
+
 var workingDirectory = "/Users/nicholas/Desktop/scenes"
 var sceneName: String = "test"
 var exposures: [Double]
@@ -74,22 +78,6 @@ func configureDisplays() -> Bool {
 binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
 exposures = [0.01, 0.02, 0.05, 0.1]
-
-// test VXMCtrl
-let vxmCtrl = VXMController()
-if !vxmCtrl.startVXM() {
-    ("VXMCtrl error: unable to start VXM controller.")
-}
-
-vxmCtrl.zero()
-vxmCtrl.cmdLineInputLoop()
-
-/*
-let switcher = Switcher()
-switcher.startConnection()
-switcher.endConnection()
- */
-
 
 initializeIPhoneCommunications()
 
