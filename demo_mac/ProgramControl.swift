@@ -77,10 +77,11 @@ func nextCommand() -> Bool {
             // set up PhotoReceiver & CameraServiceBrowser
             initializeIPhoneCommunications()
             // wait for completion
-            waitForEstablishedCommunications()
+            //waitForEstablishedCommunications()
         case "switcher":
             displayController.configureSwitcher()
         case "vxm":
+            vxmController = VXMController()
             vxmController.startVXM()
         default:
             print("cannot connect: invalid device name.")

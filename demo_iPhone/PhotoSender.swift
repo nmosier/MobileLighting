@@ -46,7 +46,7 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
     func netServiceBrowser(_ browser: NetServiceBrowser, didFind service: NetService, moreComing: Bool) {
         self.service = service              // add service to this camera service browser
         self.service.delegate = self        // this camera service browser will be responder to service's delegate
-        service.resolve(withTimeout: 30.0)  // if service resolved, delegate method "netServiceDidResolveAddress" will be called (below)
+        service.resolve(withTimeout: -1)  // if service resolved, delegate method "netServiceDidResolveAddress" will be called (below)
     }
     
     // netServiceDidResolveAddress: NetServiceDelegate function

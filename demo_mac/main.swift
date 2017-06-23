@@ -22,17 +22,15 @@ let app = NSApplication.shared()
 //MARK: global configuration variables
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
-var displayController: DisplayController!
-
-// serial interfaces
+var displayController: DisplayController!   // includes switcher
 var vxmController: VXMController!
-//var switcher: Switcher!
 
 var workingDirectory = "/Users/nicholas/Desktop/scenes"
 var sceneName: String = "test"
 var exposures: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
+let minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
 
 
 
@@ -79,7 +77,7 @@ binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
 exposures = [0.01, 0.02, 0.05, 0.1]
 
-initializeIPhoneCommunications()
+ initializeIPhoneCommunications()
 
 if configureDisplays() {
     print("main: Successfully configured displays.")
@@ -89,22 +87,20 @@ if configureDisplays() {
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
-    displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
-    displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
+    //displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
+    //displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     
     //while nextCommand() {}
     
-    waitForEstablishedCommunications()
-    
-    let response = setLensPosition(-1.0)
-    //print("Lens position set: \(response)")
+    //waitForEstablishedCommunications()
     
     // lock white balance before capture
-    let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
-    cameraServiceBrowser.sendPacket(packet)
-    var receivedUpdate = false
-    photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
-    while !receivedUpdate {}
+    //let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
+    //cameraServiceBrowser.sendPacket(packet)
+    
+    //var receivedUpdate = false
+    //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+    //while !receivedUpdate {}
     
     while nextCommand() {}
 }

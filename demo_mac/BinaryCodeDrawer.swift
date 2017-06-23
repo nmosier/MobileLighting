@@ -65,7 +65,7 @@ class BinaryCodeDrawer {
         case .MinStripeWidthCode:
             if minSWcodeBitDisplayArrays == nil {
                 do {
-                    try loadMinStripeWidthCodesForDisplay()
+                    try loadMinStripeWidthCodesForDisplay(filepath: minSWfilepath)
                 } catch {
                     print("BinaryCodeDrawer: unable to load min strip width codes from data file.")
                     return
