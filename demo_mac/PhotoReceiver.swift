@@ -191,6 +191,35 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         let fileURL: URL
         
+        /*
+        let subpath: String
+        switch packet.photoType! {
+        case .None:
+            // need to edit once I update other parts
+            subpath = "imgs_misc"
+        case .Ambient:
+            subpath = "imgs_amb"
+        case .Calibration:
+            subpath = "imgs_calib"
+        case .StructuredLight_Original:
+            subpath = "imgs_structured/orig"
+        case .StructuredLight_IntensityDiff,
+             .StructuredLight_Thresholded,
+             .StructuredLight_Decoded,
+             .StructuredLight_Filtered,
+             .StructuredLight_HoleFilled,
+             .StructuredLight_Refined:
+            subpath = "imgs_structured/processed"
+        }
+        
+        let filename: String
+        switch packet.photoType! {
+        case .None:
+            filename = "img\(packet.photoData.hashValue).jpg"
+        case .Ambient:
+            filename = "am"
+        } */
+
         if receivingCalibrationImage {
             fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/img\(calibrationImageID ?? 0).jpg")
             receivingCalibrationImage = false
@@ -215,7 +244,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO-DATA.jpg")
         }
         
-        print("FILEURL: \(fileURL.description)")
         do {
             try photoData.write(to: fileURL, options: .atomic)
             print("Successfully saved photo data to file \(fileURL).")
