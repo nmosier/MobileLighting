@@ -12,6 +12,10 @@ import CoreFoundation
 import CocoaAsyncSocket
 import AVFoundation
 
+import SwitcherCtrl
+import VXMCtrl
+
+
 let app = NSApplication.shared()
 
 
@@ -70,6 +74,22 @@ func configureDisplays() -> Bool {
 binaryCodeSystem = .MinStripeWidthCode
 sceneName = "scene"
 exposures = [0.01, 0.02, 0.05, 0.1]
+
+// test VXMCtrl
+let vxmCtrl = VXMController()
+if !vxmCtrl.startVXM() {
+    ("VXMCtrl error: unable to start VXM controller.")
+}
+
+vxmCtrl.zero()
+vxmCtrl.cmdLineInputLoop()
+
+/*
+let switcher = Switcher()
+switcher.startConnection()
+switcher.endConnection()
+ */
+
 
 initializeIPhoneCommunications()
 

@@ -15,7 +15,6 @@
 		E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */; };
 		E11F1FD41EE1B57C008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FDB1EE1B5A2008F9F0F /* main.swift */; };
-		E11F1FE01EE1B5B7008F9F0F /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
 		E11F1FE21EE1B5CA008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE31EE1B730008F9F0F /* CameraController.swift */; };
 		E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */; };
@@ -46,6 +45,86 @@
 		E1FF9E541EF3099C000606C9 /* extremesKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */; };
 		E1FF9E561EF30F2A000606C9 /* grayscaleKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E551EF30F2A000606C9 /* grayscaleKernel.cikernel */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E14699CE1EFD534D005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_19;
+			remoteInfo = SwiftSerial;
+		};
+		E14699D01EFD534D005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_20;
+			remoteInfo = SwitcherCtrl;
+		};
+		E14699D21EFD534D005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_21;
+			remoteInfo = SerialUtils;
+		};
+		E14699D41EFD534D005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_22;
+			remoteInfo = VXMCtrl;
+		};
+		E14699DB1EFD5355005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = OBJ_30;
+			remoteInfo = SwitcherCtrl;
+		};
+		E14699DD1EFD5355005967DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = OBJ_50;
+			remoteInfo = VXMCtrl;
+		};
+		E1C612641EFC54010084BB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_21;
+			remoteInfo = SwiftSerial;
+		};
+		E1C612661EFC54010084BB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_22;
+			remoteInfo = RigCtrl;
+		};
+		E1C612681EFC54010084BB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_23;
+			remoteInfo = SerialUtils;
+		};
+		E1C6126A1EFC54010084BB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_24;
+			remoteInfo = SwitcherCtrl;
+		};
+		E1C6126C1EFC54010084BB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = OBJ_25;
+			remoteInfo = VXMCtrl;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		E11F1FD21EE1B55B008F9F0F /* CopyFiles */ = {
@@ -108,12 +187,14 @@
 		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
+		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = thresholdKernel.cikernel; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
+		E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../SerialTools/SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
 		E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = differenceKernel.cikernel; sourceTree = "<group>"; };
@@ -134,7 +215,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E11F1FE01EE1B5B7008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +251,7 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */,
 				E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */,
 			);
@@ -201,6 +282,7 @@
 		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
 			isa = PBXGroup;
 			children = (
+				E14699C71EFD534D005967DA /* SerialTools.xcodeproj */,
 				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
 				E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
@@ -212,6 +294,29 @@
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 			);
 			path = demo_mac;
+			sourceTree = "<group>";
+		};
+		E14699C81EFD534D005967DA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E14699CF1EFD534D005967DA /* SwiftSerial.framework */,
+				E14699D11EFD534D005967DA /* SwitcherCtrl.framework */,
+				E14699D31EFD534D005967DA /* SerialUtils.framework */,
+				E14699D51EFD534D005967DA /* VXMCtrl.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E1C6125D1EFC54000084BB8E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E1C612651EFC54010084BB8E /* SwiftSerial.framework */,
+				E1C612671EFC54010084BB8E /* RigCtrl */,
+				E1C612691EFC54010084BB8E /* SerialUtils.framework */,
+				E1C6126B1EFC54010084BB8E /* SwitcherCtrl */,
+				E1C6126D1EFC54010084BB8E /* VXMCtrl */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		E1FF9E501EF30970000606C9 /* custom_kernels */ = {
@@ -258,6 +363,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				E14699DC1EFD5355005967DA /* PBXTargetDependency */,
+				E14699DE1EFD5355005967DA /* PBXTargetDependency */,
 			);
 			name = demo_mac;
 			productName = demo_mac;
@@ -297,6 +404,16 @@
 			mainGroup = E11F1F951EE1B3B4008F9F0F;
 			productRefGroup = E11F1F9F1EE1B3B4008F9F0F /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = E1C6125D1EFC54000084BB8E /* Products */;
+					ProjectRef = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
+				},
+				{
+					ProductGroup = E14699C81EFD534D005967DA /* Products */;
+					ProjectRef = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				E11F1FAF1EE1B521008F9F0F /* demo_iPhone */,
@@ -304,6 +421,72 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		E14699CF1EFD534D005967DA /* SwiftSerial.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSerial.framework;
+			remoteRef = E14699CE1EFD534D005967DA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E14699D11EFD534D005967DA /* SwitcherCtrl.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwitcherCtrl.framework;
+			remoteRef = E14699D01EFD534D005967DA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E14699D31EFD534D005967DA /* SerialUtils.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SerialUtils.framework;
+			remoteRef = E14699D21EFD534D005967DA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E14699D51EFD534D005967DA /* VXMCtrl.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = VXMCtrl.framework;
+			remoteRef = E14699D41EFD534D005967DA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1C612651EFC54010084BB8E /* SwiftSerial.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSerial.framework;
+			remoteRef = E1C612641EFC54010084BB8E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1C612671EFC54010084BB8E /* RigCtrl */ = {
+			isa = PBXReferenceProxy;
+			fileType = text;
+			path = RigCtrl;
+			remoteRef = E1C612661EFC54010084BB8E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1C612691EFC54010084BB8E /* SerialUtils.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SerialUtils.framework;
+			remoteRef = E1C612681EFC54010084BB8E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1C6126B1EFC54010084BB8E /* SwitcherCtrl */ = {
+			isa = PBXReferenceProxy;
+			fileType = text;
+			path = SwitcherCtrl;
+			remoteRef = E1C6126A1EFC54010084BB8E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1C6126D1EFC54010084BB8E /* VXMCtrl */ = {
+			isa = PBXReferenceProxy;
+			fileType = text;
+			path = VXMCtrl;
+			remoteRef = E1C6126C1EFC54010084BB8E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E11F1FAE1EE1B521008F9F0F /* Resources */ = {
@@ -364,6 +547,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E14699DC1EFD5355005967DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwitcherCtrl;
+			targetProxy = E14699DB1EFD5355005967DA /* PBXContainerItemProxy */;
+		};
+		E14699DE1EFD5355005967DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = VXMCtrl;
+			targetProxy = E14699DD1EFD5355005967DA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		E11F1FB61EE1B521008F9F0F /* Main.storyboard */ = {
