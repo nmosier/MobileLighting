@@ -12,7 +12,12 @@
 		<key>demo_mac.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>2</integer>
+		</dict>
+		<key>imageLib.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
@@ -33,6 +38,11 @@
 			<true/>
 		</dict>
 		<key>E11F1FD81EE1B5A2008F9F0F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E13031591F019A3F009D126C</key>
 		<dict>
 			<key>primary</key>
 			<true/>

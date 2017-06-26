@@ -215,7 +215,7 @@ func nextCommand() -> Bool {
     
     case .proj:
         guard tokens.count >= 3 else {
-            print("usage: proj <proj #> [on|off]/[1|0]")
+            print("usage: proj <proj #>/all [on|off]/[1|0]")
             break
         }
         if let projector = Int(tokens[1]) {
@@ -224,6 +224,15 @@ func nextCommand() -> Bool {
                 displayController.switcher.turnOn(projector)
             case "off", "0":
                 displayController.switcher.turnOff(projector)
+            default:
+                print("Unrecognized argument: \(tokens[2])")
+            }
+        } else if tokens[1] == "all" {
+            switch tokens[2] {
+            case "on", "1":
+                displayController.switcher.turnOn(0)
+            case "off", "0":
+                displayController.switcher.turnOff(0)
             default:
                 print("Unrecognized argument: \(tokens[2])")
             }

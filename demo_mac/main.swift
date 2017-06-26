@@ -92,15 +92,15 @@ mainQueue.async {
     
     //while nextCommand() {}
     
-    //waitForEstablishedCommunications()
+    waitForEstablishedCommunications()
     
     // lock white balance before capture
-    //let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
-    //cameraServiceBrowser.sendPacket(packet)
+    let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
+    cameraServiceBrowser.sendPacket(packet)
     
-    //var receivedUpdate = false
-    //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
-    //while !receivedUpdate {}
+    var receivedUpdate = false
+    photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+    while !receivedUpdate {}
     
     while nextCommand() {}
 }

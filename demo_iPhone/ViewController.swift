@@ -28,6 +28,26 @@ class ViewController: UIViewController {
         self.videoPreviewView.session = self.cameraService.cameraController.captureSession
         
         cameraService.startBroadcast()
+        
+        // test bridging header
+        print("testing bridging header...")
+        print("CShape width: \(getCShapeWidth())")
+        getCShapeWidth()
+        
+        // testing ActiveLighting bridging header
+        var cmd = "./activeLighting".utf8CString
+        
+        var ptr = UnsafeMutableRawPointer(mutating: &cmd)
+        var cmdptr = ptr.assumingMemoryBound(to: Int8.self)
+        var ptr2 = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: 1)
+        defer {
+            ptr2.deallocate(capacity: 1)
+        }
+        ptr2.pointee = cmdptr
+        
+        activeLighting(1, ptr2)
+        //ALmain2(1, ptr2)
+        
     }
     
     override func didReceiveMemoryWarning() {
