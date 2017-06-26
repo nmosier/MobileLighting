@@ -45,7 +45,7 @@ class ViewController: UIViewController {
         }
         ptr2.pointee = cmdptr
         
-        activeLighting(1, ptr2)
+        //activeLighting(1, ptr2)
         //ALmain2(1, ptr2)
         
     }
