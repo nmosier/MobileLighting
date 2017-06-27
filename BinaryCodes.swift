@@ -52,7 +52,7 @@ func getBit(_ n: Int, bit: Int) -> Bool {
 var minSWcodeBitDisplayArrays: [[Bool]]?   // contains minstripewidth code bit arrays from minsSWcode.dat
 
 // for displaying purposes only
-func loadMinStripeWidthCodesForDisplay(filepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat", bitCount: Int = 10) throws {
+func loadMinStripeWidthCodesForDisplay(filepath: String, bitCount: Int = 10) throws {
     try loadMinSWCodesConversionArrays(filepath: filepath)
     
     minSWcodeBitDisplayArrays = [[Bool]]()
@@ -69,7 +69,7 @@ func loadMinStripeWidthCodesForDisplay(filepath: String = "/Users/nicholas/OneDr
     }
 }
     
-func loadMinStripeWidthCodes_OLD(filepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/demo_mac/minStripeWidthCodes.dat", codeCount: Int = 10, codeLength: Int = 1024) throws {
+func loadMinStripeWidthCodes_OLD(filepath: String, codeCount: Int = 10, codeLength: Int = 1024) throws {
     
     let fileURL = URL(fileURLWithPath: filepath)
     let codeData = try Data(contentsOf: fileURL)

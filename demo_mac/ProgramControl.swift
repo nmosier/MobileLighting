@@ -141,7 +141,7 @@ func nextCommand() -> Bool {
         for i in 0..<nPhotos-1 {
             for di in [0, 1] {
                 vxmController.moveTo(dist: pos0)
-                print((di==0)? msgBoard: msgMove)
+                print((di==0) ? msgBoard: msgMove)
                 _ = readLine() // operator must press enter when in position; also signal to take photo
                 cameraServiceBrowser.sendPacket(packet)
                 receivedCalibrationImage = false
@@ -151,7 +151,7 @@ func nextCommand() -> Bool {
             
             for di in [0, 1] {
                 vxmController.moveTo(dist: pos1)
-                print((di==0)? msgMove: msgBoard)
+                print((di==0) ? msgMove: msgBoard)
                 _ = readLine()
                 cameraServiceBrowser.sendPacket(packet)
                 receivedCalibrationImage = false

@@ -46,6 +46,7 @@
 		E1C97B1C1F0152000066205B /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1C97B1B1F0152000066205B /* activeLighting_wrapper.cpp */; };
 		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
+		E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E1FF9E531EF3099C000606C9 /* differenceKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */; };
 		E1FF9E541EF3099C000606C9 /* extremesKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */; };
 		E1FF9E561EF30F2A000606C9 /* grayscaleKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E551EF30F2A000606C9 /* grayscaleKernel.cikernel */; };
@@ -386,6 +387,7 @@
 				E11F1FD61EE1B5A2008F9F0F /* Frameworks */,
 				E11F1FD71EE1B5A2008F9F0F /* CopyFiles */,
 				E11F1FF31EE1BA82008F9F0F /* CopyFiles */,
+				E1FC8A1C1F02F6DA000EF2DC /* Resources */,
 			);
 			buildRules = (
 			);
@@ -529,6 +531,14 @@
 				E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */,
 				E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */,
 				E1FF9E561EF30F2A000606C9 /* grayscaleKernel.cikernel in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1FC8A1C1F02F6DA000EF2DC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -25,21 +25,18 @@ var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // includes switcher
 var vxmController: VXMController!
 
-var workingDirectory = "/Users/nicholas/Desktop/scenes"
+var scenesDirectory = "/Users/nicholas/Desktop/scenes"
 var sceneName: String = "test"
+let minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
+
 var exposures: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
-let minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
-
-
-
 
 //MARK: Utility functions
-
 func initializeIPhoneCommunications() {
     cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver(workingDirectory)
+    photoReceiver = PhotoReceiver(scenesDirectory)
     
     photoReceiver.startBroadcast()
     cameraServiceBrowser.startBrowsing()
