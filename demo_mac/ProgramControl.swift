@@ -108,7 +108,7 @@ func nextCommand() -> Bool {
         break
             
     case .calibrate2pos:
-        let usage = "usage: calibrate2pos [leftPos: Int] [right: Int] [photosCountPerPos: Int]"
+        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int]"
         guard tokens.count == 4 else {
             print(usage)
             break
