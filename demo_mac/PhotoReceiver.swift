@@ -33,6 +33,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var receivingCalibrationImage = false
     var calibrationImageID: Int?
     var calibrationImageCompletionHandler: (()->Void)?
+    var calibrationSubpath: String?
     
     var receivingDecodedImage = false
     var decodedImageHorizontal = false
@@ -221,7 +222,13 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         } */
 
         if receivingCalibrationImage {
-            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/img\(calibrationImageID ?? 0).jpg")
+            let subpath: String
+            if let calibrationSubpath = self.calibrationSubpath {
+                subpath = calibrationSubpath + "/"
+            } else {
+                subpath = ""
+            }
+            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
             receivingCalibrationImage = false
             if let handler = calibrationImageCompletionHandler {
                 handler()
@@ -274,10 +281,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         statusUpdateCompletionHandler = completionHandler
     }
     
-    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void) {
+    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void, subpath: String? = nil) {
         receivingCalibrationImage = true
         calibrationImageID = ID
         calibrationImageCompletionHandler = completionHandler
+        calibrationSubpath = subpath
     }
     
     func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping ()->Void) {

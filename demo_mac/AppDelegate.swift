@@ -13,9 +13,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     //@IBOutlet weak var application: NSApplication!
     
-
+    func applicationWillFinishLaunching(_ notification: Notification) {
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         //application.presentationOptions = NSApplicationPresentationOptions.fullScreen   // fullscreen mode
+        
+        print("AppDelegate: didFinishLaunching")
         
         //NSMenu.setMenuBarVisible(false)
         //print("SET MENU BAR TO FALSE")

@@ -193,8 +193,6 @@
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
 		E13031531F018EF9009D126C /* libImg.armv7-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.armv7-g.a"; path = "demo_iPhone/imageLib/libImg.armv7-g.a"; sourceTree = "<group>"; };
-		E130315C1F019A40009D126C /* imageLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imageLib.h; sourceTree = "<group>"; };
-		E130315D1F019A40009D126C /* imageLib.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = imageLib.m; sourceTree = "<group>"; };
 		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
@@ -253,7 +251,6 @@
 				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FB11EE1B521008F9F0F /* demo_iPhone */,
 				E11F1FDA1EE1B5A2008F9F0F /* demo_mac */,
-				E130315B1F019A3F009D126C /* imageLib */,
 				E11F1F9F1EE1B3B4008F9F0F /* Products */,
 				E11F1FA81EE1B4E7008F9F0F /* Frameworks */,
 				E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */,
@@ -324,15 +321,6 @@
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 			);
 			path = demo_mac;
-			sourceTree = "<group>";
-		};
-		E130315B1F019A3F009D126C /* imageLib */ = {
-			isa = PBXGroup;
-			children = (
-				E130315C1F019A40009D126C /* imageLib.h */,
-				E130315D1F019A40009D126C /* imageLib.m */,
-			);
-			path = imageLib;
 			sourceTree = "<group>";
 		};
 		E14699C81EFD534D005967DA /* Products */ = {

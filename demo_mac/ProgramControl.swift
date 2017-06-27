@@ -13,6 +13,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case take   // 't'
     case connect    // 'c'
     case calibrate  // 'x'
+    case calibrate2pos
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
     case focuspoint
@@ -103,7 +104,72 @@ func nextCommand() -> Bool {
                 }
             }
         }
+            
         break
+            
+    case .calibrate2pos:
+        let usage = "usage: calibrate2pos [leftPos: Int] [right: Int] [photosCountPerPos: Int]"
+        guard tokens.count == 4 else {
+            print(usage)
+            break
+        }
+        guard let pos0 = Int(tokens[1]),
+            let pos1 = Int(tokens[2]),
+            let nPhotos = Int(tokens[3]),
+            nPhotos > 0 else {
+            print("calibrate2pos: invalid argument(s).")
+            break
+        }
+        
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
+        var receivedCalibrationImage: Bool
+        let msgMove = "Hit enter when camera in position."
+        let msgBoard = "Hit enter when board repositioned."
+        
+        vxmController.zero()    // reset robot arm
+        
+        
+        
+        vxmController.moveTo(dist: pos1)
+        print(msgMove)
+        _ = readLine()
+        cameraServiceBrowser.sendPacket(packet)
+        receivedCalibrationImage = false
+        photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "right")
+        while !receivedCalibrationImage {}
+        
+        for i in 0..<nPhotos-1 {
+            for di in [0, 1] {
+                vxmController.moveTo(dist: pos0)
+                print((di==0)? msgBoard: msgMove)
+                _ = readLine() // operator must press enter when in position; also signal to take photo
+                cameraServiceBrowser.sendPacket(packet)
+                receivedCalibrationImage = false
+                photoReceiver.receiveCalibrationImage(ID: i+di, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "left")
+                while !receivedCalibrationImage {}
+            }
+            
+            for di in [0, 1] {
+                vxmController.moveTo(dist: pos1)
+                print((di==0)? msgMove: msgBoard)
+                _ = readLine()
+                cameraServiceBrowser.sendPacket(packet)
+                receivedCalibrationImage = false
+                photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "right")
+                while !receivedCalibrationImage {}
+            }
+        }
+        
+        vxmController.moveTo(dist: pos0)
+        print(msgMove)
+        _ = readLine()
+        cameraServiceBrowser.sendPacket(packet)
+        receivedCalibrationImage = false
+        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "left")
+        while !receivedCalibrationImage {}
+        
+        break
+            
         
     case .takefull:
         // optional arguments: [binary code system] [ordering]

@@ -16,7 +16,7 @@ import SwitcherCtrl
 import VXMCtrl
 
 
-let app = NSApplication.shared()
+var app = NSApplication.shared()
 
 
 //MARK: global configuration variables
@@ -105,7 +105,7 @@ mainQueue.async {
     while nextCommand() {}
 }
 
-
+let appDelegate = AppDelegate()
+NSApp.delegate = appDelegate
 NSApp.run()
-
 
