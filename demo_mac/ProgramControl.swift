@@ -24,6 +24,10 @@ enum Command: String {      // rawValues are automatically the name of the case,
     // serial control
     case movearm
     case proj
+    
+    // image processing
+    case refine
+    //case refineall
 }
 
 
@@ -309,6 +313,31 @@ func nextCommand() -> Bool {
             print("Not a valid projector number: \(tokens[1])")
         }
         break
+        
+    case .refine:
+        let usage = "usage: refine [imageFilename] [direction (0/1)]"   // direction: 0 = x, 1 = y
+        let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
+        guard tokens.count == 3 else {
+            print(usage)
+            break
+        }
+        let imgpath = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/"+tokens[1]
+        guard let direction = Int32(tokens[2]) else {
+            print("refine: error - improper direction (0=x, 1=y).")
+            break
+        }
+        refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath))
+        break
+        
+    /*
+    case .refineall:
+        let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
+        let indir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
+        let fileman = FileManager.default
+        for imName in fileman.contentsOfDirectory(atPath: indir) {
+            refineDecodedIm(<#T##outdir: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##direction: Int32##Int32#>, <#T##decodedIm: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>)
+        } */
+        
     }
     return true
 }
@@ -460,8 +489,12 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
+        let subpath = sceneName+"/"+computedSubdir+"/"+decodedSubdir
+        
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {path in decodedImageHandler(path, horizontal: horizontal)}, subpath: subpath)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
+        
+        
     }
     
     
@@ -492,7 +525,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {path in decodedImageHandler(path, horizontal: horizontal)}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     }
     
@@ -537,7 +570,10 @@ func configureDisplays() -> Bool {
 }
 
 
-
+func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
+    let nsstr = str as NSString
+    return UnsafeMutablePointer<Int8>(mutating: nsstr.utf8String!)
+}
 
 func createStaticDirectoryStructure(atPath path: String, structure: [String : Any?]) {
     let fileman = FileManager.default

@@ -12,6 +12,6 @@
 
 #endif /* demo_mac_Bridging_Header_h */
 
-void refineDecodedIm(char *outdir, int direction, char* decodedIm);
+void refineDecodedIm(char *outdir, int direction, char *decodedIm);
 
 void test_wrapped(void);

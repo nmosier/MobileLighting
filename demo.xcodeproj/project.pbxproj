@@ -39,6 +39,7 @@
 		E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473FC1F03E0A70029B3F0 /* libpng16.a */; };
 		E14474011F03E1560029B3F0 /* libopencv_core.3.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E14474001F03E1560029B3F0 /* libopencv_core.3.2.0.dylib */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
+		E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */; };
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E19202291EFDADA000247265 /* demo_iPhone-Bridging-Header.h in Sources */ = {isa = PBXBuildFile; fileRef = E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */; };
 		E192022A1EFDAEA000247265 /* imageLib_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E19202271EFDAA1B00247265 /* imageLib_wrapper.cpp */; };
@@ -208,6 +209,7 @@
 		E14474001F03E1560029B3F0 /* libopencv_core.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.2.0.dylib; path = ../../../../../../usr/local/Cellar/opencv3/3.2.0/lib/libopencv_core.3.2.0.dylib; sourceTree = "<group>"; };
 		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
+		E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor2.swift; sourceTree = "<group>"; };
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E19202211EFDA97200247265 /* libimg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimg.a; path = ../../../../../../Volumes/nmosier/public_html/summer_research_2017/imageLib/cs453/hw1/imageLib/libimg.a; sourceTree = "<group>"; };
 		E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "demo_iPhone-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 				E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */,
 				E14473FB1F03DE590029B3F0 /* demo_mac-Bridging-Header.h */,
+				E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */,
 			);
 			path = demo_mac;
 			sourceTree = "<group>";
@@ -611,6 +614,7 @@
 				E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */,
 				E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */,
 				E11F1FF21EE1B90F008F9F0F /* Timing.swift in Sources */,
+				E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
