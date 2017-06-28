@@ -23,6 +23,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // handlers for diff. requests of packet types
     var receivingBracket: Bool = false
     var bracketCompletionHandler: (()->Void)?
+    var bracketSubpath: String!
     
     var receivingLensPosition: Bool = false
     var lensPositionCompletionHandler: ((Float)->Void)?
@@ -33,11 +34,12 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var receivingCalibrationImage = false
     var calibrationImageID: Int?
     var calibrationImageCompletionHandler: (()->Void)?
-    var calibrationSubpath: String?
+    var calibrationSubpath: String!
     
     var receivingDecodedImage = false
     var decodedImageHorizontal = false
     var decodedImageCompletionHandler: (()->Void)?
+    var decodedImageSubpath: String!
     
     var readyToReceive: Bool = false
 
@@ -190,6 +192,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         print("PhotoReceiver: focus for photo: \(packet.lensPosition ?? -1.0)")
         
+        var filePath: String = workingDirectory
         let fileURL: URL
         
         /*
@@ -222,30 +225,32 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         } */
 
         if receivingCalibrationImage {
-            let subpath: String
-            if let calibrationSubpath = self.calibrationSubpath {
-                subpath = calibrationSubpath + "/"
-            } else {
-                subpath = ""
-            }
-            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
+            filePath += "/"+calibrationSubpath+"/IMG_\(calibrationImageID ?? 0).JPG"
+            fileURL = URL(fileURLWithPath: filePath)
+            
+            //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
             receivingCalibrationImage = false
             if let handler = calibrationImageCompletionHandler {
                 handler()
             }
         } else if receivingDecodedImage {
             // save as PFM file
-            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")
+            filePath += "/"+decodedImageSubpath+"/result\(decodedImageHorizontal ? 1:0).pfm"
+            fileURL = URL(fileURLWithPath: filePath)
+            //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")
             receivingDecodedImage = false
             if let handler = decodedImageCompletionHandler {
                 handler()
             }
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
+            
             if let bracketName = bracketName {
-                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/\(bracketName)-\(bracketedPhotoID).jpg")
+                filePath += "/"+bracketSubpath+"/IMG_\(bracketedPhotoID).JPG"
+                //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/\(bracketName)-\(bracketedPhotoID).jpg")
+                fileURL = URL(fileURLWithPath: filePath)
             } else {
-                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/PHOTO_DATA-\(bracketedPhotoID).jpg")
+                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO_DATA-\(bracketedPhotoID).jpg")
             }
         } else {
             fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO-DATA.jpg")
@@ -261,10 +266,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     // receivePhotoBracket: starts receiving bracketed photo sequence of given photo count with given name
     //     given completion handler called after fully received
-    func receivePhotoBracket(name: String, photoCount: Int, completionHandler: @escaping () -> Void) {
+    func receivePhotoBracket(name: String, photoCount: Int, completionHandler: @escaping () -> Void, subpath: String) {
         bracketName = name
         bracketedPhotosComing = photoCount
         bracketCompletionHandler = completionHandler
+        bracketSubpath = subpath
         receivingBracket = true
         
         print("RECEIVING PHOTO BRACKET WITH PHOTOCOUNT \(photoCount)")
@@ -281,16 +287,17 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         statusUpdateCompletionHandler = completionHandler
     }
     
-    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void, subpath: String? = nil) {
+    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void, subpath: String) {
         receivingCalibrationImage = true
         calibrationImageID = ID
         calibrationImageCompletionHandler = completionHandler
         calibrationSubpath = subpath
     }
     
-    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping ()->Void) {
+    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping ()->Void, subpath: String) {
         receivingDecodedImage = true
         decodedImageHorizontal = horizontal
         decodedImageCompletionHandler = completionHandler
+        decodedImageSubpath = subpath
     }
 }

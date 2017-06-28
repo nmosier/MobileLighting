@@ -97,7 +97,7 @@ func nextCommand() -> Bool {
                 var receivedCalibrationImage = false
                 
                 cameraServiceBrowser.sendPacket(packet)
-                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true})
+                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: sceneName+"/"+origSubdir+"/"+calibSubdir)
                 while !receivedCalibrationImage {}
                 
                 guard let _ = readLine() else {
@@ -126,6 +126,8 @@ func nextCommand() -> Bool {
         var receivedCalibrationImage: Bool
         let msgMove = "Hit enter when camera in position."
         let msgBoard = "Hit enter when board repositioned."
+        let leftSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/left"
+        let rightSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/right"
         
         vxmController.zero()    // reset robot arm
         
@@ -136,7 +138,7 @@ func nextCommand() -> Bool {
         _ = readLine()
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "right")
+        photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
         while !receivedCalibrationImage {}
         
         for i in 0..<nPhotos-1 {
@@ -146,7 +148,7 @@ func nextCommand() -> Bool {
                 _ = readLine() // operator must press enter when in position; also signal to take photo
                 cameraServiceBrowser.sendPacket(packet)
                 receivedCalibrationImage = false
-                photoReceiver.receiveCalibrationImage(ID: i+di, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "left")
+                photoReceiver.receiveCalibrationImage(ID: i+di, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: leftSubdir)
                 while !receivedCalibrationImage {}
             }
             
@@ -156,7 +158,7 @@ func nextCommand() -> Bool {
                 _ = readLine()
                 cameraServiceBrowser.sendPacket(packet)
                 receivedCalibrationImage = false
-                photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "right")
+                photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
                 while !receivedCalibrationImage {}
             }
         }
@@ -166,7 +168,7 @@ func nextCommand() -> Bool {
         _ = readLine()
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: "left")
+        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: leftSubdir)
         while !receivedCalibrationImage {}
         
         break
@@ -398,7 +400,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
                 cameraServiceBrowser.sendPacket(packet)
             
-                photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode)
+                photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode, subpath: sceneName+"/"+origSubdir+"/"+graycodeSubdir)
             
                 currentCodeBit += 1
             }
@@ -426,11 +428,8 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
-            
-            
             cameraServiceBrowser.sendPacket(packet)
-            
-            photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)", photoCount: 1, completionHandler: captureNextBinaryCode)
+            photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
             
             currentCodeBit += 1
         }
@@ -461,7 +460,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {})
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     }
     
@@ -493,7 +492,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {})
+        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     }
     
