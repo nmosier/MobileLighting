@@ -19,6 +19,8 @@ import VXMCtrl
 var app = NSApplication.shared()
 
 
+test_wrapped()
+
 //MARK: global configuration variables
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
