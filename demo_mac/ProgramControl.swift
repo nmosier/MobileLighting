@@ -2,6 +2,7 @@
 // contains central functions to the program, i.e. setting the camera focus, etc
 
 import Foundation
+import Cocoa
 import VXMCtrl
 import SwitcherCtrl
 
@@ -496,4 +497,63 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     }
     
+}
+
+
+
+//MARK: Utility functions
+
+
+func initializeIPhoneCommunications() {
+    cameraServiceBrowser = CameraServiceBrowser()
+    photoReceiver = PhotoReceiver(scenesDirectory)
+    
+    photoReceiver.startBroadcast()
+    cameraServiceBrowser.startBrowsing()
+}
+
+// waits for both photo receiver & camera service browser communications
+// to be established
+// NOTE: only call if you're sure it won't seize control of the program, e.g. it should be executed within a DispatchQueue!
+func waitForEstablishedCommunications() {
+    while !cameraServiceBrowser.readyToSendPacket {}
+    while !photoReceiver.readyToReceive {}
+}
+
+func configureDisplays() -> Bool {
+    displayController = DisplayController()
+    guard NSScreen.screens()!.count > 1  else {
+        print("Only one screen connected.")
+        return false
+    }
+    
+    for screen in NSScreen.screens()! {
+        if screen != NSScreen.main()! {
+            displayController.createNewWindow(on: screen)
+        }
+    }
+    
+    displayController.setCurrentScreen(withID: 0)   // set main secondary screen to be first in array
+    return true
+}
+
+
+
+
+func createStaticDirectoryStructure(atPath path: String, structure: [String : Any?]) {
+    let fileman = FileManager.default
+    
+    for subdir in structure.keys {
+        if structure[subdir] == nil || structure[subdir]! == nil {
+            //print(path+"/"+subdir)
+            do {
+                try fileman.createDirectory(atPath: path+"/"+subdir, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("ProgramControl: could not create static directory structure.")
+            }
+        } else {
+            let substruct = structure[subdir]! as! [String : Any?]
+            createStaticDirectoryStructure(atPath: path+"/"+subdir, structure: substruct)
+        }
+    }
 }

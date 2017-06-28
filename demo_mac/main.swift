@@ -27,53 +27,58 @@ var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // includes switcher
 var vxmController: VXMController!
 
-var scenesDirectory = "/Users/nicholas/Desktop/scenes"
-var sceneName: String = "test"
-let minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
+var scenesDirectory: String
+var sceneName: String
+var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
+var calibSubdir: String     // used in both orig and computed dirs
+var computedSubdir: String, decodedSubdir: String, refinedSubdir: String
+
+var minSWfilepath: String
 
 var exposures: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
 
-//MARK: Utility functions
-func initializeIPhoneCommunications() {
-    cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver(scenesDirectory)
-    
-    photoReceiver.startBroadcast()
-    cameraServiceBrowser.startBrowsing()
-}
 
-// waits for both photo receiver & camera service browser communications
-// to be established
-// NOTE: only call if you're sure it won't seize control of the program, e.g. it should be executed within a DispatchQueue!
-func waitForEstablishedCommunications() {
-    while !cameraServiceBrowser.readyToSendPacket {}
-    while !photoReceiver.readyToReceive {}
-}
+// define directory structure
+scenesDirectory = "/Users/nicholas/Desktop/scenes"
+    sceneName = "scene"
+    origSubdir = "orig"
+        ambSubdir = "ambient"
+        ambBallSubdir = "ambientBall"
+        graycodeSubdir = "graycode"
+        calibSubdir = "calibration"
+    computedSubdir = "computed"
+        decodedSubdir = "decoded"
+        refinedSubdir = "refined"
+minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
 
-func configureDisplays() -> Bool {
-    displayController = DisplayController()
-    guard NSScreen.screens()!.count > 1  else {
-        print("Only one screen connected.")
-        return false
-    }
-    
-    for screen in NSScreen.screens()! {
-        if screen != NSScreen.main()! {
-            displayController.createNewWindow(on: screen)
-        }
-    }
-    
-    displayController.setCurrentScreen(withID: 0)   // set main secondary screen to be first in array
-    return true
-}
-
-
-//MARK: execution body
+let staticDirectoryStructure: [String : Any?]
+staticDirectoryStructure = [
+    origSubdir      : [
+        ambSubdir       : nil,
+        ambBallSubdir   : nil,
+        calibSubdir     : [
+            "left"  : nil,
+            "right" : nil
+        ] as [String : Any?],
+        graycodeSubdir  : nil
+    ] as Any?,
+    computedSubdir  : [
+        calibSubdir : nil,
+        decodedSubdir   : [
+            "left"  : nil,
+            "right" : nil
+        ] as [String : Any?],
+        refinedSubdir   : [
+            "left"  : nil,
+            "right" : nil
+        ]
+    ] as Any?
+]
+createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
 
 binaryCodeSystem = .MinStripeWidthCode
-sceneName = "scene"
 exposures = [0.01, 0.02, 0.05, 0.1]
 
  initializeIPhoneCommunications()
