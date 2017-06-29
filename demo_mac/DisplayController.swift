@@ -30,11 +30,6 @@ class DisplayController: NSWindowController {
     
     //MARK: Functions
     
-    func configureSwitcher() {
-        switcher = Switcher()
-        switcher.startConnection()
-    }
-    
     func turnOn(projector: Int) {
         switcher.turnOn(projector)
     }

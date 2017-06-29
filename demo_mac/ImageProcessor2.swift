@@ -8,7 +8,13 @@
 
 import Foundation
 
-func decodedImageHandler(_ decodedImPath: String, horizontal: Bool) {
-    let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
+func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int) {
+    let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)"
+    do {
+        try FileManager.default.createDirectory(atPath: outdir, withIntermediateDirectories: true, attributes: nil)
+    } catch {
+        return
+    }
     refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath))
 }
+

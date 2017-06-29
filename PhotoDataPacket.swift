@@ -10,7 +10,7 @@ import Foundation
 
 enum CameraStatusUpdate: Int {
     case None
-    case LockedWhiteBalance
+    case LockedWhiteBalance, SetAutoWhiteBalance
     case CapturedNormalBinaryCode
     case CurrentLensPosition
 }

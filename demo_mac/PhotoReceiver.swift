@@ -39,7 +39,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var receivingDecodedImage = false
     var decodedImageHorizontal = false
     var decodedImageCompletionHandler: ((String)->Void)?
-    var decodedImageSubpath: String!
+    var decodedImageAbsDir: String!
     
     var readyToReceive: Bool = false
 
@@ -194,35 +194,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         var filePath: String = workingDirectory
         let fileURL: URL
-        
-        /*
-        let subpath: String
-        switch packet.photoType! {
-        case .None:
-            // need to edit once I update other parts
-            subpath = "imgs_misc"
-        case .Ambient:
-            subpath = "imgs_amb"
-        case .Calibration:
-            subpath = "imgs_calib"
-        case .StructuredLight_Original:
-            subpath = "imgs_structured/orig"
-        case .StructuredLight_IntensityDiff,
-             .StructuredLight_Thresholded,
-             .StructuredLight_Decoded,
-             .StructuredLight_Filtered,
-             .StructuredLight_HoleFilled,
-             .StructuredLight_Refined:
-            subpath = "imgs_structured/processed"
-        }
-        
-        let filename: String
-        switch packet.photoType! {
-        case .None:
-            filename = "img\(packet.photoData.hashValue).jpg"
-        case .Ambient:
-            filename = "am"
-        } */
+        var handler: (()->Void)? = nil
 
         if receivingCalibrationImage {
             filePath += "/"+calibrationSubpath+"/IMG_\(calibrationImageID ?? 0).JPG"
@@ -230,17 +202,23 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
             receivingCalibrationImage = false
-            if let handler = calibrationImageCompletionHandler {
+            /*if let handler = calibrationImageCompletionHandler {
                 handler()
-            }
+            }*/
+            handler = calibrationImageCompletionHandler
         } else if receivingDecodedImage {
             // save as PFM file
-            filePath += "/"+decodedImageSubpath+"/result\(decodedImageHorizontal ? 1:0).pfm"
+            //filePath += "/"+decodedImageSubpath+"/result\(decodedImageHorizontal ? 1:0).pfm"
+            filePath = decodedImageAbsDir+"/result\(decodedImageHorizontal ? 1:0).pfm"
             fileURL = URL(fileURLWithPath: filePath)
             //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")
             receivingDecodedImage = false
-            if let handler = decodedImageCompletionHandler {
-                handler(filePath)
+            if decodedImageCompletionHandler != nil {
+                // so decoded image file will already have been saved; otherwise calls handler before im written
+                //handler(filePath)
+                handler = {
+                    self.decodedImageCompletionHandler!(filePath)
+                }
             }
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
@@ -261,6 +239,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             print("Successfully saved photo data to file \(fileURL).")
         } catch {
             print("Could not write photo data to file.")
+        }
+        
+        // call handler if there is one
+        if let handler = handler {
+            handler()
         }
     }
     
@@ -294,10 +277,10 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         calibrationSubpath = subpath
     }
     
-    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping (String)->Void, subpath: String) {
+    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping (String)->Void, absDir: String) {
         receivingDecodedImage = true
         decodedImageHorizontal = horizontal
         decodedImageCompletionHandler = completionHandler
-        decodedImageSubpath = subpath
+        decodedImageAbsDir = absDir
     }
 }

@@ -13,10 +13,12 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case quit   // 'q'
     case take   // 't'
     case connect    // 'c'
+    case disconnectall
     case calibrate  // 'x'
     case calibrate2pos
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
+    case lockwhitebalance
     case focuspoint
     case cb     // displays checkerboard
     case black, white
@@ -61,7 +63,7 @@ func nextCommand() -> Bool {
         // optionally followed by "ambient" token
         if nextToken >= tokens.count {
             // capture scene with current configuration (all exposures & binary patterns)
-            captureScene(system: binaryCodeSystem, ordering: BinaryCodeOrdering.NormalThenInverted)
+            //captureScene(system: binaryCodeSystem, ordering: BinaryCodeOrdering.NormalThenInverted, projector: <#Int#>)
         } else if tokens[nextToken] == "ambient" {
             nextToken += 1
             if nextToken >= tokens.count || tokens[nextToken] == "single" {
@@ -85,14 +87,26 @@ func nextCommand() -> Bool {
             // wait for completion
             //waitForEstablishedCommunications()
         case "switcher":
-            displayController.configureSwitcher()
+            guard tokens.count == 3 else {
+                print("connect switcher: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
+                break
+            }
+            displayController.switcher = Switcher(portName: tokens[2])
+            displayController.switcher.startConnection()
         case "vxm":
-            vxmController = VXMController()
+            guard tokens.count == 3 else {
+                print("connect vxm: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
+                break
+            }
+            vxmController = VXMController(portName: tokens[2])
             vxmController.startVXM()
         default:
             print("cannot connect: invalid device name.")
         }
-        
+      
+    case .disconnectall:
+        displayController.switcher.endConnection()
+        vxmController.stop()
         
     case .calibrate:
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
@@ -179,24 +193,39 @@ func nextCommand() -> Bool {
             
         
     case .takefull:
-        // optional arguments: [binary code system] [ordering]
+        let usage = "usage: takefull [projector #] [code system]? [ordering]?"
         let system: BinaryCodeSystem, ordering: BinaryCodeOrdering
         let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         let orderings: [String : BinaryCodeOrdering] = ["pairs" : .NormalInvertedPairs, "ntheni" : .NormalThenInverted]
-        if nextToken < tokens.count, let tmp_system = systems[tokens[nextToken]] {
+        
+        guard tokens.count >= 2 else {
+            print(usage)
+            break
+        }
+        guard let projector = Int(tokens[1]) else {
+            print("takefull: invalid projector number.")
+            break
+        }
+        
+        if tokens.count >= 3, let tmp_system = systems[tokens[nextToken]] {
             system = tmp_system
-            nextToken += 1
         } else {
             system = .MinStripeWidthCode
         }
-        if nextToken < tokens.count, let tmp_ordering = orderings[tokens[nextToken]] {
+        if tokens.count == 4, let tmp_ordering = orderings[tokens[nextToken]] {
             ordering = tmp_ordering
-            nextToken += 1
         } else {
             ordering = .NormalInvertedPairs
         }
         
-        captureScene(system: system, ordering: ordering)
+        displayController.switcher.turnOff(0)   // turns off all projs
+        print("Hit enter when all projectors off.")
+        readLine()
+        displayController.switcher.turnOn(projector)
+        print("Hit enter when selected projector ready.")
+        readLine()
+        
+        captureScene(system: system, ordering: ordering, projector: projector)
         
         break
     
@@ -251,6 +280,15 @@ func nextCommand() -> Bool {
                 processingCommand = false
         })
         break
+        
+        
+    case .lockwhitebalance:
+        let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
+        cameraServiceBrowser.sendPacket(packet)
+        var receivedUpdate = false
+        photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+        while !receivedUpdate {}
+        
         
     case .cb:
         // display checkerboard pattern
@@ -329,15 +367,6 @@ func nextCommand() -> Bool {
         refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath))
         break
         
-    /*
-    case .refineall:
-        let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
-        let indir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
-        let fileman = FileManager.default
-        for imName in fileman.contentsOfDirectory(atPath: indir) {
-            refineDecodedIm(<#T##outdir: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##direction: Int32##Int32#>, <#T##decodedIm: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>)
-        } */
-        
     }
     return true
 }
@@ -377,15 +406,38 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 
 // captureFullTake: captures a 'full' take of the scene with structured lighting
 
-func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
+func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projector: Int) {
     let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var inverted = false
     var horizontal = false
     var fileNamePrefix: String
+    let decodedDir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/proj\(projector)"
     
     var done: Bool = false
+    
+    /*
+    // configure projectors
+    for p in 1...8 {
+        if p == projector {
+            displayController.switcher.turnOn(p)
+        } else {
+            displayController.switcher.turnOff(p)
+        }
+    }
+    */
+    
+    // create directory if necessary
+    if ordering == .NormalInvertedPairs {   // expect 2 decoded images
+        do {
+            try FileManager.default.createDirectory(atPath: decodedDir, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            print("Failed to create directory at \(decodedDir).")
+            return
+        }
+    }
+    
     
     // captureNextBinaryCode used as handler for self
     func captureNextBinaryCode() {
@@ -489,9 +541,9 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        let subpath = sceneName+"/"+computedSubdir+"/"+decodedSubdir
+        //let subpath = sceneName+"/"+computedSubdir+"/"+decodedSubdir
         
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {path in decodedImageHandler(path, horizontal: horizontal)}, subpath: subpath)
+        photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector)}, absDir: decodedDir)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
         
         
@@ -525,7 +577,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering) {
     if ordering == .NormalInvertedPairs {
         let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: horizontal, completionHandler: {path in decodedImageHandler(path, horizontal: horizontal)}, subpath: sceneName+"/"+computedSubdir+"/"+decodedSubdir)
+        photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector)}, absDir: decodedDir)
         while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     }
     

@@ -234,18 +234,34 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                
                 self.cameraController.captureDevice.whiteBalanceMode = .locked
                 self.cameraController.captureDevice.unlockForConfiguration()
                 
                 let queueFinishWhiteBalance = DispatchQueue(label: "queueFinishWhiteBalance")
                 queueFinishWhiteBalance.async {
                     while self.cameraController.captureDevice.isAdjustingWhiteBalance {}
+                    //while self.cameraController.captureDevice.whiteBalanceMode != .locked {}
                     let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .LockedWhiteBalance)
                     self.cameraController.photoSender.sendPacket(packet)
                 }
+            
+            case .AutoWhiteBalance:
+                guard self.cameraController.captureDevice.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) else {
+                    print("CameraService: error - cannot auto focus & lock: one mode is not supported.")
+                    return
+                }
                 
-                break
+                do {
+                    try self.cameraController.captureDevice.lockForConfiguration()
+                } catch {
+                    print("CameraService: error - could not lock capture device for configuration.")
+                    return
+                }
+                self.cameraController.captureDevice.whiteBalanceMode = .continuousAutoWhiteBalance
+                self.cameraController.captureDevice.unlockForConfiguration()
+                
+                let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .SetAutoWhiteBalance)
+                self.cameraController.photoSender.sendPacket(packet)
                 
             case CameraInstruction.CaptureStillImage:
                 do {
