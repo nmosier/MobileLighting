@@ -28,13 +28,22 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="KV7-oL-C7E">
+                                <rect key="frame" x="14" y="19" width="347" height="31"/>
+                                <connections>
+                                    <action selector="updateWhiteBalance:" destination="BYZ-38-t0r" eventType="valueChanged" id="rAh-RD-vcd"/>
+                                </connections>
+                            </slider>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <gestureRecognizers/>
                         <constraints>
                             <constraint firstItem="ZbX-Aj-GCg" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="2gf-9u-fTa"/>
+                            <constraint firstItem="KV7-oL-C7E" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="8XV-TG-IVl"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="ZbX-Aj-GCg" secondAttribute="bottom" constant="20" id="JaK-fY-4JF"/>
+                            <constraint firstItem="KV7-oL-C7E" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="buD-Jd-cUM"/>
                             <constraint firstItem="ZbX-Aj-GCg" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="pG4-IH-sZl"/>
+                            <constraint firstItem="KV7-oL-C7E" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="vx9-og-hZo"/>
                         </constraints>
                         <connections>
                             <outlet property="focusPointLabel" destination="ZbX-Aj-GCg" id="zqa-kb-X3w"/>
@@ -44,6 +53,7 @@
                     <connections>
                         <outlet property="focusPointLabel" destination="ZbX-Aj-GCg" id="Vr8-Mv-KCg"/>
                         <outlet property="videoPreviewView" destination="8bC-Xf-vdC" id="eEq-yr-d0c"/>
+                        <outlet property="whiteBalanceSlider" destination="KV7-oL-C7E" id="njf-Aq-cp9"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -53,7 +63,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="52" y="49.025487256371818"/>
+            <point key="canvasLocation" x="50.625" y="48.591549295774648"/>
         </scene>
     </scenes>
 </document>

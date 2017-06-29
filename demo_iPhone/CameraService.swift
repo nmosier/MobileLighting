@@ -234,8 +234,10 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                self.cameraController.captureDevice.whiteBalanceMode = .locked
+                //self.cameraController.captureDevice.whiteBalanceMode = .locked
                 self.cameraController.captureDevice.unlockForConfiguration()
+                
+                //self.cameraController.zeroWhiteBalance()
                 
                 let queueFinishWhiteBalance = DispatchQueue(label: "queueFinishWhiteBalance")
                 queueFinishWhiteBalance.async {
@@ -262,6 +264,23 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
                 let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .SetAutoWhiteBalance)
                 self.cameraController.photoSender.sendPacket(packet)
+                
+                
+            case .LockExposure:
+                do { try self.cameraController.captureDevice.lockForConfiguration()
+                } catch { print("CameraService: error - could not lock capture device for configuration.")
+                    return
+                }
+                self.cameraController.captureDevice.exposureMode = .locked
+                self.cameraController.captureDevice.unlockForConfiguration()
+            
+            case .AutoExposure:
+                do { try self.cameraController.captureDevice.lockForConfiguration()
+                } catch { print("CameraService: error - could not lock capture device for configuration.")
+                    return
+                }
+                self.cameraController.captureDevice.exposureMode = .autoExpose
+                self.cameraController.captureDevice.unlockForConfiguration()
                 
             case CameraInstruction.CaptureStillImage:
                 do {

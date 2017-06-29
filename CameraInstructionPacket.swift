@@ -87,6 +87,7 @@ enum CameraInstruction: Int {
     case SetLensPosition, GetLensPosition, LockLensPosition
     case SetPointOfFocus
     case LockWhiteBalance, AutoWhiteBalance
+    case LockExposure, AutoExposure
     case CaptureStillImage
     case CapturePhotoBracket
     case CaptureNormalInvertedPair, FinishCapturePair

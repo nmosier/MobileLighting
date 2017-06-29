@@ -15,12 +15,14 @@ class ViewController: UIViewController {
     var cameraService: CameraService!
     @IBOutlet var videoPreviewView: VideoPreviewView!
     @IBOutlet weak var focusPointLabel: UILabel!
+    @IBOutlet weak var whiteBalanceSlider: UISlider!
     
     @IBAction func screenTapped(_ sender: UITapGestureRecognizer) {
         let tapLoc: CGPoint = sender.location(in: nil)
         focusPointLabel.text = "(\(tapLoc.x), \(tapLoc.y))"
         focusPointLabel.drawText(in: videoPreviewView.frame)
     }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

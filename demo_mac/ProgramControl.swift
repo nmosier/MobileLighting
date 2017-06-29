@@ -18,6 +18,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case calibrate2pos
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
+    case autoexposure, lockexposure
     case lockwhitebalance
     case focuspoint
     case cb     // displays checkerboard
@@ -288,6 +289,13 @@ func nextCommand() -> Bool {
         var receivedUpdate = false
         photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
         while !receivedUpdate {}
+        
+    case .autoexposure:
+        let packet = CameraInstructionPacket(cameraInstruction: .AutoExposure)
+        cameraServiceBrowser.sendPacket(packet)
+    case .lockexposure:
+        let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
+        cameraServiceBrowser.sendPacket(packet)
         
         
     case .cb:

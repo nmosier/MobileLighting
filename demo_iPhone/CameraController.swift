@@ -401,4 +401,19 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         self.captureDevice.unlockForConfiguration()
     }
+    
+    func zeroWhiteBalance() {
+        let gains = AVCaptureWhiteBalanceGains(redGain: 0.0, greenGain: 0.0, blueGain: 0.0)
+        
+        do {
+            try captureDevice.lockForConfiguration()
+        } catch {
+            print("Could not lock for config.")
+            return
+        }
+        
+        captureDevice.setWhiteBalanceModeLockedWithDeviceWhiteBalanceGains(gains, completionHandler: {time in return})
+        
+        captureDevice.unlockForConfiguration()
+    }
 }
