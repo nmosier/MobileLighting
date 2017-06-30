@@ -15,12 +15,43 @@ class ViewController: UIViewController {
     var cameraService: CameraService!
     @IBOutlet var videoPreviewView: VideoPreviewView!
     @IBOutlet weak var focusPointLabel: UILabel!
-    @IBOutlet weak var whiteBalanceSlider: UISlider!
+    @IBOutlet weak var lockExposureSwitch: UISwitch!
+    @IBOutlet weak var lockFocusSwitch: UISwitch!
     
-    @IBAction func screenTapped(_ sender: UITapGestureRecognizer) {
-        let tapLoc: CGPoint = sender.location(in: nil)
-        focusPointLabel.text = "(\(tapLoc.x), \(tapLoc.y))"
-        focusPointLabel.drawText(in: videoPreviewView.frame)
+    
+    @IBAction func updateExposureMode(_ sender: UISwitch) {
+        let mode: AVCaptureExposureMode = sender.isOn ? .locked : .autoExpose
+        do {
+            try self.cameraService.cameraController.configureCaptureDevice(exposureMode: mode)
+        } catch {
+            // failed — set back to prev. state
+            sender.setOn(!sender.isOn, animated: false)
+        }
+    }
+    
+    @IBAction func updateFocusMode(_ sender: UISwitch) {
+        let mode: AVCaptureFocusMode = sender.isOn ? .locked : .autoFocus
+        do {
+            try self.cameraService.cameraController.configureCaptureDevice(focusMode: mode)
+        } catch {
+            sender.setOn(!sender.isOn, animated: false)
+        }
+    }
+    
+    // called when screen is tapped
+    @IBAction func updateFocus(_ sender: UITapGestureRecognizer) {
+        guard sender.state == .ended && !lockFocusSwitch.isOn else {
+            return
+        }
+        
+        let rawPos = sender.location(in: videoPreviewView)   // location in base coordinate system
+        let focusPoint = videoPreviewView.videoPreviewLayer.captureDevicePointOfInterest(for: rawPos)
+        print("ViewController: focusing to point: (\(focusPoint.x), \(focusPoint.y))")
+        do {
+            try self.cameraService.cameraController.configureCaptureDevice(focusMode: .autoFocus, focusPointOfInterest: focusPoint)
+        } catch {
+            // will toggle focus switch to off
+        }
     }
     
     override func viewDidLoad() {
