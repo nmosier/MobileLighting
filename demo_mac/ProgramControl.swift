@@ -225,10 +225,10 @@ func nextCommand() -> Bool {
         }
         
         //vxmController.moveTo(dist: positions[position])   // move to specified position
-        //displayController.switcher.turnOff(0)   // turns off all projs
+        displayController.switcher.turnOff(0)   // turns off all projs
         print("Hit enter when all projectors off.")
         readLine()
-        //displayController.switcher.turnOn(projector)
+        displayController.switcher.turnOn(projector)
         print("Hit enter when selected projector ready.")
         readLine()
         
