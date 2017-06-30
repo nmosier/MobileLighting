@@ -202,13 +202,9 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
             receivingCalibrationImage = false
-            /*if let handler = calibrationImageCompletionHandler {
-                handler()
-            }*/
             handler = calibrationImageCompletionHandler
         } else if receivingDecodedImage {
             // save as PFM file
-            //filePath += "/"+decodedImageSubpath+"/result\(decodedImageHorizontal ? 1:0).pfm"
             filePath = decodedImageAbsDir+"/result\(decodedImageHorizontal ? 1:0).pfm"
             fileURL = URL(fileURLWithPath: filePath)
             //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")

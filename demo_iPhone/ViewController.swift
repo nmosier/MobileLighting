@@ -50,7 +50,7 @@ class ViewController: UIViewController {
         do {
             try self.cameraService.cameraController.configureCaptureDevice(focusMode: .autoFocus, focusPointOfInterest: focusPoint)
         } catch {
-            // will toggle focus switch to off
+            lockFocusSwitch.setOn(false, animated: false)
         }
     }
     

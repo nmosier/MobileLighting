@@ -36,6 +36,7 @@ var computedSubdir: String, decodedSubdir: String, refinedSubdir: String
 var minSWfilepath: String
 
 var exposures: [Double]
+var positions: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
 
@@ -63,23 +64,18 @@ staticDirectoryStructure = [
             "right" : nil
         ] as [String : Any?],
         graycodeSubdir  : nil
-    ] as Any?,
+    ],
     computedSubdir  : [
         calibSubdir : nil,
-        decodedSubdir   : [
-            "left"  : nil,
-            "right" : nil
-        ] as [String : Any?],
-        refinedSubdir   : [
-            "left"  : nil,
-            "right" : nil
-        ]
-    ] as Any?
+        decodedSubdir   : nil,
+        refinedSubdir   : nil
+    ] as [String : Any?]
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
 
 binaryCodeSystem = .MinStripeWidthCode
 exposures = [0.01, 0.02, 0.05, 0.1]
+positions = [200.0, 250.0]
 
  initializeIPhoneCommunications()
 

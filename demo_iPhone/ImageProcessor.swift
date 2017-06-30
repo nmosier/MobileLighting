@@ -267,6 +267,7 @@ class Decoder {
         
     }
     
+    /*
     func getPFMData() -> Data {
         let pfmHeaderStr: NSString = "Pf\n\(width) \(height)\n-1\n" as NSString
         var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
@@ -293,6 +294,49 @@ class Decoder {
                 val = Float.infinity
             }
             pfmBodyArray[i] = val
+        }
+        
+        let pfmBodyData = Data(bytes: &pfmBodyArray, count: width*height*MemoryLayout<Float>.size)
+        pfmData.append(pfmBodyData)
+        
+        return pfmData
+    } */
+    
+    // ROTATED
+    func getPFMData() -> Data {
+        let pfmHeaderStr: NSString = "Pf\n\(height) \(width)\n-1\n" as NSString
+        var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
+        
+        let arrlen: Int = width*height
+        let arrlenm1: Int = arrlen-1    // for optimization in rotation calculation
+        var pfmBodyArray: [Float] = Array<Float>(repeating: 0.0, count: arrlen)
+        for i in 0..<width*height {
+            let val: Float
+            if (unknownArray[i] == 0) {
+                let code = valueArray[i]
+                
+                switch binaryCodeSystem {
+                case .GrayCode:
+                    let pos = decodeGrayCode(of: code)
+                    val = Float(exactly: pos)!
+                case .MinStripeWidthCode:
+                    if code < UInt32(minSW_codeToPos!.count) {  // make sure codeToPos function defined for code
+                        let pos = minSW_codeToPos![Int(code)]
+                        val = Float(exactly: pos)!
+                    } else {
+                        val = Float.infinity
+                    }
+                }
+            } else {
+                val = Float.infinity
+            }
+            // rotates i
+            // optimized way of calculating this?
+            //let x_rot = height - i/width - 1
+            //let y_rot = width - i%width - 1
+            //let i_rot = y_rot*height + x_rot
+            let i_rot = arrlenm1 - height*(i%width) - i/width   // optimized version of calculation above
+            pfmBodyArray[i_rot] = val
         }
         
         let pfmBodyData = Data(bytes: &pfmBodyArray, count: width*height*MemoryLayout<Float>.size)

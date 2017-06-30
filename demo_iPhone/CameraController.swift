@@ -126,6 +126,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureSession.sessionPreset = sessionPreset
         self.captureSession.addInput(videoInput)
         self.captureSession.addOutput(capturePhotoOutput)
+        
+        capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo).videoOrientation = .portrait
+        
         self.captureSession.commitConfiguration()
         
         print("New session configured.")

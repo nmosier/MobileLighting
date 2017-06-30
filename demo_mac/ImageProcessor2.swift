@@ -8,8 +8,8 @@
 
 import Foundation
 
-func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int) {
-    let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)"
+func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
+    let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
     do {
         try FileManager.default.createDirectory(atPath: outdir, withIntermediateDirectories: true, attributes: nil)
     } catch {
