@@ -87,20 +87,13 @@ if configureDisplays() {
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
-    //displayController.windows.first!.configureDisplaySettings(horizontal: false, inverted: false)
-    //displayController.windows.first!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
-    
-    //while nextCommand() {}
-    
     waitForEstablishedCommunications()
     
-    // lock white balance before capture
-    let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
-    cameraServiceBrowser.sendPacket(packet)
-    
+    /*
     var receivedUpdate = false
     photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
     while !receivedUpdate {}
+    */
     
     while nextCommand() {}
 }

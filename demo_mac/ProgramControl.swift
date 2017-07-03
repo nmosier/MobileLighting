@@ -13,7 +13,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case quit   // 'q'
     case take   // 't'
     case connect    // 'c'
-    case disconnectall
+    case disconnect, disconnectall
     case calibrate  // 'x'
     case calibrate2pos
     case takefull
@@ -93,7 +93,7 @@ func nextCommand() -> Bool {
                 break
             }
             displayController.switcher = Switcher(portName: tokens[2])
-            displayController.switcher.startConnection()
+            displayController.switcher!.startConnection()
         case "vxm":
             guard tokens.count == 3 else {
                 print("connect vxm: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
@@ -104,10 +104,27 @@ func nextCommand() -> Bool {
         default:
             print("cannot connect: invalid device name.")
         }
+        
+    case .disconnect:
+        guard tokens.count == 2 else {
+            print("usage: disconnect [vxm|switcher]")
+            break
+        }
+        switch tokens[1] {
+        case "vxm":
+            vxmController.stop()
+        case "switcher":
+            if let switcher = displayController.switcher {
+                switcher.endConnection()
+            }
+        default:
+            print("connect: invalid device \(tokens[1])")
+            break
+        }
       
     case .disconnectall:
-        displayController.switcher.endConnection()
-        //vxmController.stop()
+        vxmController.stop()
+        displayController.switcher?.endConnection()
         
     case .calibrate:
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
@@ -161,33 +178,31 @@ func nextCommand() -> Bool {
         while !receivedCalibrationImage {}
         
         for i in 0..<nPhotos-1 {
-            for di in [0, 1] {
-                vxmController.moveTo(dist: pos0)
-                print((di==0) ? msgBoard: msgMove)
-                _ = readLine() // operator must press enter when in position; also signal to take photo
-                cameraServiceBrowser.sendPacket(packet)
-                receivedCalibrationImage = false
-                photoReceiver.receiveCalibrationImage(ID: i+di, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: leftSubdir)
-                while !receivedCalibrationImage {}
-            }
+            let dist = (i%2 == 0) ? pos0:pos1
+            let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
+            vxmController.moveTo(dist: dist)
+            print(msgMove)
+            _ = readLine() // operator must press enter when in position; also signal to take photo
+            cameraServiceBrowser.sendPacket(packet)
+            receivedCalibrationImage = false
+            photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+            while !receivedCalibrationImage {}
             
-            for di in [0, 1] {
-                vxmController.moveTo(dist: pos1)
-                print((di==0) ? msgMove: msgBoard)
-                _ = readLine()
-                cameraServiceBrowser.sendPacket(packet)
-                receivedCalibrationImage = false
-                photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
-                while !receivedCalibrationImage {}
-            }
+            print(msgBoard)
+            _ = readLine()
+            cameraServiceBrowser.sendPacket(packet)
+            receivedCalibrationImage = false
+            photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+            
+            while !receivedCalibrationImage {}
         }
         
-        vxmController.moveTo(dist: pos0)
+        vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0)
         print(msgMove)
         _ = readLine()
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: leftSubdir)
+        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
         while !receivedCalibrationImage {}
         
         break
@@ -225,10 +240,10 @@ func nextCommand() -> Bool {
         }
         
         //vxmController.moveTo(dist: positions[position])   // move to specified position
-        displayController.switcher.turnOff(0)   // turns off all projs
+        displayController.switcher?.turnOff(0)   // turns off all projs
         print("Hit enter when all projectors off.")
         readLine()
-        displayController.switcher.turnOn(projector)
+        displayController.switcher?.turnOn(projector)
         print("Hit enter when selected projector ready.")
         readLine()
         
@@ -346,18 +361,18 @@ func nextCommand() -> Bool {
         if let projector = Int(tokens[1]) {
             switch tokens[2] {
             case "on", "1":
-                displayController.switcher.turnOn(projector)
+                displayController.switcher?.turnOn(projector)
             case "off", "0":
-                displayController.switcher.turnOff(projector)
+                displayController.switcher?.turnOff(projector)
             default:
                 print("Unrecognized argument: \(tokens[2])")
             }
         } else if tokens[1] == "all" {
             switch tokens[2] {
             case "on", "1":
-                displayController.switcher.turnOn(0)
+                displayController.switcher?.turnOn(0)
             case "off", "0":
-                displayController.switcher.turnOff(0)
+                displayController.switcher?.turnOff(0)
             default:
                 print("Unrecognized argument: \(tokens[2])")
             }

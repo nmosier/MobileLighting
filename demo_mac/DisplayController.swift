@@ -14,9 +14,7 @@ class DisplayController: NSWindowController {
     //MARK: Properties
     var windows = [FullscreenWindow]()  // windows currently being displayed
     var currentWindow: FullscreenWindow?
-    var switcher: Switcher!
-    
-    //MARK: Static functions
+    var switcher: Switcher?
     
     // createCGImage(filePath:)
     //  -filePath: file path (String)
@@ -31,7 +29,9 @@ class DisplayController: NSWindowController {
     //MARK: Functions
     
     func turnOn(projector: Int) {
-        switcher.turnOn(projector)
+        if let switcher = switcher {
+            switcher.turnOn(projector)
+        }
     }
     
     func turnOn(projectors: [Int]) {
@@ -47,7 +47,9 @@ class DisplayController: NSWindowController {
     }
     
     func turnOff(projector: Int) {
-        switcher.turnOff(projector)
+        if let switcher = switcher {
+            switcher.turnOff(projector)
+        }
     }
     
     func turnOff(projectors: [Int]) {
