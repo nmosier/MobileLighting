@@ -13,5 +13,5 @@
 #endif /* demo_mac_Bridging_Header_h */
 
 void refineDecodedIm(char *outdir, int direction, char *decodedIm);
-
-void test_wrapped(void);
+//void disparitiesOfRefinedImgs(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);
+void disparitiesOfRefinedImgs(char *dirpos0, char *dirpos1);

@@ -13,7 +13,3 @@ extern "C" int activeLighting(int argc, char *argv[]) {
     return main(argc, argv);
 }
 
-/*
-extern "C" int ALmain2(int argc, char *argv[]) {
-    return main2(argc, argv);
-} */

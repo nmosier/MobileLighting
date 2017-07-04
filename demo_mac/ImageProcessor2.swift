@@ -18,3 +18,18 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
     refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath))
 }
 
+func disparityMatchPair(projector: Int, leftpos: Int, rightpos: Int) {
+    let refinedDirLeft = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(leftpos)"
+    let refinedDirRight = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(rightpos)"
+    let disparityDirLeft = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+disparitySubdir+"/proj\(projector)/pos\(leftpos)"
+    let disparityDirRight = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+disparitySubdir+"/proj\(projector)/pos\(rightpos)"
+    let fileman = FileManager.default
+    do {
+        try fileman.createDirectory(atPath: disparityDirLeft, withIntermediateDirectories: true, attributes: nil)
+        try fileman.createDirectory(atPath: disparityDirRight, withIntermediateDirectories: true, attributes: nil)
+    } catch {
+        print("ImageProcessor2: could not create directory at either:\n\t\(disparityDirLeft)\n\t\(disparityDirRight)")
+        return
+    }
+    disparitiesOfRefinedImgs(swift2Cstr(refinedDirLeft), swift2Cstr(refinedDirRight))
+}

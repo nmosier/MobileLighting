@@ -18,9 +18,6 @@ import VXMCtrl
 
 var app = NSApplication.shared()
 
-
-test_wrapped()
-
 //MARK: global configuration variables
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
@@ -31,7 +28,7 @@ var scenesDirectory: String
 var sceneName: String
 var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
 var calibSubdir: String     // used in both orig and computed dirs
-var computedSubdir: String, decodedSubdir: String, refinedSubdir: String
+var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String
 
 var minSWfilepath: String
 
@@ -52,6 +49,7 @@ scenesDirectory = "/Users/nicholas/Desktop/scenes"
     computedSubdir = "computed"
         decodedSubdir = "decoded"
         refinedSubdir = "refined"
+        disparitySubdir = "disparity"
 minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
 
 let staticDirectoryStructure: [String : Any?]
@@ -68,7 +66,8 @@ staticDirectoryStructure = [
     computedSubdir  : [
         calibSubdir : nil,
         decodedSubdir   : nil,
-        refinedSubdir   : nil
+        refinedSubdir   : nil,
+        disparitySubdir : nil
     ] as [String : Any?]
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
@@ -87,7 +86,7 @@ if configureDisplays() {
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 mainQueue.async {
-    waitForEstablishedCommunications()
+    //waitForEstablishedCommunications()
     
     /*
     var receivedUpdate = false

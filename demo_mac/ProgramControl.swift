@@ -30,6 +30,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     
     // image processing
     case refine
+    case disparity
     //case refineall
 }
 
@@ -395,8 +396,26 @@ func nextCommand() -> Bool {
         }
         refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath))
         break
+    
+    case .disparity:
+        // INCOMPLETE
+        let usage = "usage: disparity [projector #] [left pos #] [right pos #]"
+        guard tokens.count == 4 else {
+            print(usage)
+            break
+        }
+        guard let projector = Int(tokens[1]) else {
+            print("disparity: invalid projector number \(tokens[1]).")
+            break
+        }
+        guard let leftpos = Int(tokens[2]), let rightpos = Int(tokens[3]) else {
+            print("disparity: invalid position ID (\(tokens[2]) or \(tokens[3])).")
+            break
+        }
+        disparityMatchPair(projector: projector, leftpos: leftpos, rightpos: rightpos)
         
     }
+    
     return true
 }
 
