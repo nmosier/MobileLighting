@@ -398,21 +398,33 @@ func nextCommand() -> Bool {
         break
     
     case .disparity:
-        // INCOMPLETE
-        let usage = "usage: disparity [projector #] [left pos #] [right pos #]"
-        guard tokens.count == 4 else {
+        let usage = "usage: disparity [[projector #] [[left pos #] [right pos #]]?]?"
+        guard tokens.count >= 1 && tokens.count <= 4  else {
             print(usage)
             break
         }
-        guard let projector = Int(tokens[1]) else {
-            print("disparity: invalid projector number \(tokens[1]).")
-            break
+        
+        if tokens.count == 1 {
+            // compute all
+            disparityMatch()
+        } else {
+            // compute for specific projector
+            guard let projector = Int(tokens[1]) else {
+                print("disparity: invalid projector number \(tokens[1]).")
+                break
+            }
+            if tokens.count == 2 {
+                // compute all for projector
+                disparityMatch(projector: projector)
+            } else {
+                // compute specified position pair
+                guard let leftpos = Int(tokens[2]), let rightpos = Int(tokens[3]) else {
+                    print("disparity: invalid position ID (\(tokens[2]) or \(tokens[3])).")
+                    break
+                }
+                disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
+            }
         }
-        guard let leftpos = Int(tokens[2]), let rightpos = Int(tokens[3]) else {
-            print("disparity: invalid position ID (\(tokens[2]) or \(tokens[3])).")
-            break
-        }
-        disparityMatchPair(projector: projector, leftpos: leftpos, rightpos: rightpos)
         
     }
     
