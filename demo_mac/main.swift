@@ -24,23 +24,17 @@ var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // includes switcher
 var vxmController: VXMController!
 
-var scenesDirectory: String
-var sceneName: String
+
+
 var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
 var calibSubdir: String     // used in both orig and computed dirs
 var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String
 
-var minSWfilepath: String
-
-var exposures: [Double]
-var positions: [Double]
 var lensPosition: Float
 var binaryCodeSystem: BinaryCodeSystem
 
 
 // define directory structure
-scenesDirectory = "/Users/nicholas/Desktop/scenes"
-    sceneName = "scene"
     origSubdir = "orig"
         ambSubdir = "ambient"
         ambBallSubdir = "ambientBall"
@@ -50,7 +44,44 @@ scenesDirectory = "/Users/nicholas/Desktop/scenes"
         decodedSubdir = "decoded"
         refinedSubdir = "refined"
         disparitySubdir = "disparity"
-minSWfilepath = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/minSW.dat"
+
+// read initial settings + setup
+
+// required settings
+var scenesDirectory: String
+var sceneName: String
+var minSWfilepath: String
+
+// optional settings
+var projectors: Int?
+var exposures: [Double]
+var positions: [Int]
+
+
+let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
+let initSettings: InitSettings
+do {
+    initSettings = try loadInitSettings(filepath: initSettingsPath)
+    print("Successfully loaded initial settings.")
+} catch {
+    print("Fatal error: could not load init settings")
+    exit(0)
+}
+
+// save required settings
+scenesDirectory = initSettings.scenesDirectory
+sceneName = initSettings.sceneName
+minSWfilepath = initSettings.minSWfilepath
+
+// setup optional settings
+projectors = initSettings.nProjectors
+exposures = initSettings.exposures ?? [Double]()
+positions = initSettings.positionCoords ?? [Int]()
+
+print("Exposures: \(exposures)")
+print("Positions: \(positions)")
+print("Projectors: \(projectors)")  
+
 
 let staticDirectoryStructure: [String : Any?]
 staticDirectoryStructure = [
@@ -73,8 +104,9 @@ staticDirectoryStructure = [
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
 
 binaryCodeSystem = .MinStripeWidthCode
-exposures = [0.01, 0.02, 0.05, 0.1]
-positions = [200.0, 250.0]
+//exposures = [0.01, 0.02, 0.05, 0.1]
+//exposures = [0.02, 0.05, 0.1, 0.15]
+positions = [200, 250]
 
  initializeIPhoneCommunications()
 

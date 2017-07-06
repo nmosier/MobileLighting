@@ -11,6 +11,8 @@ import SwitcherCtrl
 enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for determining an exhaustive switch statement)
     case help   // 'h'
     case quit   // 'q'
+    case reloadsettings
+    
     case take   // 't'
     case connect    // 'c'
     case disconnect, disconnectall
@@ -61,6 +63,30 @@ func nextCommand() -> Bool {
         print("help")
     case .quit:
         return false
+        
+    case .reloadsettings:
+        let usage: String = "usage: reload [attribute_name]" // e.g. exposures
+        guard tokens.count == 2 else {
+            print(usage)
+            break
+        }
+        
+        let initSettings: InitSettings
+        do {
+            initSettings = try loadInitSettings(filepath: initSettingsPath)
+            print("Successfully loaded initial settings.")
+        } catch {
+            print("Fatal error: could not load init settings")
+            break
+        }
+        
+        if tokens[1] == "exposures" {
+            print("Reloading exposures...")
+            exposures = initSettings.exposures ?? exposures
+            print("New exposures: \(exposures)")
+        }
+        
+        
     case .take:
         // optionally followed by "ambient" token
         if nextToken >= tokens.count {
@@ -146,8 +172,8 @@ func nextCommand() -> Bool {
         break
             
     case .calibrate2pos:
-        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int]"
-        guard tokens.count == 4 else {
+        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?"
+        guard tokens.count >= 4 && tokens.count <= 5 else {
             print(usage)
             break
         }
@@ -158,8 +184,9 @@ func nextCommand() -> Bool {
             print("calibrate2pos: invalid argument(s).")
             break
         }
+        let resolution = (tokens.count == 5) ? tokens[4] : "high"   // high is default res
         
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
         var receivedCalibrationImage: Bool
         let msgMove = "Hit enter when camera in position."
         let msgBoard = "Hit enter when board repositioned."
@@ -167,8 +194,6 @@ func nextCommand() -> Bool {
         let rightSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/right"
         
         vxmController.zero()    // reset robot arm
-        
-        
         
         vxmController.moveTo(dist: pos1)
         print(msgMove)
