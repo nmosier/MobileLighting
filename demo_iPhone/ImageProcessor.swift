@@ -267,41 +267,6 @@ class Decoder {
         
     }
     
-    /*
-    func getPFMData() -> Data {
-        let pfmHeaderStr: NSString = "Pf\n\(width) \(height)\n-1\n" as NSString
-        var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
-        
-        var pfmBodyArray: [Float] = Array<Float>(repeating: 0.0, count: width*height)
-        for i in 0..<width*height {
-            let val: Float
-            if (unknownArray[i] == 0) {
-                let code = valueArray[i]
-                
-                switch binaryCodeSystem {
-                case .GrayCode:
-                    let pos = decodeGrayCode(of: code)
-                    val = Float(exactly: pos)!
-                case .MinStripeWidthCode:
-                    if code < UInt32(minSW_codeToPos!.count) {  // make sure codeToPos function defined for code
-                        let pos = minSW_codeToPos![Int(code)]
-                        val = Float(exactly: pos)!
-                    } else {
-                        val = Float.infinity
-                    }
-                }
-            } else {
-                val = Float.infinity
-            }
-            pfmBodyArray[i] = val
-        }
-        
-        let pfmBodyData = Data(bytes: &pfmBodyArray, count: width*height*MemoryLayout<Float>.size)
-        pfmData.append(pfmBodyData)
-        
-        return pfmData
-    } */
-    
     // ROTATED
     func getPFMData() -> Data {
         let pfmHeaderStr: NSString = "Pf\n\(height) \(width)\n-1\n" as NSString

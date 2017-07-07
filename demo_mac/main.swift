@@ -82,6 +82,7 @@ print("Exposures: \(exposures)")
 print("Positions: \(positions)")
 print("Projectors: \(projectors)")  
 
+saveSceneParameters(SceneParameters(), to: "")
 
 let staticDirectoryStructure: [String : Any?]
 staticDirectoryStructure = [

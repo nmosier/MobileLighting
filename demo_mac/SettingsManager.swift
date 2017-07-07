@@ -31,6 +31,29 @@ class InitSettings {
     var positionCoords: [Int]?
 }
 
+class SceneParameters {
+    var sceneName: String!
+    var nPositions: Int { get { return self.positions.count } }
+    var positions: [Int]!
+    var structuredLighting: StructuredLightingParameters!
+    var calibration: CalibrationParameters!
+}
+
+class StructuredLightingParameters {
+    var nProjectors: Int!
+    var resolution: String!
+    var nExposures: Int { get { return self.exposures.count } }
+    var exposures: [Double]!
+    var lensPosition: Float!
+    var focusPoint: CGPoint?
+}
+
+class CalibrationParameters {
+    
+}
+
+
+
 func loadInitSettings(filepath: String) throws -> InitSettings {
     let settingsStr = try String(contentsOfFile: filepath)
     let settings: Yaml = try Yaml.load(settingsStr)
@@ -65,4 +88,10 @@ func loadInitSettings(filepath: String) throws -> InitSettings {
     }
     
     return initSettings
+}
+
+
+func saveSceneParameters(_ parameters: SceneParameters, to path: String) {
+    let yml: Yaml = Yaml(arrayLiteral: Yaml(stringLiteral: "test"))
+    print("YAML VAL: \(yml)")
 }
