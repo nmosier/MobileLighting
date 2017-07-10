@@ -11,7 +11,8 @@ import AVFoundation
 import CoreImage
 
 // used by custom threshold filter as default when no input threshold specified
-let thresholdDefault: Float = 0.08
+var thresholdDefault: Float = 0.08
+var binaryCodeDirection: Bool?
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
@@ -152,15 +153,43 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
         resultImage = extremeIntensitiesFilter.outputImage!
     }
     
-    // testing threshold kernel
-    let thresholdFilter = ThresholdFilter()
+    // TEMP
+    var thresh2: CVPixelBuffer? = nil
+    CVPixelBufferCreate(nil, buffers[0].width, buffers[0].height, kCVPixelFormatType_32BGRA, nil, &thresh2)
+    thresholdDefault = 0.03; let thresholdFilter2 = ThresholdFilter2()
+    thresholdFilter2.setValue(resultImage, forKey: kCIInputImageKey)
+    let thresheldImage2 = thresholdFilter2.outputImage!
+    context.render(thresheldImage2, to: thresh2!)
+    
+    
+    thresholdDefault = 0.06; let thresholdFilter = ThresholdFilter()
     thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
-    //thresholdFilter.setValue(threshold, forKey: ThresholdFilter.kCIInputThresholdKey)
     let thresheldImage = thresholdFilter.outputImage!
-    
-    //thresheldImage.setValue(NSNull(), forKey: kCIImageColorSpace)
-    
     context.render(thresheldImage, to: buffers[0])
+    
+    
+    // compare buffers
+    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
+    CVPixelBufferLockBaseAddress(buffers[0], lockFlags)
+    CVPixelBufferLockBaseAddress(thresh2!, lockFlags)
+    
+    var thresh1Ptr = CVPixelBufferGetBaseAddress(buffers[0])!.bindMemory(to: UInt8.self, capacity: buffers[0].width*buffers[0].height*4)
+    var thresh2Ptr = CVPixelBufferGetBaseAddress(thresh2!)!.bindMemory(to: UInt8.self, capacity: buffers[0].width*buffers[0].height*4)
+    for i in 0..<thresh2!.width*thresh2!.height {
+        var val1 = thresh1Ptr.pointee
+        var val2 = thresh2Ptr.pointee
+        if (val1 == 128 || val1 == 127) && !(val2 == 128 || val2 == 127) {
+            thresh1Ptr.pointee = 0; thresh1Ptr.advanced(by: 1).pointee = 255; thresh1Ptr.advanced(by: 2).pointee = 0
+        } else if !(val1 == 128 || val1 == 127) && (val2 == 128 || val2 == 127) {
+            thresh1Ptr.pointee = 0; thresh1Ptr.advanced(by: 1).pointee = 0; thresh1Ptr.advanced(by: 2).pointee = 255
+        }
+        thresh1Ptr = thresh1Ptr.advanced(by: 4)
+        thresh2Ptr = thresh2Ptr.advanced(by: 4)
+    }
+    
+    CVPixelBufferUnlockBaseAddress(buffers[0], lockFlags)
+    CVPixelBufferUnlockBaseAddress(thresh2!, lockFlags)
+    
     
     return buffers[0]
 }

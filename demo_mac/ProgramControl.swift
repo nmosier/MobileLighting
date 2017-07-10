@@ -584,7 +584,8 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
-            photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+            //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+            photoReceiver.receivePhotoBracket(name: "thresh\(currentCodeBit)_p\(position)", photoCount: 1, completionHandler: {captureNextBinaryCode()}, subpath: "tmp")
             
             currentCodeBit += 1
         }
@@ -595,7 +596,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
     currentCodeBit = 0  // reset to 0
     //inverted = false
     if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeSystem: system)
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
         cameraServiceBrowser.sendPacket(packet)
         while !cameraServiceBrowser.readyToSendPacket {}
     }
@@ -630,7 +631,7 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
     //inverted = false
     horizontal = true
     if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeSystem: system)
+        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
         cameraServiceBrowser.sendPacket(packet)
         while !cameraServiceBrowser.readyToSendPacket {}
     }

@@ -48,6 +48,27 @@ class CustomKernelStrings {
         "pix.g = pix.b = pix.r;" +
         "return pix;" +
         "}"
+    
+    static let Threshold2 = "kernel vec4 threshold ( sampler imIn, float thresh, float dir ) {\nvec2 coords = samplerCoord(imIn);\nvec2 origin = samplerOrigin(imIn);\nvec2 bound = origin + samplerSize(imIn);\nvec4 pix_c = sample(imIn, coords);\nif ( true || (dir == 0.0 && (coords.x <= origin.x || coords.x >= bound.x)) || (dir != 0.0 && (coords.y <= origin.y || coords.y >= bound.y)) ) {\nif (abs(pix_c.r-0.5) >= thresh) pix_c.r = (sign(pix_c.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = 0.5;\n} else {\nvec2 dxy;\nif (dir == 0.0) dxy = vec2(1.0, 0.0);\nelse dxy = vec2(0.0, 1.0);\nvec4 pix_l = sample(imIn, coords - dxy);\nvec4 pix_r = sample(imIn, coords + dxy);\nif ( (sign(pix_l.r-0.5) == sign(pix_r.r-0.5)) || (min(abs(pix_l.r-0.5), abs(pix_r.r-0.5)) < thresh) ) {\n// fallback (old)\nif (abs(pix_c.r-0.5) >= thresh) pix_c.r = (sign(pix_c.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = 0.5;\n} else {\n// new logic\nif (sign(pix_l.r-0.5) == sign(pix_c.r-0.5)) pix_c.r = (sign(pix_l.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = (sign(pix_r.r-0.5) + 1.0) * 0.5;\n}\n}\npix_c.g = pix_c.b = pix_c.r;\nreturn pix_c;\n}"
+}
+
+func getKernelString(from filepath: String) -> String {
+    var kernel: String
+    var result = String()
+    var chars: String.CharacterView
+    do {
+        kernel = try String(contentsOfFile: filepath)
+    } catch {
+        print("getKernelString: error reading file.")
+        return ""
+    }
+    chars = kernel.characters
+    for c in chars {
+        if c == "\t" {break}
+        else if c == "\n" {result.append("\\n")}
+        else {result.append(c)}
+    }
+    return result
 }
 
 //MARK: Custom kernels
@@ -55,6 +76,7 @@ let ExtremeIntensityKernel = CIColorKernel(string: CustomKernelStrings.ExtremeIn
 let IntensityDifferenceKernel = CIColorKernel(string: CustomKernelStrings.IntensityDifference)!
 let GrayscaleKernel = CIColorKernel(string: CustomKernelStrings.Grayscale)!
 let ThresholdKernel = CIColorKernel(string: CustomKernelStrings.Threshold)!
+let ThresholdKernel2 = CIKernel(string: CustomKernelStrings.Threshold2)!
 
 //MARK: Custom filters
 
@@ -195,6 +217,53 @@ class ThresholdFilter: CIFilter {
                 let threshold_float = 0.5 - (inputThresholdGrayscale ?? thresholdDefault)*0.5
                 let args = [inputImage as Any, threshold_float as Any]
                 return ThresholdKernel.apply(withExtent: inputImage.extent, arguments: args)
+            } else {
+                return nil
+            }
+        }
+    }
+}
+
+class ThresholdFilter2: CIFilter {
+    static let kCIInputThresholdKey = "inputThresholdGrayscale"
+    var inputImage: CIImage?
+    var inputThresholdGrayscale: Float? // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
+    // 1.0 means [0, 127] -> 0, [128, 255] -> 1
+    var direction: Bool?
+    
+    override var attributes: [String : Any] {
+        return [
+            kCIAttributeFilterDisplayName : "ThresholdFilter2" as Any,
+            kCIInputImageKey : [
+                kCIAttributeIdentity : 0,
+                kCIAttributeClass : "CIImage",
+                kCIAttributeDisplayName : "Image",
+                kCIAttributeType : kCIAttributeTypeImage],
+            ThresholdFilter.kCIInputThresholdKey : [
+                kCIAttributeIdentity : 1,
+                kCIAttributeClass: "Float",
+                kCIAttributeDisplayName : "Threshold",
+                kCIAttributeType : kCIAttributeTypeScalar]
+        ]
+    }
+    
+    override public var outputImage: CIImage? {
+        get {
+            if let inputImage = self.inputImage {
+                // compute threshold_float, which is max val for black pixel (0)
+                let threshold_float = NSNumber(value: inputThresholdGrayscale ?? thresholdDefault)
+                guard threshold_float.floatValue >= 0.0 && threshold_float.floatValue <= 0.5 else {
+                    print("ThresholdFilter2: ERROR - threshold val must be between 0.0 and 0.5.")
+                    return nil
+                }
+                let dir: Float = (direction ?? binaryCodeDirection!) ? 1.0 : 0.0  // b/c image rotated
+                print("Thresholdfilter2: direction: \(dir)")
+                let args = [inputImage as Any, threshold_float as Any, NSNumber(value: dir) as Any]
+                
+                func callback(index: Int32, rect: CGRect) -> CGRect {
+                    return rect
+                }
+                return ThresholdKernel2.apply(withExtent: inputImage.extent, roiCallback: callback, arguments: args)
             } else {
                 return nil
             }

@@ -21,6 +21,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var lensPosition: Float?
     
     var binaryCodeSystem: BinaryCodeSystem?
+    var binaryCodeDirection: Bool?
     var binaryCodeBit: Int?         // bit of binary code being displayed
     var binaryCodeInverted: Bool?   // if binary code is inverted
     
@@ -48,10 +49,11 @@ class CameraInstructionPacket: NSObject, NSCoding {
         }
         self.binaryCodeBit = decoder.decodeObject(forKey: "binaryCodeBit") as! Int?
         self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
+        self.binaryCodeDirection = decoder.decodeObject(forKey: "binaryCodeDirection") as! Bool?
     }
     
     // for standard initialization
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -62,6 +64,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.lensPosition = lensPosition
         
         self.binaryCodeBit = binaryCodeBit
+        self.binaryCodeDirection = binaryCodeDirection
         self.binaryCodeInverted = binaryCodeInverted
         self.binaryCodeSystem = binaryCodeSystem
     }
@@ -79,6 +82,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.binaryCodeSystem?.rawValue ?? nil, forKey: "binaryCodeSystem")
         coder.encode(self.binaryCodeBit, forKey: "binaryCodeBit")
         coder.encode(self.binaryCodeInverted, forKey: "binaryCodeInverted")
+        coder.encode(self.binaryCodeDirection, forKey: "binaryCodeDirection")
     }
     
 }
