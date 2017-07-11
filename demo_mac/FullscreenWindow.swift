@@ -17,6 +17,8 @@ class FullscreenWindow: NSView {
         case BinaryCode
         case Checkerboard(Int)  // can store square size
         case White, Black
+        case DiagonalStripes(Int)   // for testing with 'diamond' pixels
+        case VerticalStripes(Int)
     }
     
     var fullscreenWindow: NSWindow!
@@ -149,14 +151,35 @@ class FullscreenWindow: NSView {
                                 decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
             context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
             break
+            
+        case .DiagonalStripes(let stripWidth), .VerticalStripes(let stripWidth):
+            let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
+            defer {
+                bitmapPtr.deallocate(capacity: width*height)
+            }
+            
+            let calculation: (Int) -> UInt32
+            switch displayContent {
+            case .DiagonalStripes(let stripWidth):
+                calculation = { return ((($0%self.width + $0/self.width)/stripWidth)%2 == 0) ? self.whitePix : self.blackPix }
+            case .VerticalStripes(let stripWidth):
+                calculation = { return ((($0%self.width)/stripWidth)%2 == 0) ? self.whitePix : self.blackPix }
+            default:
+                calculation = { _ in return 0 }
+            }
+            
+            // draw lines row by row
+            for i in 0..<width*height {
+                bitmapPtr.advanced(by: i).pointee = calculation(i)//(((i%width + i/width)/stripWidth)%2 == 0) ? whitePix : blackPix
+            }
+            
+            let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
+            let colorspace = CGColorSpaceCreateDeviceRGB()
+            let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
+            let image = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!, decode: nil, shouldInterpolate: false, intent: .defaultIntent)
+            context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
+            break
         }
-        
-        /*
-        if let image = image {
-            context.draw(image, in: self.frame)
-        } else if let codeDrawer = codeDrawer, let currentCodeBit = currentCodeBit, let currentSystem = currentSystem {
-            codeDrawer.drawCode(forBit: currentCodeBit, system: currentSystem, positionLimit: (currentSystem == BinaryCodeSystem.MinStripeWidthCode) ? 1024 : nil)
-        } */
     }
     
     func drawImage(_ image: CGImage) {
@@ -199,6 +222,16 @@ class FullscreenWindow: NSView {
     
     func displayWhite() {
         self.displayContent = .White
+        self.display()
+    }
+    
+    func displayDiagonal(width: Int) {
+        self.displayContent = .DiagonalStripes(width)
+        self.display()
+    }
+    
+    func displayVertical(width: Int) {
+        self.displayContent = .VerticalStripes(width)
         self.display()
     }
 }

@@ -153,6 +153,8 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
         resultImage = extremeIntensitiesFilter.outputImage!
     }
     
+    
+    /*
     // TEMP
     var thresh2: CVPixelBuffer? = nil
     CVPixelBufferCreate(nil, buffers[0].width, buffers[0].height, kCVPixelFormatType_32BGRA, nil, &thresh2)
@@ -160,7 +162,7 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
     thresholdFilter2.setValue(resultImage, forKey: kCIInputImageKey)
     let thresheldImage2 = thresholdFilter2.outputImage!
     context.render(thresheldImage2, to: thresh2!)
-    
+    */
     
     thresholdDefault = 0.06; let thresholdFilter = ThresholdFilter()
     thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
@@ -168,6 +170,8 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
     context.render(thresheldImage, to: buffers[0])
     
     
+    
+    /*
     // compare buffers
     let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(buffers[0], lockFlags)
@@ -189,7 +193,7 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
     
     CVPixelBufferUnlockBaseAddress(buffers[0], lockFlags)
     CVPixelBufferUnlockBaseAddress(thresh2!, lockFlags)
-    
+ */
     
     return buffers[0]
 }

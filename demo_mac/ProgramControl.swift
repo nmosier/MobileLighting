@@ -25,6 +25,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case focuspoint
     case cb     // displays checkerboard
     case black, white
+    case diagonal, verticalbars   // displays diagonal stripes (for testing 'diagonal' DLP chip)
     
     // serial control
     case movearm
@@ -34,6 +35,10 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case refine
     case disparity
     //case refineall
+    
+    // for debugging
+    case dispres
+    case dispcode
 }
 
 
@@ -363,6 +368,22 @@ func nextCommand() -> Bool {
     case .white:
         displayController.windows.first!.displayWhite()
         break
+    case .diagonal:
+        let usage = "usage: diagonal [stripe width]"    // width measured horizontally
+        guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
+            print(usage)
+            break
+        }
+        displayController.currentWindow!.displayDiagonal(width: stripeWidth)
+        break
+    case .verticalbars:
+        let usage = "usage: verticalbars [width]"
+        guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
+            print(usage)
+            break
+        }
+        displayController.currentWindow!.displayVertical(width: stripeWidth)
+        break
         
     case .movearm:
         guard tokens.count >= 2 else {
@@ -450,7 +471,12 @@ func nextCommand() -> Bool {
                 disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
             }
         }
-        
+    
+    case .dispres:
+        let screen = displayController.currentWindow!
+        print("Screen resolution: \(screen.width)x\(screen.height)")
+    case .dispcode:
+        displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     }
     
     return true
