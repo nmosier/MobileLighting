@@ -611,7 +611,9 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
             //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
-            photoReceiver.receivePhotoBracket(name: "thresh\(currentCodeBit)_p\(position)", photoCount: 1, completionHandler: {captureNextBinaryCode()}, subpath: "tmp")
+            photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+            
+            //photoReceiver.receivePhotoBracket(name: "thresh\(currentCodeBit)_p\(position)", photoCount: 1, completionHandler: {captureNextBinaryCode()}, subpath: "tmp")
             
             currentCodeBit += 1
         }

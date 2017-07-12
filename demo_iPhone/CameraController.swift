@@ -288,15 +288,30 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_normal.removeAll()
                 pixelBuffers_inverted.removeAll()
                 
-                let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers)
+                let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers, shouldThreshold: true)
                 let intensityImage = CIImage(cvPixelBuffer: combinedIntensityBuffer)
                 
                 // decode threshold image for current bit using decoder
                 decoder!.decodeThreshold(combinedIntensityBuffer, forBit: currentBinaryCodeBit!)
                 
-                let colorspace = CGColorSpaceCreateDeviceRGB()
-                guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
-                let packet = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: 0)
+                
+                let sendJPG: Bool = false
+                let photoData: Data
+                if (sendJPG) {
+                    let colorspace = CGColorSpaceCreateDeviceRGB()
+                    guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
+                    photoData = jpegData
+                } else {
+                    // send PGM(s)
+                    if let prethresh = prethreshPGM {
+                        photoSender.sendPacket(PhotoDataPacket(photoData: prethresh.getPGMData()))
+                        prethreshPGM = nil
+                    }
+                    
+                    let pgm = PGMFile(buffer: combinedIntensityBuffer)
+                    photoData = pgm.getPGMData()
+                }
+                let packet = PhotoDataPacket(photoData: photoData, bracketedPhotoID: 0)
                 photoSender.sendPacket(packet)
                 
                 capturingNormalInvertedPair = false

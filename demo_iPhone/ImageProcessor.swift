@@ -11,7 +11,7 @@ import AVFoundation
 import CoreImage
 
 // used by custom threshold filter as default when no input threshold specified
-var thresholdDefault: Float = 0.08
+var thresholdDefault: Float = 0.06
 var binaryCodeDirection: Bool?
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
@@ -131,7 +131,12 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
     return normal
 }
 
-func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thresholdDefault) -> CVPixelBuffer {
+//////////////////////////
+//TEMP
+var prethreshPGM: PGMFile?
+//////////////////////////
+
+func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CVPixelBuffer {
     guard buffers.count > 0 else {
         fatalError("ImageProcessor: fatal error — number of buffers supplied must be >= 1.")
     }
@@ -164,11 +169,25 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], threshold: Float = thre
     context.render(thresheldImage2, to: thresh2!)
     */
     
-    thresholdDefault = 0.06; let thresholdFilter = ThresholdFilter()
-    thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
-    let thresheldImage = thresholdFilter.outputImage!
-    context.render(thresheldImage, to: buffers[0])
+    ///////////////////////////////////
+    // TEMP: for sending pre-threshold combined intensity buffer
+    var prethresh: CVPixelBuffer? = nil
+    CVPixelBufferCreate(nil, buffers[0].width, buffers[0].height, kCVPixelFormatType_32BGRA, nil, &prethresh)
+    context.render(resultImage, to: prethresh!)
+    prethreshPGM = PGMFile(buffer: prethresh!)
+    ///////////////////////////////////
     
+    
+    if (shouldThreshold) {
+        thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter()
+        //thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
+        
+        thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
+        let thresheldImage = thresholdFilter.outputImage!
+        context.render(thresheldImage, to: buffers[0])
+    } else {
+        context.render(resultImage, to: buffers[0])
+    }
     
     
     /*
@@ -344,4 +363,57 @@ class Decoder {
     }
     
     
+}
+
+
+class PGMFile {
+    var buffer: CVPixelBuffer
+    var imageWidth: Int
+    var imageHeight: Int
+    
+    let maxGray: UInt8 = 255
+    let bufferLockFlags = CVPixelBufferLockFlags(rawValue: 0)
+    var rotate: Bool
+    
+    private var header: NSString {
+        get {
+            if rotate {
+                return "P5 \(imageHeight) \(imageWidth) \(maxGray)\n" as NSString
+            } else {
+                return "P5 \(imageWidth) \(imageHeight) \(maxGray)\n" as NSString
+            }
+        }
+    }
+    
+    init(buffer: CVPixelBuffer, rotate: Bool = true) {
+        self.buffer = buffer
+        self.imageWidth = buffer.width
+        self.imageHeight = buffer.height
+        self.rotate = rotate
+    }
+    
+    func getPGMData() -> Data {
+        var data: Data = self.header.data(using: String.Encoding.utf8.rawValue)!
+        
+        CVPixelBufferLockBaseAddress(buffer, bufferLockFlags)
+        
+        let ptr = buffer.baseAddress!.bindMemory(to: UInt8.self, capacity: imageWidth*imageHeight*4)
+        
+        let arrlenm1 = imageHeight*imageWidth - 1
+        var body: [UInt8] = Array<UInt8>(repeating: 0, count: imageWidth*imageHeight)
+        for i in 0..<imageWidth*imageHeight {
+            let value = ptr.advanced(by: i*4).pointee
+            if rotate {
+                let i_rot = imageHeight*(i%imageWidth) + i/imageWidth   // rotates index so image upright
+                body[i_rot] = value
+            } else {
+                body[i] = value
+            }
+        }
+        
+        CVPixelBufferUnlockBaseAddress(buffer, bufferLockFlags)
+        
+        data.append(&body, count: imageWidth*imageHeight)
+        return data
+    }
 }

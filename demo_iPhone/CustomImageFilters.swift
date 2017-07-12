@@ -40,16 +40,9 @@ class CustomKernelStrings {
         "return pix;" +
         "}"
     
-    static let Threshold = "kernel vec4 threshold ( sampler imIn, float thresh ) {" +
-        "vec4 pix = sample(imIn, samplerCoord(imIn));" +
-        "if (pix.r < thresh) pix.r = 0.0;" +
-        "else if (pix.r + thresh > 1.0) pix.r = 1.0;" +
-        "else pix.r = 0.5;" +
-        "pix.g = pix.b = pix.r;" +
-        "return pix;" +
-        "}"
+    static let Threshold = "kernel vec4 threshold ( sampler imIn, float thresh ) {\nvec4 pix = sample(imIn, samplerCoord(imIn));\n//if (pix.r < thresh) pix.r = 0.0;\n//else if (pix.r + thresh > 1.0) pix.r = 1.0;\n//else pix.r = 0.5;\n    if (pix.r-0.5 >= thresh) pix.r = 1.0;\n    else if (0.5-pix.r >= thresh) pix.r = 0.0;\n    else pix.r = 0.5;\npix.g = pix.b = pix.r;\nreturn pix;\n}\n"
     
-    static let Threshold2 = "kernel vec4 threshold ( sampler imIn, float thresh, float dir ) {\nvec2 coords = samplerCoord(imIn);\nvec2 origin = samplerOrigin(imIn);\nvec2 bound = origin + samplerSize(imIn);\nvec4 pix_c = sample(imIn, coords);\nif ( true || (dir == 0.0 && (coords.x <= origin.x || coords.x >= bound.x)) || (dir != 0.0 && (coords.y <= origin.y || coords.y >= bound.y)) ) {\nif (abs(pix_c.r-0.5) >= thresh) pix_c.r = (sign(pix_c.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = 0.5;\n} else {\nvec2 dxy;\nif (dir == 0.0) dxy = vec2(1.0, 0.0);\nelse dxy = vec2(0.0, 1.0);\nvec4 pix_l = sample(imIn, coords - dxy);\nvec4 pix_r = sample(imIn, coords + dxy);\nif ( (sign(pix_l.r-0.5) == sign(pix_r.r-0.5)) || (min(abs(pix_l.r-0.5), abs(pix_r.r-0.5)) < thresh) ) {\n// fallback (old)\nif (abs(pix_c.r-0.5) >= thresh) pix_c.r = (sign(pix_c.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = 0.5;\n} else {\n// new logic\nif (sign(pix_l.r-0.5) == sign(pix_c.r-0.5)) pix_c.r = (sign(pix_l.r-0.5) + 1.0) * 0.5;\nelse pix_c.r = (sign(pix_r.r-0.5) + 1.0) * 0.5;\n}\n}\npix_c.g = pix_c.b = pix_c.r;\nreturn pix_c;\n}"
+    static let Threshold2 = "kernel vec4 threshold ( sampler imIn, float thresh, float dir ) {\nvec2 coords = samplerCoord(imIn);\nvec2 origin = samplerOrigin(imIn);\nvec2 bound = origin + samplerSize(imIn);\nvec4 pix_c = sample(imIn, coords);\n\nif ( (dir == 0.0 && (coords.x <= origin.x || coords.x >= bound.x)) || (dir != 0.0 && (coords.y <= origin.y || coords.y >= bound.y)) ) {\n// apply old fallback logic\nif (pix_c.r-0.5 >= thresh) pix_c.r = 1.0;\nelse if (0.5-pix_c.r >= thresh) pix_c.r = 0.0;\nelse pix_c.r = 0.5;\n\npix_c.r = 0.0;// TEMP\n} else {\nif (pix_c.r-0.5 >= thresh) pix_c.r = 1.0;\nelse if (0.5-pix_c.r >= thresh) pix_c.r = 0.0;\nelse pix_c.r = 0.5;\n\npix_c.r = 0.0;\n}\n\npix_c.g = pix_c.b = pix_c.r;\nreturn pix_c;\n}"
 }
 
 func getKernelString(from filepath: String) -> String {
@@ -214,8 +207,8 @@ class ThresholdFilter: CIFilter {
         get {
             if let inputImage = self.inputImage {
                 // compute threshold_float, which is max val for black pixel (0)
-                let threshold_float = 0.5 - (inputThresholdGrayscale ?? thresholdDefault)*0.5
-                let args = [inputImage as Any, threshold_float as Any]
+                //let threshold_float = 0.5 - (inputThresholdGrayscale ?? thresholdDefault)*0.5
+                let args = [inputImage as Any, thresholdDefault as Any]
                 return ThresholdKernel.apply(withExtent: inputImage.extent, arguments: args)
             } else {
                 return nil
