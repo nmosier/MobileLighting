@@ -1,9 +1,13 @@
+// Mobile Lighting control software
+//
+// DESCRIPTION:
+// main script for the Mac control program
 //
 //  main.swift
 //  demo_mac
 //
 //  Created by Nicholas Mosier on 6/2/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+//  Last modified 7/14/17
 //
 
 import Foundation
@@ -11,30 +15,24 @@ import Cocoa
 import CoreFoundation
 import CocoaAsyncSocket
 import AVFoundation
-
 import SwitcherCtrl
 import VXMCtrl
 
-
+// creates shared application instance
+//  required in order for windows (for displaying binary codes) to display properly,
+//  since the Mac program compiles to a command-line binary
 var app = NSApplication.shared()
 
-//MARK: global configuration variables
+// Communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
-var displayController: DisplayController!   // includes switcher
+var displayController: DisplayController!   // manages Kramer switcher box
 var vxmController: VXMController!
 
-
-
+// Subdirectories in directory structure
 var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
 var calibSubdir: String     // used in both orig and computed dirs
 var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String
-
-var lensPosition: Float
-var binaryCodeSystem: BinaryCodeSystem
-
-
-// define directory structure
     origSubdir = "orig"
         ambSubdir = "ambient"
         ambBallSubdir = "ambientBall"
@@ -45,18 +43,20 @@ var binaryCodeSystem: BinaryCodeSystem
         refinedSubdir = "refined"
         disparitySubdir = "disparity"
 
-// read initial settings + setup
+// use minsw codes, not graycodes
+let binaryCodeSystem: BinaryCodeSystem = .MinStripeWidthCode
 
-// required settings
+// READ INITIAL SETTINGS
+
+// required settings vars
 var scenesDirectory: String
 var sceneName: String
 var minSWfilepath: String
 
-// optional settings
+// optional settings vars
 var projectors: Int?
 var exposures: [Double]
 var positions: [Int]
-
 
 let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
 let initSettings: InitSettings
@@ -82,8 +82,7 @@ print("Exposures: \(exposures)")
 print("Positions: \(positions)")
 print("Projectors: \(projectors)")  
 
-saveSceneParameters(SceneParameters(), to: "")
-
+// create scene's directory structure
 let staticDirectoryStructure: [String : Any?]
 staticDirectoryStructure = [
     origSubdir      : [
@@ -104,10 +103,8 @@ staticDirectoryStructure = [
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
 
-binaryCodeSystem = .MinStripeWidthCode
-//exposures = [0.01, 0.02, 0.05, 0.1]
-//exposures = [0.02, 0.05, 0.1, 0.15]
-positions = [200, 250]
+
+//positions = [200, 250]
 
  initializeIPhoneCommunications()
 

@@ -62,10 +62,6 @@ class ViewController: UIViewController {
         
         cameraService.startBroadcast()
         
-        // test bridging header
-        print("testing bridging header...")
-        print("CShape width: \(getCShapeWidth())")
-        getCShapeWidth()
         
         // testing ActiveLighting bridging header
         var cmd = "./activeLighting".utf8CString

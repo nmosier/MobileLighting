@@ -42,7 +42,7 @@ class CustomKernelStrings {
     
     static let Threshold = "kernel vec4 threshold ( sampler imIn, float thresh ) {\nvec4 pix = sample(imIn, samplerCoord(imIn));\n//if (pix.r < thresh) pix.r = 0.0;\n//else if (pix.r + thresh > 1.0) pix.r = 1.0;\n//else pix.r = 0.5;\n    if (pix.r-0.5 >= thresh) pix.r = 1.0;\n    else if (0.5-pix.r >= thresh) pix.r = 0.0;\n    else pix.r = 0.5;\npix.g = pix.b = pix.r;\nreturn pix;\n}\n"
     
-    static let Threshold2 = "kernel vec4 threshold ( sampler imIn, float thresh, float dir ) {\nvec2 coords = samplerCoord(imIn);\nvec2 origin = samplerOrigin(imIn);\nvec2 bound = origin + samplerSize(imIn);\nvec4 pix_c = sample(imIn, coords);\n\nif ( (dir == 0.0 && (coords.x <= origin.x || coords.x >= bound.x)) || (dir != 0.0 && (coords.y <= origin.y || coords.y >= bound.y)) ) {\n// apply old fallback logic\nif (pix_c.r-0.5 >= thresh) pix_c.r = 1.0;\nelse if (0.5-pix_c.r >= thresh) pix_c.r = 0.0;\nelse pix_c.r = 0.5;\n\npix_c.r = 0.0;// TEMP\n} else {\nif (pix_c.r-0.5 >= thresh) pix_c.r = 1.0;\nelse if (0.5-pix_c.r >= thresh) pix_c.r = 0.0;\nelse pix_c.r = 0.5;\n\npix_c.r = 0.0;\n}\n\npix_c.g = pix_c.b = pix_c.r;\nreturn pix_c;\n}"
+    static let Threshold2 = "kernel vec4 threshold ( sampler imIn, float thresh, float angle ) {\nvec2 coords = samplerCoord(imIn);\nvec2 origin = samplerOrigin(imIn);\nvec2 bound = origin + samplerSize(imIn);\nvec4 pix_c = sample(imIn, coords);\nfloat val = pix_c.r;\n\nfloat dx, dy;\ndx = cos(angle);\nif (abs(dx) >= 0.5) dx = sign(dx);\nelse dx = 0.0;\ndy = sin(angle);\nif (abs(dy) >= 0.5) dy = sign(dy);\nelse dy = 0.0;\n\n// check bounds\nif (false) {\n//if ( (min(coords.x-dx,coords.x+dx) < origin.x || max(coords.x+dx,coords.x-dx) >= bound.x) || (min(coords.y-dy,coords.y+dy) < origin.y || max(coords.y+dy,coords.y-dy) >= bound.y) ) {\nif (val-0.5 >= thresh) val = 1.0;\nelse if (0.5-val >= thresh) val = 0.0;\nelse val = 0.5;\n} else {\nvec4 pix_l, pix_r;\nfloat val_l, val_r;\npix_l = sample( imIn, samplerTransform(imIn, destCoord()-vec2(dx,dy)) );\npix_r = sample( imIn, samplerTransform(imIn, destCoord()+vec2(dx,dy)) );\nval_l = pix_l.r;\nval_r = pix_r.r;\n\nif (sign(val_l-0.5) == sign(val_r-0.5) || min(abs(val_l-0.5), abs(val_r-0.5)) < thresh) {\nif (val-0.5 >= thresh) val = 1.0;\nelse if (0.5-val >= thresh) val = 0.0;\nelse val = 0.5;\n} else {\nval = (sign(val-0.5)+1.0) / 2.0;\n}\n}\npix_c.g = pix_c.b = pix_c.r = val;\nreturn pix_c;\n}"
 }
 
 func getKernelString(from filepath: String) -> String {
@@ -218,25 +218,35 @@ class ThresholdFilter: CIFilter {
 }
 
 class ThresholdFilter2: CIFilter {
-    static let kCIInputThresholdKey = "inputThresholdGrayscale"
     var inputImage: CIImage?
-    var inputThresholdGrayscale: Float? // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
+    var inputThreshold: CGFloat = 0.03 // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
     // 1.0 means [0, 127] -> 0, [128, 255] -> 1
-    var direction: Bool?
+    var inputAngle: CGFloat = 0.0
     
     override var attributes: [String : Any] {
         return [
             kCIAttributeFilterDisplayName : "ThresholdFilter2" as Any,
-            kCIInputImageKey : [
+            "inputImage" : [
                 kCIAttributeIdentity : 0,
                 kCIAttributeClass : "CIImage",
                 kCIAttributeDisplayName : "Image",
-                kCIAttributeType : kCIAttributeTypeImage],
-            ThresholdFilter.kCIInputThresholdKey : [
-                kCIAttributeIdentity : 1,
-                kCIAttributeClass: "Float",
+                kCIAttributeType : kCIAttributeTypeImage] as Any,
+            "inputThreshold" : [
+                kCIAttributeIdentity : 0,
+                kCIAttributeClass: "NSNumber",
+                kCIAttributeDefault: 0.03,
+                kCIAttributeMin: 0.0,
+                kCIAttributeMax: 0.5,
                 kCIAttributeDisplayName : "Threshold",
-                kCIAttributeType : kCIAttributeTypeScalar]
+                kCIAttributeType : kCIAttributeTypeScalar] as Any,
+            "inputAngle" : [
+                kCIAttributeIdentity: 0,
+                kCIAttributeClass: "NSNumber",
+                kCIAttributeDefault: 0.0,
+                kCIAttributeMin: -Double.pi/2.0,
+                kCIAttributeMax: Double.pi/2.0,
+                kCIAttributeDisplayName: "Angle",
+                kCIAttributeType : kCIAttributeTypeScalar] as Any
         ]
     }
     
@@ -244,18 +254,23 @@ class ThresholdFilter2: CIFilter {
         get {
             if let inputImage = self.inputImage {
                 // compute threshold_float, which is max val for black pixel (0)
-                let threshold_float = NSNumber(value: inputThresholdGrayscale ?? thresholdDefault)
+                //let threshold_float = NSNumber(value: inputThreshold ?? thresholdDefault)
+                let threshold_float: NSNumber = inputThreshold as NSNumber
+                let angle_float: NSNumber = inputAngle as NSNumber
                 guard threshold_float.floatValue >= 0.0 && threshold_float.floatValue <= 0.5 else {
                     print("ThresholdFilter2: ERROR - threshold val must be between 0.0 and 0.5.")
                     return nil
                 }
-                let dir: Float = (direction ?? binaryCodeDirection!) ? 1.0 : 0.0  // b/c image rotated
-                print("Thresholdfilter2: direction: \(dir)")
-                let args = [inputImage as Any, threshold_float as Any, NSNumber(value: dir) as Any]
+                //let dir: Float = (direction ?? binaryCodeDirection!) ? 1.0 : 0.0  // b/c image rotated
+                //print("Thresholdfilter2: direction: \(dir)")
+                //let args = [inputImage as Any, threshold_float as Any, NSNumber(value: dir) as Any]
+                let args = [inputImage as Any, threshold_float as Any, angle_float as Any]
                 
                 func callback(index: Int32, rect: CGRect) -> CGRect {
-                    return rect
+                    print("ROI: rect: \(rect), extent: \(inputImage.extent)")
+                    return inputImage.extent
                 }
+                print("SmartThreshold: THRESHOLD=\(inputThreshold), ANGLE=\(inputAngle)")
                 return ThresholdKernel2.apply(withExtent: inputImage.extent, roiCallback: callback, arguments: args)
             } else {
                 return nil

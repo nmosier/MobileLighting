@@ -34,8 +34,6 @@
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
-		E13031541F018EF9009D126C /* libImg.armv7-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E13031531F018EF9009D126C /* libImg.armv7-g.a */; };
-		E13031551F019495009D126C /* libactivelighting.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1C97B1E1F015DD20066205B /* libactivelighting.a */; };
 		E14473F51F03DA0D0029B3F0 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */; };
 		E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */; };
 		E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473FC1F03E0A70029B3F0 /* libpng16.a */; };
@@ -43,14 +41,11 @@
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
 		E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */; };
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
-		E19202291EFDADA000247265 /* demo_iPhone-Bridging-Header.h in Sources */ = {isa = PBXBuildFile; fileRef = E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */; };
-		E192022A1EFDAEA000247265 /* imageLib_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E19202271EFDAA1B00247265 /* imageLib_wrapper.cpp */; };
 		E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */; };
 		E19B513F1EF4703400FD0538 /* thresholdKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */; };
 		E1B6BAF31EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */; };
-		E1C97B1C1F0152000066205B /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1C97B1B1F0152000066205B /* activeLighting_wrapper.cpp */; };
 		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 		E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
@@ -291,8 +286,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E13031551F019495009D126C /* libactivelighting.a in Frameworks */,
-				E13031541F018EF9009D126C /* libImg.armv7-g.a in Frameworks */,
 				E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -694,8 +687,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E192022A1EFDAEA000247265 /* imageLib_wrapper.cpp in Sources */,
-				E19202291EFDADA000247265 /* demo_iPhone-Bridging-Header.h in Sources */,
 				E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
@@ -707,7 +698,6 @@
 				E1B6BAF31EF99CDC00E7531C /* BinaryCodes.swift in Sources */,
 				E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */,
 				E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */,
-				E1C97B1C1F0152000066205B /* activeLighting_wrapper.cpp in Sources */,
 				E11F1FF91EE1BBD7008F9F0F /* CameraPermissions.swift in Sources */,
 				E11F1FFB1EE1BBD7008F9F0F /* PhotoSender.swift in Sources */,
 			);

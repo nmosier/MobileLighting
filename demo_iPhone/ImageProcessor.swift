@@ -179,10 +179,13 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) 
     
     
     if (shouldThreshold) {
-        thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter()
-        //thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
-        
+        //thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter()
+        thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
         thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
+        thresholdFilter.setValue(CGFloat(0.035), forKey: "inputThreshold")
+        thresholdFilter.setValue(CGFloat(-Double.pi/4.0), forKey: "inputAngle")
+        
+        //thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
         let thresheldImage = thresholdFilter.outputImage!
         context.render(thresheldImage, to: buffers[0])
     } else {
@@ -228,6 +231,7 @@ extension CVPixelBuffer {
             return CVPixelBufferGetWidth(self)
         }
     }
+    
     var height: Int {
         get {
             return CVPixelBufferGetHeight(self)
