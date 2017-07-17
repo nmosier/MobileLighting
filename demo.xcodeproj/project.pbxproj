@@ -34,10 +34,8 @@
 		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
-		E14473F51F03DA0D0029B3F0 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */; };
 		E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */; };
 		E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473FC1F03E0A70029B3F0 /* libpng16.a */; };
-		E14474011F03E1560029B3F0 /* libopencv_core.3.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E14474001F03E1560029B3F0 /* libopencv_core.3.2.0.dylib */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
 		E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */; };
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
@@ -50,6 +48,8 @@
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 		E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E1FC8A211F02FB86000EF2DC /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */; };
+		E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */; };
+		E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */; };
 		E1FF9E531EF3099C000606C9 /* differenceKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */; };
 		E1FF9E541EF3099C000606C9 /* extremesKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */; };
 		E1FF9E561EF30F2A000606C9 /* grayscaleKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E551EF30F2A000606C9 /* grayscaleKernel.cikernel */; };
@@ -252,8 +252,6 @@
 		E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgProcessor.h; path = activeLighting/ImgProcessor.h; sourceTree = "<group>"; };
 		E14473FB1F03DE590029B3F0 /* demo_mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "demo_mac-Bridging-Header.h"; sourceTree = "<group>"; };
 		E14473FC1F03E0A70029B3F0 /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../../../usr/local/Cellar/libpng/1.6.29/lib/libpng16.a; sourceTree = "<group>"; };
-		E14473FE1F03E11A0029B3F0 /* libopencv_videoio.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videoio.3.2.0.dylib; path = ../../../../../../usr/local/Cellar/opencv3/3.2.0/lib/libopencv_videoio.3.2.0.dylib; sourceTree = "<group>"; };
-		E14474001F03E1560029B3F0 /* libopencv_core.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.2.0.dylib; path = ../../../../../../usr/local/Cellar/opencv3/3.2.0/lib/libopencv_core.3.2.0.dylib; sourceTree = "<group>"; };
 		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor2.swift; sourceTree = "<group>"; };
@@ -276,6 +274,7 @@
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
 		E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
+		E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.13.dylib; path = ../../../../../../usr/local/Cellar/opencv/2.4.13.2/lib/libopencv_core.2.4.13.dylib; sourceTree = "<group>"; };
 		E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = differenceKernel.cikernel; sourceTree = "<group>"; };
 		E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = extremesKernel.cikernel; sourceTree = "<group>"; };
 		E1FF9E551EF30F2A000606C9 /* grayscaleKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = grayscaleKernel.cikernel; sourceTree = "<group>"; };
@@ -294,10 +293,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */,
+				E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */,
 				E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */,
-				E14474011F03E1560029B3F0 /* libopencv_core.3.2.0.dylib in Frameworks */,
 				E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */,
-				E14473F51F03DA0D0029B3F0 /* libImgProcessor.i386-g.a in Frameworks */,
 				E1FC8A211F02FB86000EF2DC /* libImg.i386-g.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,8 +335,7 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E14474001F03E1560029B3F0 /* libopencv_core.3.2.0.dylib */,
-				E14473FE1F03E11A0029B3F0 /* libopencv_videoio.3.2.0.dylib */,
+				E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */,
 				E14473FC1F03E0A70029B3F0 /* libpng16.a */,
 				E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */,
 				E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */,
@@ -923,6 +921,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
+					/usr/local/lib,
 				);
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -930,7 +929,7 @@
 					"$(PROJECT_DIR)/demo_mac/imageLib",
 					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
-					/usr/local/Cellar/opencv3/3.2.0/lib,
+					/usr/local/Cellar/opencv/2.4.13.2/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
@@ -947,6 +946,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
+					/usr/local/lib,
 				);
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -954,7 +954,7 @@
 					"$(PROJECT_DIR)/demo_mac/imageLib",
 					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
-					/usr/local/Cellar/opencv3/3.2.0/lib,
+					/usr/local/Cellar/opencv/2.4.13.2/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
