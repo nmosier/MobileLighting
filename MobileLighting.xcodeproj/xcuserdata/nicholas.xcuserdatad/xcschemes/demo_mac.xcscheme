@@ -17,7 +17,7 @@
                BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
                BuildableName = "demo_mac"
                BlueprintName = "demo_mac"
-               ReferencedContainer = "container:demo.xcodeproj">
+               ReferencedContainer = "container:MobileLighting.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
             BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
             BuildableName = "demo_mac"
             BlueprintName = "demo_mac"
-            ReferencedContainer = "container:demo.xcodeproj">
+            ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -58,7 +58,7 @@
             BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
             BuildableName = "demo_mac"
             BlueprintName = "demo_mac"
-            ReferencedContainer = "container:demo.xcodeproj">
+            ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -82,7 +82,7 @@
             BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
             BuildableName = "demo_mac"
             BlueprintName = "demo_mac"
-            ReferencedContainer = "container:demo.xcodeproj">
+            ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

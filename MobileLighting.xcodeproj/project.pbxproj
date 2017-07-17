@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E10954D91F1D45B200181BCA /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E10954D81F1D45B200181BCA /* libImg.i386-g.a */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
 		E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FB61EE1B521008F9F0F /* Main.storyboard */; };
@@ -47,7 +48,6 @@
 		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 		E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
-		E1FC8A211F02FB86000EF2DC /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */; };
 		E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */; };
 		E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */; };
 		E1FF9E531EF3099C000606C9 /* differenceKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */; };
@@ -218,6 +218,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E10954D81F1D45B200181BCA /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = demo_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -258,19 +259,15 @@
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E180A4D01F0D5D1B0036466F /* Yaml.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Yaml.xcodeproj; path = ../../YamlSwift/Yaml.xcodeproj; sourceTree = "<group>"; };
 		E19202211EFDA97200247265 /* libimg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimg.a; path = ../../../../../../Volumes/nmosier/public_html/summer_research_2017/imageLib/cs453/hw1/imageLib/libimg.a; sourceTree = "<group>"; };
-		E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "demo_iPhone-Bridging-Header.h"; sourceTree = "<group>"; };
-		E19202271EFDAA1B00247265 /* imageLib_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = imageLib_wrapper.cpp; path = ../imageLib_wrapper.cpp; sourceTree = "<group>"; };
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = thresholdKernel.cikernel; sourceTree = "<group>"; };
+		E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "../MobileLighting_tmp/demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
 		E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../SerialTools/SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E1C97B131F0146F30066205B /* libimg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimg.a; path = demo_iPhone/imageLib/libimg.a; sourceTree = "<group>"; };
-		E1C97B151F01473A0066205B /* imageLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = imageLib.h; path = imageLib/imageLib.h; sourceTree = "<group>"; };
 		E1C97B161F0150BE0066205B /* libactiveLighting.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libactiveLighting.a; path = demo_iPhone/activeLighting/libactiveLighting.a; sourceTree = "<group>"; };
-		E1C97B1B1F0152000066205B /* activeLighting_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = activeLighting_wrapper.cpp; path = activeLighting/activeLighting_wrapper.cpp; sourceTree = "<group>"; };
 		E1C97B1E1F015DD20066205B /* libactivelighting.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libactivelighting.a; path = demo_iPhone/activeLighting/libactivelighting.a; sourceTree = "<group>"; };
-		E1C97B201F015F280066205B /* ActiveLighting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ActiveLighting.h; path = activeLighting/ActiveLighting.h; sourceTree = "<group>"; };
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
 		E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
@@ -293,11 +290,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E10954D91F1D45B200181BCA /* libImg.i386-g.a in Frameworks */,
 				E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */,
 				E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */,
 				E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */,
 				E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */,
-				E1FC8A211F02FB86000EF2DC /* libImg.i386-g.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,7 +316,6 @@
 				E11F1FDA1EE1B5A2008F9F0F /* demo_mac */,
 				E11F1F9F1EE1B3B4008F9F0F /* Products */,
 				E11F1FA81EE1B4E7008F9F0F /* Frameworks */,
-				E19202261EFDAA1B00247265 /* demo_iPhone-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -335,6 +331,8 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E10954D81F1D45B200181BCA /* libImg.i386-g.a */,
+				E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */,
 				E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */,
 				E14473FC1F03E0A70029B3F0 /* libpng16.a */,
 				E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */,
@@ -354,10 +352,6 @@
 		E11F1FB11EE1B521008F9F0F /* demo_iPhone */ = {
 			isa = PBXGroup;
 			children = (
-				E1C97B201F015F280066205B /* ActiveLighting.h */,
-				E1C97B151F01473A0066205B /* imageLib.h */,
-				E1C97B1B1F0152000066205B /* activeLighting_wrapper.cpp */,
-				E19202271EFDAA1B00247265 /* imageLib_wrapper.cpp */,
 				E1FF9E501EF30970000606C9 /* custom_kernels */,
 				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
 				E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */,
@@ -513,7 +507,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E11F1F991EE1B3B4008F9F0F /* Build configuration list for PBXProject "demo" */;
+			buildConfigurationList = E11F1F991EE1B3B4008F9F0F /* Build configuration list for PBXProject "MobileLighting" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -877,7 +871,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "demo_iPhone-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
@@ -906,7 +899,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.demo-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_OBJC_BRIDGING_HEADER = "demo_iPhone-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 				VALIDATE_PRODUCT = YES;
@@ -930,6 +922,8 @@
 					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
 					/usr/local/Cellar/opencv/2.4.13.2/lib,
+					"$(PROJECT_DIR)_tmp/demo_mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/demo_mac/activeLighting/imageLib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
@@ -955,6 +949,8 @@
 					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
 					/usr/local/Cellar/opencv/2.4.13.2/lib,
+					"$(PROJECT_DIR)_tmp/demo_mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/demo_mac/activeLighting/imageLib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
@@ -965,7 +961,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E11F1F991EE1B3B4008F9F0F /* Build configuration list for PBXProject "demo" */ = {
+		E11F1F991EE1B3B4008F9F0F /* Build configuration list for PBXProject "MobileLighting" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E11F1FA31EE1B3B4008F9F0F /* Debug */,
