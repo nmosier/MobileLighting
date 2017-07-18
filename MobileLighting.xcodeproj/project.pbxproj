@@ -91,13 +91,6 @@
 			remoteGlobalIDString = OBJ_30;
 			remoteInfo = SwitcherCtrl;
 		};
-		E14699DD1EFD5355005967DA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = OBJ_50;
-			remoteInfo = VXMCtrl;
-		};
 		E180A4DB1F0D5D1B0036466F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E180A4D01F0D5D1B0036466F /* Yaml.xcodeproj */;
@@ -146,6 +139,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8E1D76201B258FEE0022C013;
 			remoteInfo = "Yaml OSX";
+		};
+		E1FB1C7E1F1E406C00E654B8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = OBJ_50;
+			remoteInfo = VXMCtrl;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -411,9 +411,9 @@
 			buildRules = (
 			);
 			dependencies = (
+				E1FB1C7F1F1E406C00E654B8 /* PBXTargetDependency */,
 				E180A4E81F0D5D2E0036466F /* PBXTargetDependency */,
 				E14699DC1EFD5355005967DA /* PBXTargetDependency */,
-				E14699DE1EFD5355005967DA /* PBXTargetDependency */,
 			);
 			name = MobileLighting_Mac;
 			productName = demo_mac;
@@ -623,15 +623,15 @@
 			name = SwitcherCtrl;
 			targetProxy = E14699DB1EFD5355005967DA /* PBXContainerItemProxy */;
 		};
-		E14699DE1EFD5355005967DA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = VXMCtrl;
-			targetProxy = E14699DD1EFD5355005967DA /* PBXContainerItemProxy */;
-		};
 		E180A4E81F0D5D2E0036466F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "Yaml OSX";
 			targetProxy = E180A4E71F0D5D2E0036466F /* PBXContainerItemProxy */;
+		};
+		E1FB1C7F1F1E406C00E654B8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = VXMCtrl;
+			targetProxy = E1FB1C7E1F1E406C00E654B8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -742,6 +742,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
