@@ -103,10 +103,8 @@ staticDirectoryStructure = [
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
 
-
-//positions = [200, 250]
-
- initializeIPhoneCommunications()
+// publish PhotoReceiver service & set up Camera Service Browser
+initializeIPhoneCommunications()
 
 if configureDisplays() {
     print("main: Successfully configured displays.")
@@ -127,7 +125,5 @@ mainQueue.async {
     while nextCommand() {}
 }
 
-let appDelegate = AppDelegate()
-NSApp.delegate = appDelegate
 NSApp.run()
 

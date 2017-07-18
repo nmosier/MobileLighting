@@ -30,9 +30,10 @@
 		E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */; };
 		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
-		E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */; };
 		E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
+		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
+		E136681F1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */; };
 		E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473FC1F03E0A70029B3F0 /* libpng16.a */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
@@ -201,9 +202,9 @@
 		E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPermissions.swift; sourceTree = "<group>"; };
 		E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
-		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
+		E136681D1F1E505800BC561A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = activeLighting_wrapper.cpp; path = activeLighting/activeLighting_wrapper.cpp; sourceTree = "<group>"; };
 		E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgProcessor.h; path = activeLighting/ImgProcessor.h; sourceTree = "<group>"; };
 		E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobileLighting_Mac-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -250,6 +251,7 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
+				E136681D1F1E505800BC561A /* Utils.swift */,
 				E1765EB51EF9B997003A2BB3 /* minSW.dat */,
 				E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */,
 				E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */,
@@ -313,7 +315,6 @@
 				E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */,
 				E14699C71EFD534D005967DA /* SerialTools.xcodeproj */,
 				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
-				E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */,
 				E11F1FE71EE1B7C1008F9F0F /* FullscreenWindow.swift */,
@@ -552,6 +553,7 @@
 				E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E136681E1F1E505800BC561A /* Utils.swift in Sources */,
 				E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */,
 				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,
 				E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */,
@@ -574,7 +576,7 @@
 				E11F1FF01EE1B90F008F9F0F /* CameraInstructionPacket.swift in Sources */,
 				E11F1FF11EE1B90F008F9F0F /* PhotoDataPacket.swift in Sources */,
 				E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */,
-				E11F20001EE1E0A9008F9F0F /* AppDelegate.swift in Sources */,
+				E136681F1F1E505800BC561A /* Utils.swift in Sources */,
 				E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */,
 				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
 				E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */,

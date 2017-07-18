@@ -13,7 +13,11 @@ import SwitcherCtrl
 class DisplayController: NSWindowController {
     //MARK: Properties
     var windows = [FullscreenWindow]()  // windows currently being displayed
-    var currentWindow: FullscreenWindow?
+    var currentWindow: FullscreenWindow? {
+        get {
+            return windows.first
+        }
+    }
     var switcher: Switcher?
     
     // createCGImage(filePath:)
@@ -70,10 +74,6 @@ class DisplayController: NSWindowController {
     func createNewWindow(on screen: NSScreen) {
         let newWindow = FullscreenWindow(on: screen)
         windows.append(newWindow)
-    }
-    
-    func setCurrentScreen(withID: Int) {
-        currentWindow = windows[withID]
     }
     
     func configureDisplaySettings(horizontal: Bool = false, inverted: Bool = false, screenID: Int? = nil) {

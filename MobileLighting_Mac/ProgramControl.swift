@@ -278,7 +278,7 @@ func nextCommand() -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()
         
-        captureScene(system: system, ordering: ordering, projector: projector, position: position)
+        captureWithStructuredLighting(system: system, ordering: ordering, projector: projector, position: position)
         
         break
     
@@ -515,9 +515,16 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 }
 
 
-// captureFullTake: captures a 'full' take of the scene with structured lighting
-
-func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projector: Int, position: Int) {
+// captureWithStructuredLighting - does a 'full take' of current scene using the specified binary code system.
+//   - system: BinaryCodeSystem - either GrayCode or MinStripeWidthCode
+//   - projector: Int - should be in range [1, 8] (if using Kramer switcher box). Currently does
+//       not turn on projector; the value is used for only creating/saving to the proper directory
+//   - position: Int - should be >= 0, less than total # of positions (currently only 2)
+//       Doesn't move to the position; simply uses value for saving to proper directory
+//  NOTE: before calling this function, be sure that the correct projector is on and properly configured.
+//      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
+//      on from the Kramer box.)
+func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projector: Int, position: Int) {
     let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
@@ -528,22 +535,38 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
     
     var done: Bool = false
     
-    // create directory if necessary
+    // create decoded directory if necessary
     if ordering == .NormalInvertedPairs {   // expect 2 decoded images
         do {
             try FileManager.default.createDirectory(atPath: decodedDir, withIntermediateDirectories: true, attributes: nil)
-        } catch {
-            print("Failed to create directory at \(decodedDir).")
-            return
-        }
+        } catch { fatalError("Failed to create directory at \(decodedDir).") }
     }
     
     
-    // captureNextBinaryCode used as handler for self
+    // DESCRIPTION OF FLOW OF EXECUTION
+    //   There are two different subfunctions that drive the capture of the scene. They are:
+    //      -captureNextBinaryCode() -> Void
+    //      -captureInvertedBinaryCode(CameraStatusUpdate) -> Void
+    //  
+    //   captureBinaryCode() is the entry point to the chain of calls that follows the initial setup 
+    //     performed at the top level of enclosing function. It displays the correct binary code image
+    //     with the correct orientation and notifies the iPhone that it should begin capturing for the
+    //     current binary code bit being displayed. It then tells the photo receiver to receive a status
+    //     update from the iPhone, setting the completion handler (which is called on receipt of the
+    //     update) to be the captureInvertedBinaryCode() function.
+    //
+    //   captureInvertedBinaryCode() is called after the iPhone has notified the Mac that it has finished
+    //      taking a photo of the non-inverted binary code image. The function then displays the inverted
+    //      image of the current binary code; it then notifies the iPhone that it should take a picture 
+    //      of an inverted binary code image. This time, instead of a status update, it tells the photo 
+    //      receiver to expect two images - one prethresholded intensity difference image and one 
+    //      thresholded image - and save them to the 'tmp' directory (ultimately, this part of the image 
+    //      processing will only take place on the iPhone). After incrementing the current binary code 
+    //      bit, the photo receiver will then call captureBinaryCode(), starting the loop all over again
+    
+    
+    // captureNextBinaryCode:  used as handler for self
     func captureNextBinaryCode() {
-        print("CURRENT CODE BIT: \(currentCodeBit)")
-        
-        
         guard cameraServiceBrowser.readyToSendPacket else {
             print("Program Control: error - camera service browser not ready to send packet.")
             return
@@ -560,22 +583,20 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
         case .NormalInvertedPairs:
             // configure capture of normal photo bracket for current code bit
             displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
-            displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
+            displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
+            
             let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
             
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
-            
                 cameraServiceBrowser.sendPacket(packet)
-            
-                // receive CameraStatusUpdate that normal photo bracket capture finished
                 photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
             }
             
             break
         
         case .NormalThenInverted:
-            //displayController.configureDisplaySettings(horizontal: horizontal, inverted: inverted)
-            displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
+            displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
+            //displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
             let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
             
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
@@ -590,8 +611,6 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
     }
     
     func captureInvertedBinaryCode(statusUpdate: CameraStatusUpdate) {
-        
-        
         guard cameraServiceBrowser.readyToSendPacket else {
             print("Program Control: error - camera service browser not ready to send packet.")
             return
@@ -603,17 +622,21 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
         }
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
-        displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
+        displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
         
         //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
-            //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
-            photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
             
-            //photoReceiver.receivePhotoBracket(name: "thresh\(currentCodeBit)_p\(position)", photoCount: 1, completionHandler: {captureNextBinaryCode()}, subpath: "tmp")
+            // uncomment this when iPhone no longer configured to send prethreshold & threshold images:
+            /*
+            photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+            */
+            
+            // comment this out when iPhone no longer configured to send prethresholded & thresholded images:
+            photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
             
             currentCodeBit += 1
         }
@@ -652,7 +675,6 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
         
     }
     
-    
     fileNamePrefix = "\(sceneName)_h"
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
@@ -686,11 +708,11 @@ func captureScene(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projec
     
 }
 
+//MARK: UTILITY FUNCTIONS
 
-
-//MARK: Utility functions
-
-
+// creates the camera service browser (for sending instructions to iPhone) and
+//    the photo receiver (for receiving photos, updates, etc from iPhone)
+// NOTE: returns immediately; doens't wait for connection with iPhone to be established.
 func initializeIPhoneCommunications() {
     cameraServiceBrowser = CameraServiceBrowser()
     photoReceiver = PhotoReceiver(scenesDirectory)
@@ -700,42 +722,40 @@ func initializeIPhoneCommunications() {
 }
 
 // waits for both photo receiver & camera service browser communications
-// to be established
-// NOTE: only call if you're sure it won't seize control of the program, e.g. it should be executed within a DispatchQueue!
+// to be established (synchronous)
+// NOTE: only call if you're sure it won't seize control of the program / cause it to hang
+//    e.g. it should be executed within a DispatchQueue
 func waitForEstablishedCommunications() {
     while !cameraServiceBrowser.readyToSendPacket {}
     while !photoReceiver.readyToReceive {}
 }
 
+// configures the display controller object, whcih manages the displays
+// untested for multiple screens; Kramer switcher box is treated as only one screen
 func configureDisplays() -> Bool {
-    displayController = DisplayController()
+    if displayController == nil {
+        displayController = DisplayController()
+    }
     guard NSScreen.screens()!.count > 1  else {
         print("Only one screen connected.")
         return false
     }
-    
     for screen in NSScreen.screens()! {
         if screen != NSScreen.main()! {
             displayController.createNewWindow(on: screen)
         }
     }
-    
-    displayController.setCurrentScreen(withID: 0)   // set main secondary screen to be first in array
     return true
 }
 
-
-func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
-    let nsstr = str as NSString
-    return UnsafeMutablePointer<Int8>(mutating: nsstr.utf8String!)
-}
-
+// creates a (partial) directory structure for the current scene
+// structure is specified as a recursive dictionary of strings (subdirectories) to
+//   either nil or another recursive dictionary
+// path: root path at which to generate the directory tree
 func createStaticDirectoryStructure(atPath path: String, structure: [String : Any?]) {
     let fileman = FileManager.default
-    
     for subdir in structure.keys {
         if structure[subdir] == nil || structure[subdir]! == nil {
-            //print(path+"/"+subdir)
             do {
                 try fileman.createDirectory(atPath: path+"/"+subdir, withIntermediateDirectories: true, attributes: nil)
             } catch {
