@@ -240,13 +240,12 @@ func nextCommand() -> Bool {
             
         
     case .takefull:
-        let usage = "usage: takefull [projector #] [position #] [code system]? [ordering]?"
+        let usage = "usage: takefull [projector #] [position #] [code system]?"
         // for now, [pos #] simply tells prog where to save files
-        let system: BinaryCodeSystem, ordering: BinaryCodeOrdering
+        let system: BinaryCodeSystem
         let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
-        let orderings: [String : BinaryCodeOrdering] = ["pairs" : .NormalInvertedPairs, "ntheni" : .NormalThenInverted]
         
-        guard tokens.count >= 2 else {
+        guard tokens.count >= 2 && tokens.count <= 4 else {
             print(usage)
             break
         }
@@ -259,18 +258,12 @@ func nextCommand() -> Bool {
             break
         }
         
-        if tokens.count >= 4, let tmp_system = systems[tokens[nextToken]] {
-            system = tmp_system
+        if tokens.count == 4 {
+            system = systems[tokens[3]] ?? .MinStripeWidthCode
         } else {
             system = .MinStripeWidthCode
         }
-        if tokens.count == 5, let tmp_ordering = orderings[tokens[nextToken]] {
-            ordering = tmp_ordering
-        } else {
-            ordering = .NormalInvertedPairs
-        }
         
-        //vxmController.moveTo(dist: positions[position])   // move to specified position
         displayController.switcher?.turnOff(0)   // turns off all projs
         print("Hit enter when all projectors off.")
         _ = readLine()
@@ -278,8 +271,7 @@ func nextCommand() -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()
         
-        captureWithStructuredLighting(system: system, ordering: ordering, projector: projector, position: position)
-        
+        captureWithStructuredLighting(system: system, projector: projector, position: position)
         break
     
     case .readfocus:
@@ -524,7 +516,7 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 //  NOTE: before calling this function, be sure that the correct projector is on and properly configured.
 //      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
 //      on from the Kramer box.)
-func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCodeOrdering, projector: Int, position: Int) {
+func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, position: Int) {
     let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
@@ -532,15 +524,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCod
     var horizontal = false
     var fileNamePrefix: String
     let decodedDir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/proj\(projector)/pos\(position)"
+    var packet: CameraInstructionPacket
     
     var done: Bool = false
     
     // create decoded directory if necessary
-    if ordering == .NormalInvertedPairs {   // expect 2 decoded images
-        do {
-            try FileManager.default.createDirectory(atPath: decodedDir, withIntermediateDirectories: true, attributes: nil)
-        } catch { fatalError("Failed to create directory at \(decodedDir).") }
-    }
+    do {
+        try FileManager.default.createDirectory(atPath: decodedDir, withIntermediateDirectories: true, attributes: nil)
+    } catch { fatalError("Failed to create directory at \(decodedDir).") }
     
     
     // DESCRIPTION OF FLOW OF EXECUTION
@@ -564,8 +555,6 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCod
     //      processing will only take place on the iPhone). After incrementing the current binary code 
     //      bit, the photo receiver will then call captureBinaryCode(), starting the loop all over again
     
-    
-    // captureNextBinaryCode:  used as handler for self
     func captureNextBinaryCode() {
         guard cameraServiceBrowser.readyToSendPacket else {
             print("Program Control: error - camera service browser not ready to send packet.")
@@ -579,34 +568,15 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCod
             done = false
         }
         
-        switch ordering {
-        case .NormalInvertedPairs:
-            // configure capture of normal photo bracket for current code bit
-            displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
-            displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-            
-            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
-                cameraServiceBrowser.sendPacket(packet)
-                photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
-            }
-            
-            break
+        // configure capture of normal photo bracket for current code bit
+        displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
+        displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        case .NormalThenInverted:
-            displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-            //displayController.windows.first!.displayBinaryCode(forBit: currentCodeBit, system: system)
-            let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: "high", photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
-                cameraServiceBrowser.sendPacket(packet)
-            
-                photoReceiver.receivePhotoBracket(name: "\(fileNamePrefix)_b\(currentCodeBit)\(inverted ? "i" : "n")", photoCount: exposures.count, completionHandler: captureNextBinaryCode, subpath: sceneName+"/"+origSubdir+"/"+graycodeSubdir)
-            
-                currentCodeBit += 1
-            }
-            break
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
+            cameraServiceBrowser.sendPacket(packet)
+            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
         }
     }
     
@@ -646,66 +616,37 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, ordering: BinaryCod
     horizontal = false
     currentCodeBit = 0  // reset to 0
     //inverted = false
-    if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
-        cameraServiceBrowser.sendPacket(packet)
-        while !cameraServiceBrowser.readyToSendPacket {}
-    }
-    captureNextBinaryCode()
     
+    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
+    cameraServiceBrowser.sendPacket(packet)
+    while !cameraServiceBrowser.readyToSendPacket {}
+    
+    captureNextBinaryCode()
     while currentCodeBit < codeBitCount || !done {}  // wait til finished
     
-    if ordering == .NormalThenInverted {
-        fileNamePrefix = "\(sceneName)_v"
-        displayController.configureDisplaySettings(horizontal: false, inverted: true)
-        currentCodeBit = 0
-        captureNextBinaryCode()
-        
-        while currentCodeBit < codeBitCount {}
-    }
-    
-    if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
-        cameraServiceBrowser.sendPacket(packet)
-        //let subpath = sceneName+"/"+computedSubdir+"/"+decodedSubdir
-        
-        photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
-        while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
-        
-        
-    }
+    packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
+    cameraServiceBrowser.sendPacket(packet)
+    photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
+    while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     
     fileNamePrefix = "\(sceneName)_h"
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
     //inverted = false
     horizontal = true
-    if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
-        cameraServiceBrowser.sendPacket(packet)
-        while !cameraServiceBrowser.readyToSendPacket {}
-    }
+    
+    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
+    cameraServiceBrowser.sendPacket(packet)
+    while !cameraServiceBrowser.readyToSendPacket {}
+    
     captureNextBinaryCode()
     
     while currentCodeBit < codeBitCount || !done {}
     
-    if ordering == .NormalThenInverted {
-        inverted = true
-        fileNamePrefix = "\(sceneName)_h"
-        displayController.configureDisplaySettings(horizontal: true, inverted: true)
-        currentCodeBit = 0
-        captureNextBinaryCode()
-        
-        while currentCodeBit < codeBitCount {}
-    }
-    
-    if ordering == .NormalInvertedPairs {
-        let packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
-        cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector, position: position)}, absDir: decodedDir)
-        while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
-    }
-    
+    packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
+    cameraServiceBrowser.sendPacket(packet)
+    photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector, position: position)}, absDir: decodedDir)
+    while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
 }
 
 //MARK: UTILITY FUNCTIONS

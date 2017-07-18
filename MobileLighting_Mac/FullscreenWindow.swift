@@ -136,22 +136,6 @@ class FullscreenWindow: NSView {
             context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
             break
             
-        case .Black:
-            let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
-            defer {
-                bitmapPtr.deallocate(capacity: width*height)
-            }
-            
-            bitmapPtr.initialize(to: blackPix, count: width*height)
-            let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
-            let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
-            let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
-            let image = CGImage(width: width, height: height,
-                                bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
-                                decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
-            context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
-            break
-            
         case .DiagonalStripes(let stripWidth), .VerticalStripes(let stripWidth):
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {

@@ -4,11 +4,6 @@ import CoreGraphics
 
 let monitorTimeDelay: DispatchTimeInterval = .milliseconds(30)
 
-enum BinaryCodeOrdering {
-    case NormalInvertedPairs
-    case NormalThenInverted
-}
-
 struct Pixel {
     var r: UInt8
     var g: UInt8
