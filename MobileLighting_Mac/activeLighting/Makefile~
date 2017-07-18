@@ -12,7 +12,7 @@ BIN = ActiveLighting # FloVis
 ARCH := $(shell arch)
 
 # IMGLIB = /home/schar/summer2017/MiddStereo/imageLib
-IMGLIB = "imageLib"
+IMGLIB = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/demo_mac/imageLib"
 
 DBG = -g
 CC = g++
