@@ -10,15 +10,14 @@ import Foundation
 
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
     let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
-    do {
-        try FileManager.default.createDirectory(atPath: outdir, withIntermediateDirectories: true, attributes: nil)
-    } catch {
-        return
-    }
+    makeDir(outdir)
     refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath))
 }
 
 //MARK: disparity matching functions
+// uses bridged C++ code from ActiveLighting image processing pipeline
+// NOTE: this decoding step is not yet automated; it must manually be executed from
+//    the main command-line user input loop
 
 // computes & saves disparity maps for images of the given image position pair taken with the given projector
 func disparityMatch(projector: Int, leftpos: Int, rightpos: Int) {

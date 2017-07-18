@@ -7,9 +7,6 @@
 //    as sending directives to the camera in the form of instruction packets
 //    (defined in the .swift file "CameraInstructionPackets.swift").
 //
-// Public functions:
-// -startBrowsing()
-// -sendPacket(CameraInstructionPacket)
 
 
 import Foundation
@@ -47,27 +44,6 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
             writeNextPacket()
         }
     }
-    
-    // getInstructionPrompt: makes a single prompt at the command line for camera instruction
-    public func getInstructionPrompt() {
-        print("Camera instruction: ", terminator: "")
-        guard let input = readLine() else {
-            // failed to get input
-            return
-        }
-        let instructionDict: [String : CameraInstruction] = ["capture still image" : .CaptureStillImage,
-                                                             "capture photo bracket" : .CapturePhotoBracket,
-                                                             "end capture session" : .EndCaptureSession]
-        guard let instruction = instructionDict[input] else {
-            // invalid input, do nothing
-            return
-        }
-        
-        let instructionPacket = CameraInstructionPacket(cameraInstruction: instruction)
-        sendPacket(instructionPacket)
-    }
-    
-    //MARK: Internal functions
     
     // netServiceBrowserDidFindService: NetServiceBrowserDelegate function
     // -sets this CameraServiceBrowser as delegate, intiates attempt to connect to service

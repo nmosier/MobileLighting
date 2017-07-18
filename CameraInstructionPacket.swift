@@ -9,25 +9,72 @@
 import Foundation
 import AVFoundation
 
-@objc(CameraInstructionPacket)
+// CameraInstruction: specifies type of instruction being sent to iPhone
+enum CameraInstruction: Int {
+    case SetLensPosition    // requires lensPosition parameter
+    case GetLensPosition
+    case LockLensPosition   // lensPosition parameter optional
+    case SetPointOfFocus    // requires pointOfFocus parameter
+    
+    case LockExposure, AutoExposure // sets camera exposure mode
+    
+    case CaptureStillImage  // capture single image; optional parameters: resolution
+    case CapturePhotoBracket    // capture photo bracket; required parameters:
+                                //      photoBracketExposures; optional parameters: resolution
+    
+    // the following instructions are used by captureWithStructuredLighting function in Mac app's
+    //   ProgramControl.swift
+    case CaptureNormalInvertedPair, FinishCapturePair
+    case StartStructuredLightingCaptureFull, EndStructuredLightingCaptureFull
+    
+    case EndCaptureSession  // not yet implemented
+    
+    case LockWhiteBalance, AutoWhiteBalance // sets white balance modes -- feature not used/relevant, though
+}
+
+@objc(CameraInstructionPacket)  // IMPORTANT: this line ensures that both the Mac and iPhone
+                                // targets consider this to be the same class during sending/receipt
 class CameraInstructionPacket: NSObject, NSCoding {
+    // Parameters
+    //---IN USE---
     var cameraInstruction: CameraInstruction!
     var resolution: String?   // for setting photo resolution (use constants "AVCaptureSessionPreset...")
-    var photoBracketExposures: [Double]?   // optional b/c only used for bracketed photo sequences -> in seconds
-                                            // implicitly contains number of photos in bracket (= # items in array)
+    var photoBracketExposures: [Double]?   // values are in seconds
     var pointOfFocus: CGPoint?  // point of focus: represents where to focus in field of view
-    var torchMode: AVCaptureTorchMode?
-    var torchLevel: Float?
-    var lensPosition: Float?
+    var lensPosition: Float?    // sets focus
     
+    // binary code parameters
     var binaryCodeSystem: BinaryCodeSystem?
     var binaryCodeDirection: Bool?
     var binaryCodeBit: Int?         // bit of binary code being displayed
     var binaryCodeInverted: Bool?   // if binary code is inverted
     
-    //MARK: Initialization
+    //---NOT IN USE---
+    var torchMode: AVCaptureTorchMode?
+    var torchLevel: Float?
     
-    // for decoding packet
+    
+    //MARK: INITIALIZERS
+    
+    // public initializer for CameraInstructionPacket
+    // NOTE: most values are optional, so they are safe to omit when calling this function unless
+    //   you need to use them
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
+        self.init()
+        self.cameraInstruction = cameraInstruction
+        self.resolution = resolution
+        self.photoBracketExposures = photoBracketExposures
+        self.pointOfFocus = pointOfFocus
+        self.torchMode = torchMode
+        self.torchLevel = torchLevel
+        self.lensPosition = lensPosition
+        self.binaryCodeBit = binaryCodeBit
+        self.binaryCodeDirection = binaryCodeDirection
+        self.binaryCodeInverted = binaryCodeInverted
+        self.binaryCodeSystem = binaryCodeSystem
+    }
+    
+    // for decoding packet (never called by programmer)
     required convenience init?(coder decoder: NSCoder) {
         self.init()
         self.cameraInstruction = CameraInstruction(rawValue: decoder.decodeInteger(forKey: "cameraInstruction"))
@@ -52,24 +99,8 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeDirection = decoder.decodeObject(forKey: "binaryCodeDirection") as! Bool?
     }
     
-    // for standard initialization
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposures: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
-        self.init()
-        self.cameraInstruction = cameraInstruction
-        self.resolution = resolution
-        self.photoBracketExposures = photoBracketExposures
-        self.pointOfFocus = pointOfFocus
-        self.torchMode = torchMode
-        self.torchLevel = torchLevel
-        self.lensPosition = lensPosition
-        
-        self.binaryCodeBit = binaryCodeBit
-        self.binaryCodeDirection = binaryCodeDirection
-        self.binaryCodeInverted = binaryCodeInverted
-        self.binaryCodeSystem = binaryCodeSystem
-    }
-    
-    //MARK: Encoding/decoding
+    // never called by programmer
+    // encodes packet before being sent
     func encode(with coder: NSCoder) {
         coder.encode(self.cameraInstruction.rawValue, forKey: "cameraInstruction")
         coder.encode(self.resolution, forKey: "captureSessionPreset")
@@ -86,16 +117,3 @@ class CameraInstructionPacket: NSObject, NSCoding {
     }
     
 }
-
-enum CameraInstruction: Int {
-    case SetLensPosition, GetLensPosition, LockLensPosition
-    case SetPointOfFocus
-    case LockWhiteBalance, AutoWhiteBalance
-    case LockExposure, AutoExposure
-    case CaptureStillImage
-    case CapturePhotoBracket
-    case CaptureNormalInvertedPair, FinishCapturePair
-    case StartStructuredLightingCaptureFull, EndStructuredLightingCaptureFull
-    case EndCaptureSession
-}
-

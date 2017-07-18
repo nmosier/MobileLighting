@@ -9,16 +9,17 @@
 import Foundation
 import Yaml
 
+// simple error enum for when trying to read YML settings files
 enum YamlError: Error {
     case InvalidFormat
     case MissingRequiredKey
 }
 
-/*
-private func readpair(dict: key: String, type: AnyClass, to dest: inout Any) {
-    
-}*/
+//MARK: SETTINGS CLASSES
 
+// InitSettings: represents all settings required for capturing a new scene
+// read from YML file
+// -consists of required and optional settings
 class InitSettings {
     // required
     var scenesDirectory: String!
@@ -31,6 +32,13 @@ class InitSettings {
     var positionCoords: [Int]?
 }
 
+// SceneParameters: will represent the parameters determined during and after scene capture,
+//   including the locations of each camera position (in robot arm coordinates), etc
+//   -contains two further groups of parameters: structured lighting parameters and calibration
+//      parameters
+//
+// IMPORTANT: this has not yet been implemented -- eventually, it should be used when writing
+//   scene parameters to YML file as well as reading scene parameters for use during image processing, e.g.
 class SceneParameters {
     var sceneName: String!
     var nPositions: Int { get { return self.positions.count } }
@@ -53,7 +61,20 @@ class CalibrationParameters {
 }
 
 
+// MARK: SETTINGS FUNCTIONS
 
+// loadInitSettings: loads init settings from YML file at given filepath & returns InitSettings object
+// 
+// FORMAT of init settings file:
+//  -is a DICTIONARY at top level; where all parameter settings keys are specified
+//     -required keys:
+//          'scenesDir' (must be absolute path)
+//          'sceneName'
+//          'minSWdataDir' (must be absolute path)
+//     -optional keys:
+//          'positions' - value is list of positions as ints (NOTE: currently not utilized)
+//          'exposures' - value is list of exposure times as floats (IMPORTANT: this IS currently used)
+//          'projectors' (int)
 func loadInitSettings(filepath: String) throws -> InitSettings {
     let settingsStr = try String(contentsOfFile: filepath)
     let settings: Yaml = try Yaml.load(settingsStr)
@@ -88,10 +109,4 @@ func loadInitSettings(filepath: String) throws -> InitSettings {
     }
     
     return initSettings
-}
-
-
-func saveSceneParameters(_ parameters: SceneParameters, to path: String) {
-    let yml: Yaml = Yaml(arrayLiteral: Yaml(stringLiteral: "test"))
-    print("YAML VAL: \(yml)")
 }
