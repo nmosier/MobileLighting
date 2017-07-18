@@ -15,7 +15,6 @@
 		E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */; };
 		E11F1FD41EE1B57C008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FDB1EE1B5A2008F9F0F /* main.swift */; };
-		E11F1FE21EE1B5CA008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE31EE1B730008F9F0F /* CameraController.swift */; };
 		E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */; };
 		E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */; };
@@ -162,7 +161,6 @@
 			dstPath = usr/share/man/man1;
 			dstSubfolderSpec = 10;
 			files = (
-				E11F1FE21EE1B5CA008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,10 +186,9 @@
 		E11F1FBC1EE1B521008F9F0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E11F1FBE1EE1B521008F9F0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
-		E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = ../Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FD91EE1B5A2008F9F0F /* MobileLighting_Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MobileLighting_Mac; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FDB1EE1B5A2008F9F0F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FE31EE1B730008F9F0F /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraServiceBrowser.swift; sourceTree = "<group>"; };
 		E11F1FE61EE1B7C1008F9F0F /* DisplayController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayController.swift; sourceTree = "<group>"; };
@@ -200,7 +197,7 @@
 		E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraInstructionPacket.swift; sourceTree = "<group>"; };
 		E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoDataPacket.swift; sourceTree = "<group>"; };
 		E11F1FEF1EE1B90F008F9F0F /* Timing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Timing.swift; sourceTree = "<group>"; };
-		E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
+		E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = ../Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPermissions.swift; sourceTree = "<group>"; };
 		E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E11F1FF81EE1BBD7008F9F0F /* PhotoSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoSender.swift; sourceTree = "<group>"; };
@@ -255,12 +252,9 @@
 			children = (
 				E1765EB51EF9B997003A2BB3 /* minSW.dat */,
 				E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */,
-				E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */,
 				E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */,
 				E11F1FEF1EE1B90F008F9F0F /* Timing.swift */,
-				E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */,
-				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */,
 				E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */,
 				E11F1F9F1EE1B3B4008F9F0F /* Products */,
@@ -293,6 +287,7 @@
 		E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */ = {
 			isa = PBXGroup;
 			children = (
+				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
 				E11F1FF71EE1BBD7008F9F0F /* CameraService.swift */,
 				E11F1FE31EE1B730008F9F0F /* CameraController.swift */,
@@ -313,6 +308,7 @@
 		E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXGroup;
 			children = (
+				E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */,
 				E180A4D01F0D5D1B0036466F /* Yaml.xcodeproj */,
 				E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */,
 				E14699C71EFD534D005967DA /* SerialTools.xcodeproj */,
