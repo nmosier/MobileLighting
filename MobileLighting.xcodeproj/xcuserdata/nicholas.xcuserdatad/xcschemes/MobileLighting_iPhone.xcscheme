@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
-               BuildableName = "demo_mac"
-               BlueprintName = "demo_mac"
+               BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+               BuildableName = "MobileLighting_iPhone.app"
+               BlueprintName = "MobileLighting_iPhone"
                ReferencedContainer = "container:MobileLighting.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,13 +28,23 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E11F1FC21EE1B521008F9F0F"
+               BuildableName = "demo_iPhoneTests.xctest"
+               BlueprintName = "demo_iPhoneTests"
+               ReferencedContainer = "container:MobileLighting.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
-            BuildableName = "demo_mac"
-            BlueprintName = "demo_mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -55,18 +65,13 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
-            BuildableName = "demo_mac"
-            BlueprintName = "demo_mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
-         <AdditionalOption
-            key = "NSZombieEnabled"
-            value = "YES"
-            isEnabled = "YES">
-         </AdditionalOption>
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
@@ -79,9 +84,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E11F1FD81EE1B5A2008F9F0F"
-            BuildableName = "demo_mac"
-            BlueprintName = "demo_mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

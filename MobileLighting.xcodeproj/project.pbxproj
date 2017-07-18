@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E10954D91F1D45B200181BCA /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E10954D81F1D45B200181BCA /* libImg.i386-g.a */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
 		E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FB61EE1B521008F9F0F /* Main.storyboard */; };
@@ -42,6 +41,8 @@
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */; };
 		E19B513F1EF4703400FD0538 /* thresholdKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */; };
+		E1B5A4ED1F1D4A8700C23350 /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */; };
+		E1B5A4EF1F1D4A9800C23350 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */; };
 		E1B6BAF31EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */; };
@@ -49,7 +50,6 @@
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
 		E1FC8A1D1F02F6E4000EF2DC /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */; };
-		E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */; };
 		E1FF9E531EF3099C000606C9 /* differenceKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */; };
 		E1FF9E541EF3099C000606C9 /* extremesKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */; };
 		E1FF9E561EF30F2A000606C9 /* grayscaleKernel.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = E1FF9E551EF30F2A000606C9 /* grayscaleKernel.cikernel */; };
@@ -220,7 +220,7 @@
 /* Begin PBXFileReference section */
 		E10954D81F1D45B200181BCA /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
-		E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = demo_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E11F1FB41EE1B521008F9F0F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		E11F1FB71EE1B521008F9F0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -229,7 +229,7 @@
 		E11F1FBE1EE1B521008F9F0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/iOS/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
-		E11F1FD91EE1B5A2008F9F0F /* demo_mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = demo_mac; sourceTree = BUILT_PRODUCTS_DIR; };
+		E11F1FD91EE1B5A2008F9F0F /* MobileLighting_Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MobileLighting_Mac; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FDB1EE1B5A2008F9F0F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FE31EE1B730008F9F0F /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
@@ -251,7 +251,7 @@
 		E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "demo_mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = activeLighting_wrapper.cpp; path = activeLighting/activeLighting_wrapper.cpp; sourceTree = "<group>"; };
 		E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgProcessor.h; path = activeLighting/ImgProcessor.h; sourceTree = "<group>"; };
-		E14473FB1F03DE590029B3F0 /* demo_mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "demo_mac-Bridging-Header.h"; sourceTree = "<group>"; };
+		E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobileLighting_Mac-Bridging-Header.h"; sourceTree = "<group>"; };
 		E14473FC1F03E0A70029B3F0 /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../../../usr/local/Cellar/libpng/1.6.29/lib/libpng16.a; sourceTree = "<group>"; };
 		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
@@ -262,6 +262,8 @@
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = thresholdKernel.cikernel; sourceTree = "<group>"; };
 		E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "../MobileLighting_tmp/demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
+		E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "MobileLighting_Mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
+		E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "MobileLighting_Mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
 		E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../SerialTools/SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
@@ -290,8 +292,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E10954D91F1D45B200181BCA /* libImg.i386-g.a in Frameworks */,
-				E1FF9DD11F1D2D7E00E42A12 /* libImgProcessor.i386-g.a in Frameworks */,
+				E1B5A4EF1F1D4A9800C23350 /* libImgProcessor.i386-g.a in Frameworks */,
+				E1B5A4ED1F1D4A8700C23350 /* libImg.i386-g.a in Frameworks */,
 				E1FF9DC21F1D280600E42A12 /* libopencv_core.2.4.13.dylib in Frameworks */,
 				E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */,
 				E14473FD1F03E0A70029B3F0 /* libpng16.a in Frameworks */,
@@ -312,8 +314,8 @@
 				E11F1FEF1EE1B90F008F9F0F /* Timing.swift */,
 				E11F1FE11EE1B5CA008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
-				E11F1FB11EE1B521008F9F0F /* demo_iPhone */,
-				E11F1FDA1EE1B5A2008F9F0F /* demo_mac */,
+				E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */,
+				E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */,
 				E11F1F9F1EE1B3B4008F9F0F /* Products */,
 				E11F1FA81EE1B4E7008F9F0F /* Frameworks */,
 			);
@@ -322,8 +324,8 @@
 		E11F1F9F1EE1B3B4008F9F0F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */,
-				E11F1FD91EE1B5A2008F9F0F /* demo_mac */,
+				E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */,
+				E11F1FD91EE1B5A2008F9F0F /* MobileLighting_Mac */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -331,6 +333,8 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */,
+				E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */,
 				E10954D81F1D45B200181BCA /* libImg.i386-g.a */,
 				E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */,
 				E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */,
@@ -349,7 +353,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		E11F1FB11EE1B521008F9F0F /* demo_iPhone */ = {
+		E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */ = {
 			isa = PBXGroup;
 			children = (
 				E1FF9E501EF30970000606C9 /* custom_kernels */,
@@ -367,10 +371,10 @@
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
 				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
 			);
-			path = demo_iPhone;
+			path = MobileLighting_iPhone;
 			sourceTree = "<group>";
 		};
-		E11F1FDA1EE1B5A2008F9F0F /* demo_mac */ = {
+		E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXGroup;
 			children = (
 				E180A4D01F0D5D1B0036466F /* Yaml.xcodeproj */,
@@ -386,11 +390,11 @@
 				E11F1FDB1EE1B5A2008F9F0F /* main.swift */,
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 				E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */,
-				E14473FB1F03DE590029B3F0 /* demo_mac-Bridging-Header.h */,
+				E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */,
 				E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */,
 				E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */,
 			);
-			path = demo_mac;
+			path = MobileLighting_Mac;
 			sourceTree = "<group>";
 		};
 		E14699C81EFD534D005967DA /* Products */ = {
@@ -443,9 +447,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E11F1FAF1EE1B521008F9F0F /* demo_iPhone */ = {
+		E11F1FAF1EE1B521008F9F0F /* MobileLighting_iPhone */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "demo_iPhone" */;
+			buildConfigurationList = E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "MobileLighting_iPhone" */;
 			buildPhases = (
 				E11F1FAC1EE1B521008F9F0F /* Sources */,
 				E11F1FAD1EE1B521008F9F0F /* Frameworks */,
@@ -456,14 +460,14 @@
 			);
 			dependencies = (
 			);
-			name = demo_iPhone;
+			name = MobileLighting_iPhone;
 			productName = demo_iPhone;
-			productReference = E11F1FB01EE1B521008F9F0F /* demo_iPhone.app */;
+			productReference = E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */;
 			productType = "com.apple.product-type.application";
 		};
-		E11F1FD81EE1B5A2008F9F0F /* demo_mac */ = {
+		E11F1FD81EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "demo_mac" */;
+			buildConfigurationList = E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "MobileLighting_Mac" */;
 			buildPhases = (
 				E11F1FD51EE1B5A2008F9F0F /* Sources */,
 				E11F1FD61EE1B5A2008F9F0F /* Frameworks */,
@@ -478,9 +482,9 @@
 				E14699DC1EFD5355005967DA /* PBXTargetDependency */,
 				E14699DE1EFD5355005967DA /* PBXTargetDependency */,
 			);
-			name = demo_mac;
+			name = MobileLighting_Mac;
 			productName = demo_mac;
-			productReference = E11F1FD91EE1B5A2008F9F0F /* demo_mac */;
+			productReference = E11F1FD91EE1B5A2008F9F0F /* MobileLighting_Mac */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -534,8 +538,8 @@
 			);
 			projectRoot = "";
 			targets = (
-				E11F1FAF1EE1B521008F9F0F /* demo_iPhone */,
-				E11F1FD81EE1B5A2008F9F0F /* demo_mac */,
+				E11F1FAF1EE1B521008F9F0F /* MobileLighting_iPhone */,
+				E11F1FD81EE1B5A2008F9F0F /* MobileLighting_Mac */,
 			);
 		};
 /* End PBXProject section */
@@ -858,7 +862,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = demo_iPhone/Info.plist;
+				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -867,7 +871,7 @@
 					"$(PROJECT_DIR)/demo_iPhone/imageLib",
 					"$(PROJECT_DIR)/demo_iPhone/activeLighting",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.demo-iPhone";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -887,7 +891,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = demo_iPhone/Info.plist;
+				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -896,7 +900,7 @@
 					"$(PROJECT_DIR)/demo_iPhone/imageLib",
 					"$(PROJECT_DIR)/demo_iPhone/activeLighting",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.demo-iPhone";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -918,15 +922,13 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/demo_mac/imageLib",
-					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
 					/usr/local/Cellar/opencv/2.4.13.2/lib,
-					"$(PROJECT_DIR)_tmp/demo_mac/activeLighting/imageLib",
-					"$(PROJECT_DIR)/demo_mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "MobileLighting_Mac/MobileLighting_Mac-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
@@ -945,15 +947,13 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/demo_mac/imageLib",
-					"$(PROJECT_DIR)/demo_mac/activeLighting",
 					/usr/local/Cellar/libpng/1.6.29/lib,
 					/usr/local/Cellar/opencv/2.4.13.2/lib,
-					"$(PROJECT_DIR)_tmp/demo_mac/activeLighting/imageLib",
-					"$(PROJECT_DIR)/demo_mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "demo_mac/demo_mac-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "MobileLighting_Mac/MobileLighting_Mac-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -970,7 +970,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "demo_iPhone" */ = {
+		E11F1FCA1EE1B521008F9F0F /* Build configuration list for PBXNativeTarget "MobileLighting_iPhone" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E11F1FCB1EE1B521008F9F0F /* Debug */,
@@ -979,7 +979,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "demo_mac" */ = {
+		E11F1FDD1EE1B5A2008F9F0F /* Build configuration list for PBXNativeTarget "MobileLighting_Mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E11F1FDE1EE1B5A2008F9F0F /* Debug */,
