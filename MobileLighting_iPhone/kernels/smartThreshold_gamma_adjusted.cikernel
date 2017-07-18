@@ -1,0 +1,30 @@
+kernel vec4 threshold ( sampler imIn, float thresh, float angle ) {
+	vec4 pix_c = sample(imIn, samplerTransform(imIn, destCoord()));
+	float val = pow(pix_c.r, 1.0/2.2);
+	
+	float dx, dy;
+	dx = cos(angle);
+	if (abs(dx) >= 0.5) dx = sign(dx);
+	else dx = 0.0;
+	dy = sin(angle);
+	if (abs(dy) >= 0.5) dy = sign(dy);
+	else dy = 0.0;
+	
+	vec4 pix_l, pix_r;
+	float val_l, val_r;
+	pix_l = sample( imIn, samplerTransform(imIn, destCoord() - vec2(dx,dy)) );
+	pix_r = sample( imIn, samplerTransform(imIn, destCoord() + vec2(dx,dy)) );
+	val_l = pow(pix_l.r, 1.0/2.2);
+	val_r = pow(pix_r.r, 1.0/2.2);
+		
+	if (sign(val_l-0.5) == sign(val_r-0.5) || min(abs(val_l-0.5), abs(val_r-0.5)) < thresh) {
+		if (val-0.5 >= thresh) val = 1.0;
+		else if (0.5-val >= thresh) val = 0.0;
+		else val = 0.5;
+	} else {
+		val = (sign(val-0.5)+1.0) / 2.0;
+	}
+	
+	pix_c.g = pix_c.b = pix_c.r = val;
+	return pix_c;
+}
