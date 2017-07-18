@@ -12,3 +12,11 @@ func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
     let nsstr = str as NSString
     return UnsafeMutablePointer<Int8>(mutating: nsstr.utf8String!)
 }
+
+func makeDir(_ str: String) -> Void {
+    do {
+        try FileManager.default.createDirectory(atPath: str, withIntermediateDirectories: true, attributes: nil)
+    } catch {
+        print("make dir - error - could not make directory.")
+    }
+}

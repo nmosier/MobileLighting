@@ -6,15 +6,15 @@ import Cocoa
 import VXMCtrl
 import SwitcherCtrl
 
-//MARK: Input utility functions
 
-enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for determining an exhaustive switch statement)
-    case help   // 'h'
-    case quit   // 'q'
+//MARK: COMMAND-LINE INPUT
+
+enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
+    case help
+    case quit
     case reloadsettings
     
-    case take   // 't'
-    case connect    // 'c'
+    case connect
     case disconnect, disconnectall
     case calibrate  // 'x'
     case calibrate2pos
@@ -41,6 +41,26 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case dispcode
 }
 
+let commandUsage: [Command : String?] = [
+    .help: nil,
+    .quit: nil,
+    .reloadsettings: "reloadsettings [attribute_name]",
+    .connect: "connect [iphone|switcher|vxm] [port string]?",
+    .disconnect: "disconnect [vxm|switcher]",
+    .calibrate: "calibrate [# of photos]",
+    .calibrate2pos: "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?",
+    .takefull: "takefull [projector #] [position #] [code system]?",
+    .setfocus: "setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)",
+    .focuspoint: "focuspoint [x_coord] [y_coord]",
+    .cb: "cb [squareSize]?",
+    .diagonal: "diagonal [stripe width]",
+    .verticalbars: "verticalbars [width]",
+    .movearm: "movearm [int/MAX/MIN]",
+    .proj: "proj [projector_#|all] [on|off]|[1|0]",
+    .refine: "refine [imageFilename] [direction (0/1)]",
+    .disparity: "disparity [[projector #] [[left pos #] [right pos #]]?]?",
+]
+
 
 var processingCommand: Bool = false
 
@@ -66,10 +86,13 @@ func nextCommand() -> Bool {
     case .help:
         // to be implemented
         print("help")
+        
     case .quit:
         return false
         
     case .reloadsettings:
+        // rereads init settings file and reloads specified attribute
+        // currently only supports changing exposures at runtime
         let usage: String = "usage: reload [attribute_name]" // e.g. exposures
         guard tokens.count == 2 else {
             print(usage)
@@ -90,42 +113,26 @@ func nextCommand() -> Bool {
             exposures = initSettings.exposures ?? exposures
             print("New exposures: \(exposures)")
         }
-        
-        
-    case .take:
-        // optionally followed by "ambient" token
-        if nextToken >= tokens.count {
-            // capture scene with current configuration (all exposures & binary patterns)
-            //captureScene(system: binaryCodeSystem, ordering: BinaryCodeOrdering.NormalThenInverted, projector: <#Int#>)
-        } else if tokens[nextToken] == "ambient" {
-            nextToken += 1
-            if nextToken >= tokens.count || tokens[nextToken] == "single" {
-                // take single
-                
-            } else if tokens[nextToken] == "full" {
-                // full ambient take
-            }
-        }
     
-    // for connecting devices
+    // connect: use to connect external devices
     case .connect:
         guard tokens.count >= 2 else {
-            print("usage: connect iphone|switcher|vxm")
+            print("usage: connect [iphone|switcher|vxm] [port string]?")
             break
         }
+        
         switch tokens[1] {
         case "iphone":
-            // set up PhotoReceiver & CameraServiceBrowser
             initializeIPhoneCommunications()
-            // wait for completion
-            //waitForEstablishedCommunications()
+            
         case "switcher":
             guard tokens.count == 3 else {
-                print("connect switcher: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
+                print("usage: connect switcher: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
                 break
             }
             displayController.switcher = Switcher(portName: tokens[2])
             displayController.switcher!.startConnection()
+            
         case "vxm":
             guard tokens.count == 3 else {
                 print("connect vxm: must specify port (e.g. /dev/cu.usbserial\n(hint: ls /dev/cu.*)")
@@ -133,15 +140,18 @@ func nextCommand() -> Bool {
             }
             vxmController = VXMController(portName: tokens[2])
             _ = vxmController.startVXM()
+            
         default:
             print("cannot connect: invalid device name.")
         }
         
+    // disconnect: use to disconnect vxm or switcher (generally not necessary)
     case .disconnect:
         guard tokens.count == 2 else {
             print("usage: disconnect [vxm|switcher]")
             break
         }
+        
         switch tokens[1] {
         case "vxm":
             vxmController.stop()
@@ -154,18 +164,27 @@ func nextCommand() -> Bool {
             break
         }
       
+    // disconnects both switcher and vxm box
     case .disconnectall:
         vxmController.stop()
         displayController.switcher?.endConnection()
         
+    
+    // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .calibrate:
+        guard tokens.count == 2 else {
+            print("usage: calibrate [# of photos]")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
+        let subpath = sceneName+"/"+origSubdir+"/"+calibSubdir+"/other"
+        makeDir(scenesDirectory+subpath)
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
             for i in 0..<nPhotos {
                 var receivedCalibrationImage = false
                 
                 cameraServiceBrowser.sendPacket(packet)
-                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: sceneName+"/"+origSubdir+"/"+calibSubdir)
+                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: subpath)
                 while !receivedCalibrationImage {}
                 
                 guard let _ = readLine() else {
@@ -173,75 +192,37 @@ func nextCommand() -> Bool {
                 }
             }
         }
-            
         break
-            
+       
+    // captures calibration images from two viewpoints
+    // viewpoints specified as integers corresponding to the position along the linear
+    //    robot arm's axis
+    // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
+    //     proper location
     case .calibrate2pos:
         let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?"
         guard tokens.count >= 4 && tokens.count <= 5 else {
             print(usage)
             break
         }
-        guard let pos0 = Int(tokens[1]),
-            let pos1 = Int(tokens[2]),
+        guard let left = Int(tokens[1]),
+            let right = Int(tokens[2]),
             let nPhotos = Int(tokens[3]),
             nPhotos > 0 else {
             print("calibrate2pos: invalid argument(s).")
             break
         }
         let resolution = (tokens.count == 5) ? tokens[4] : "high"   // high is default res
-        
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
-        var receivedCalibrationImage: Bool
-        let msgMove = "Hit enter when camera in position."
-        let msgBoard = "Hit enter when board repositioned."
-        let leftSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/left"
-        let rightSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/right"
-        
-        vxmController.zero()    // reset robot arm
-        
-        vxmController.moveTo(dist: pos1)
-        print(msgMove)
-        _ = readLine()
-        cameraServiceBrowser.sendPacket(packet)
-        receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
-        while !receivedCalibrationImage {}
-        
-        for i in 0..<nPhotos-1 {
-            let dist = (i%2 == 0) ? pos0:pos1
-            let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
-            vxmController.moveTo(dist: dist)
-            print(msgMove)
-            _ = readLine() // operator must press enter when in position; also signal to take photo
-            cameraServiceBrowser.sendPacket(packet)
-            receivedCalibrationImage = false
-            photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
-            while !receivedCalibrationImage {}
-            
-            print(msgBoard)
-            _ = readLine()
-            cameraServiceBrowser.sendPacket(packet)
-            receivedCalibrationImage = false
-            photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
-            
-            while !receivedCalibrationImage {}
-        }
-        
-        vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0)
-        print(msgMove)
-        _ = readLine()
-        cameraServiceBrowser.sendPacket(packet)
-        receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
-        while !receivedCalibrationImage {}
-        
+        captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
-            
-        
+    
+    // captures scene using structured lighting from specified projector and position number
+    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
+    //  NOTE: this command does not move the arm; it must already be in the correct positions
+    //      BUT it does configure the projectors
     case .takefull:
         let usage = "usage: takefull [projector #] [position #] [code system]?"
-        // for now, [pos #] simply tells prog where to save files
+        // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
         let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         
@@ -266,14 +247,15 @@ func nextCommand() -> Bool {
         
         displayController.switcher?.turnOff(0)   // turns off all projs
         print("Hit enter when all projectors off.")
-        _ = readLine()
+        _ = readLine()  // wait until user hits enter
         displayController.switcher?.turnOn(projector)
         print("Hit enter when selected projector ready.")
-        _ = readLine()
+        _ = readLine()  // wait until user hits enter
         
         captureWithStructuredLighting(system: system, projector: projector, position: position)
         break
     
+    // requests current lens position from iPhone camera, prints it
     case .readfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
@@ -282,11 +264,12 @@ func nextCommand() -> Bool {
             processingCommand = false
         })
         
-    
+    // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
         _ = setLensPosition(-1.0)
         processingCommand = false
     
+    // tells the iPhone to lock the focus at the current position
     case .lockfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
         cameraServiceBrowser.sendPacket(packet)
@@ -294,10 +277,11 @@ func nextCommand() -> Bool {
             print("Lens position:\t\(pos)")
             processingCommand = false
         })
-        
+      
+    // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
         guard nextToken < tokens.count else {
-            print("\tUSAGE: 'setfocus <lensPosition>', where 0.0 <= lensPosition <= 1.0")
+            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
             break
         }
         guard let pos = Float(tokens[nextToken]) else {
@@ -307,14 +291,15 @@ func nextCommand() -> Bool {
         _ = setLensPosition(pos)
         processingCommand = false
     
+    // autofocus on point, given in normalized x and y coordinates
+    // NOTE: top left corner of image frame when iPhone is held in landscape with home button on the right corresponds to (0.0, 0.0).
     case .focuspoint:
         // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
         guard tokens.count >= 3 else {
-            print("focuspoint usage: focuspoint [x_coord] [y_coord]")
+            print("usage: focuspoint [x_coord] [y_coord]")
             break
         }
         guard let x = Float(tokens[1]), let y = Float(tokens[2]) else {
-            
             print("invalid x or y coordinate: must be on interval [0.0, 1.0]")
             break
         }
@@ -326,7 +311,7 @@ func nextCommand() -> Bool {
         })
         break
         
-        
+    // currently useless, but leaving in here just in case it ever comes in handy
     case .lockwhitebalance:
         let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
         cameraServiceBrowser.sendPacket(packet)
@@ -334,52 +319,75 @@ func nextCommand() -> Bool {
         photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
         while !receivedUpdate {}
         
+    // tells iPhone to use auto exposure mode (automatically adjusts exposure)
     case .autoexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .AutoExposure)
         cameraServiceBrowser.sendPacket(packet)
+    
+    // tells iPhone to use locked exposure mode (does not change exposure settings, even when lighting
+    //   changes)
     case .lockexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
         cameraServiceBrowser.sendPacket(packet)
-        
-        
+    
+    // displays checkerboard pattern
+    // optional parameter: side length of squares, in pixels
     case .cb:
-        // display checkerboard pattern
-        // optional parameter: side length of square (in pixels)
+        let usage = "usage: cb [squareSize]?"
         let size: Int
-        if nextToken < tokens.count, let customSize = Int(tokens[nextToken]) {
-            size = customSize
+        guard tokens.count >= 1 && tokens.count <= 2 else {
+            print(usage)
+            break
+        }
+        if tokens.count == 2 {
+            size = Int(tokens[nextToken]) ?? 2
         } else {
             size = 2
         }
-        displayController.windows.first!.displayCheckerboard(squareSize: size)
+        displayController.currentWindow?.displayCheckerboard(squareSize: size)
+        //displayController.windows.first!.displayCheckerboard(squareSize: size)
         break
     
+    // paints entire window black
     case .black:
-        displayController.windows.first!.displayBlack()
+        displayController.currentWindow?.displayBlack()
+        //displayController.windows.first!.displayBlack()
         break
+       
+    // paints entire window white
     case .white:
-        displayController.windows.first!.displayWhite()
+        displayController.currentWindow?.displayWhite()
+        //displayController.windows.first!.displayWhite()
         break
+    
+    // displays diagonal stripes (at 45°) of specified width (measured horizontally)
+    // (tool for testing pico projector and its diagonal pixel grid)
     case .diagonal:
         let usage = "usage: diagonal [stripe width]"    // width measured horizontally
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
         }
-        displayController.currentWindow!.displayDiagonal(width: stripeWidth)
+        displayController.currentWindow?.displayDiagonal(width: stripeWidth)
         break
+    
+    // displays vertical bars of specified width
+    // (tool originaly made for testing pico projector)
     case .verticalbars:
         let usage = "usage: verticalbars [width]"
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
         }
-        displayController.currentWindow!.displayVertical(width: stripeWidth)
+        displayController.currentWindow?.displayVertical(width: stripeWidth)
         break
-        
+       
+    // moves linear robot arm to specified position using VXM controller box
+    //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
+    //      (and zeroes out the coordinate system)*
     case .movearm:
         guard tokens.count >= 2 else {
-            print("usage: movearm <int>/MAX/MIN")
+            print("usage: movearm [int/MAX/MIN]")
             break
         }
         let dist = tokens[1]
@@ -392,9 +400,13 @@ func nextCommand() -> Bool {
         }
         break
     
+    // used to turn projectors on or off
+    //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+    //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
-        guard tokens.count >= 3 else {
-            print("usage: proj <proj #>/all [on|off]/[1|0]")
+        guard tokens.count == 3 else {
+            print("usage: proj [projector_#|all] [on|off]|[1|0]")
             break
         }
         if let projector = Int(tokens[1]) {
@@ -420,6 +432,11 @@ func nextCommand() -> Bool {
         }
         break
         
+    // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
+    //  and saves intermediate and final results to refined subdirectory
+    //    -direction argument specifies which axis to refine in, where 0 <-> x-axis
+    // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
+    //  thresholding step
     case .refine:
         let usage = "usage: refine [imageFilename] [direction (0/1)]"   // direction: 0 = x, 1 = y
         let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
@@ -435,6 +452,13 @@ func nextCommand() -> Bool {
         refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath))
         break
     
+    // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
+    // usage options:
+    //  -'disparity': computes disparities for all projectors & all consecutive positions
+    //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
+    //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
+    //
+    // NOTE: these disparity maps are not yet rectified
     case .disparity:
         let usage = "usage: disparity [[projector #] [[left pos #] [right pos #]]?]?"
         guard tokens.count >= 1 && tokens.count <= 4  else {
@@ -464,9 +488,14 @@ func nextCommand() -> Bool {
             }
         }
     
+    // displays current resolution being used for external display
+    // -useful for troubleshooting with projector display issues
     case .dispres:
         let screen = displayController.currentWindow!
         print("Screen resolution: \(screen.width)x\(screen.height)")
+    
+    // displays a min stripe width binary code pattern
+    //  useful for verifying the minSW.dat file loaded properly
     case .dispcode:
         displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
     }
@@ -476,19 +505,14 @@ func nextCommand() -> Bool {
 
 
 
+//MARK: SETUP/CAPTURE ROUTINES + UTILITY FUNCTIONS
 
-
-// setLensPosition(_:)
+// setLensPosition
 // -Parameters
 //      - lensPosition: Float -> what to set the camera's lens position to
-// -Return value: Float -> camera's lens position directly after done adjusting focus (may not agree with given pos?)
+// -Return value: Float -> camera's lens position directly after done adjusting focus
+// NOTE: return value seems to be inaccurate - just ignore it for now
 func setLensPosition(_ lensPosition: Float) -> Float {
-    /*
-    guard lensPosition <= 1.0 && lensPosition >= 0.0 else {
-        fatalError("Lens position not in range.")
-    }
- */
-    
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
     
@@ -520,9 +544,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
-    var inverted = false
     var horizontal = false
-    var fileNamePrefix: String
     let decodedDir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/proj\(projector)/pos\(position)"
     var packet: CameraInstructionPacket
     
@@ -612,10 +634,8 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         }
     }
     
-    fileNamePrefix = "\(sceneName)_v"
     horizontal = false
     currentCodeBit = 0  // reset to 0
-    //inverted = false
     
     packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
     cameraServiceBrowser.sendPacket(packet)
@@ -629,10 +649,8 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
     while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
     
-    fileNamePrefix = "\(sceneName)_h"
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
-    //inverted = false
     horizontal = true
     
     packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
@@ -640,7 +658,6 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     while !cameraServiceBrowser.readyToSendPacket {}
     
     captureNextBinaryCode()
-    
     while currentCodeBit < codeBitCount || !done {}
     
     packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
@@ -649,7 +666,60 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
 }
 
-//MARK: UTILITY FUNCTIONS
+
+// captureStereoCalibration: captures specified number of image pairs from specified linear robot arm positions
+//   -left arm position should be greater (i.e. farther from 0 on robot arm) than right arm position
+//   -requires user input to indicate when robot arm has finished moving to position
+//   -minimizes # of robot arm movements required
+//   -stores images in 'left' and 'right' folders of 'calibration' subdir (under 'orig')
+func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, resolution: String = "high") {
+    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
+    var receivedCalibrationImage: Bool
+    let msgMove = "Hit enter when camera in position."
+    let msgBoard = "Hit enter when board repositioned."
+    let leftSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/left"
+    let rightSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/right"
+    
+    vxmController.zero()    // reset robot arm
+    
+    vxmController.moveTo(dist: pos1)
+    print(msgMove)
+    _ = readLine()
+    cameraServiceBrowser.sendPacket(packet)
+    receivedCalibrationImage = false
+    photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
+    while !receivedCalibrationImage {}
+    
+    for i in 0..<nPhotos-1 {
+        let dist = (i%2 == 0) ? pos0:pos1
+        let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
+        vxmController.moveTo(dist: dist)
+        print(msgMove)
+        _ = readLine() // operator must press enter when in position; also signal to take photo
+        cameraServiceBrowser.sendPacket(packet)
+        receivedCalibrationImage = false
+        photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+        while !receivedCalibrationImage {}
+        
+        print(msgBoard)
+        _ = readLine()
+        cameraServiceBrowser.sendPacket(packet)
+        receivedCalibrationImage = false
+        photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+        
+        while !receivedCalibrationImage {}
+    }
+    
+    vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0)
+    print(msgMove)
+    _ = readLine()
+    cameraServiceBrowser.sendPacket(packet)
+    receivedCalibrationImage = false
+    photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
+    while !receivedCalibrationImage {}
+}
+
+
 
 // creates the camera service browser (for sending instructions to iPhone) and
 //    the photo receiver (for receiving photos, updates, etc from iPhone)
