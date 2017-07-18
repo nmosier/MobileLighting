@@ -1,0 +1,11 @@
+kernel vec4 threshold ( sampler imIn, float thresh ) {
+	vec4 pix = sample(imIn, samplerCoord(imIn));
+	//if (pix.r < thresh) pix.r = 0.0;
+	//else if (pix.r + thresh > 1.0) pix.r = 1.0;
+	//else pix.r = 0.5;
+    if (pix.r-0.5 >= thresh) pix.r = 1.0;
+    else if (0.5-pix.r >= thresh) pix.r = 0.0;
+    else pix.r = 0.5;
+	pix.g = pix.b = pix.r;
+	return pix;
+}

@@ -1,9 +1,0 @@
-kernel vec4 grayscale( sampler image, vec3 rgbWeights ) {
-    vec4 pix = sample(image, samplerCoord(image));
-    vec3 weights = rgbWeights;
-    float weightSum = rgbWeights[0] + rgbWeights[1] + rgbWeights[2];
-    weights = weights / weightSum;
-    pix.r = pix.g = pix.b = dot(pix.rgb, weights);
-    pix.a = 1.0;
-    return pix;
-}

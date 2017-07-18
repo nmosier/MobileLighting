@@ -147,41 +147,6 @@
 			remoteGlobalIDString = 8E1D76201B258FEE0022C013;
 			remoteInfo = "Yaml OSX";
 		};
-		E1C612641EFC54010084BB8E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = OBJ_21;
-			remoteInfo = SwiftSerial;
-		};
-		E1C612661EFC54010084BB8E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = OBJ_22;
-			remoteInfo = RigCtrl;
-		};
-		E1C612681EFC54010084BB8E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = OBJ_23;
-			remoteInfo = SerialUtils;
-		};
-		E1C6126A1EFC54010084BB8E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = OBJ_24;
-			remoteInfo = SwitcherCtrl;
-		};
-		E1C6126C1EFC54010084BB8E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = OBJ_25;
-			remoteInfo = VXMCtrl;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -218,7 +183,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		E10954D81F1D45B200181BCA /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -247,8 +211,6 @@
 		E11F1FFF1EE1E0A9008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minStripeWidthCodes.dat; sourceTree = "<group>"; };
-		E13031531F018EF9009D126C /* libImg.armv7-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.armv7-g.a"; path = "demo_iPhone/imageLib/libImg.armv7-g.a"; sourceTree = "<group>"; };
-		E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "demo_mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = activeLighting_wrapper.cpp; path = activeLighting/activeLighting_wrapper.cpp; sourceTree = "<group>"; };
 		E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgProcessor.h; path = activeLighting/ImgProcessor.h; sourceTree = "<group>"; };
 		E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobileLighting_Mac-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -258,21 +220,14 @@
 		E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor2.swift; sourceTree = "<group>"; };
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E180A4D01F0D5D1B0036466F /* Yaml.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Yaml.xcodeproj; path = ../../YamlSwift/Yaml.xcodeproj; sourceTree = "<group>"; };
-		E19202211EFDA97200247265 /* libimg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimg.a; path = ../../../../../../Volumes/nmosier/public_html/summer_research_2017/imageLib/cs453/hw1/imageLib/libimg.a; sourceTree = "<group>"; };
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E19B513E1EF4703400FD0538 /* thresholdKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = thresholdKernel.cikernel; sourceTree = "<group>"; };
-		E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "../MobileLighting_tmp/demo_mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "MobileLighting_Mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "MobileLighting_Mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
-		E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../SerialTools/SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
-		E1C97B131F0146F30066205B /* libimg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libimg.a; path = demo_iPhone/imageLib/libimg.a; sourceTree = "<group>"; };
-		E1C97B161F0150BE0066205B /* libactiveLighting.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libactiveLighting.a; path = demo_iPhone/activeLighting/libactiveLighting.a; sourceTree = "<group>"; };
-		E1C97B1E1F015DD20066205B /* libactivelighting.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libactivelighting.a; path = demo_iPhone/activeLighting/libactivelighting.a; sourceTree = "<group>"; };
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
-		E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "demo_mac/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.13.dylib; path = ../../../../../../usr/local/Cellar/opencv/2.4.13.2/lib/libopencv_core.2.4.13.dylib; sourceTree = "<group>"; };
 		E1FF9E511EF3099C000606C9 /* differenceKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = differenceKernel.cikernel; sourceTree = "<group>"; };
 		E1FF9E521EF3099C000606C9 /* extremesKernel.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = extremesKernel.cikernel; sourceTree = "<group>"; };
@@ -335,18 +290,8 @@
 			children = (
 				E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */,
 				E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */,
-				E10954D81F1D45B200181BCA /* libImg.i386-g.a */,
-				E1A47D941F1D433900BB8E19 /* libImg.i386-g.a */,
 				E1FF9DC11F1D280600E42A12 /* libopencv_core.2.4.13.dylib */,
 				E14473FC1F03E0A70029B3F0 /* libpng16.a */,
-				E14473F41F03DA0D0029B3F0 /* libImgProcessor.i386-g.a */,
-				E1FC8A201F02FB86000EF2DC /* libImg.i386-g.a */,
-				E13031531F018EF9009D126C /* libImg.armv7-g.a */,
-				E1C97B1E1F015DD20066205B /* libactivelighting.a */,
-				E1C97B161F0150BE0066205B /* libactiveLighting.a */,
-				E1C97B131F0146F30066205B /* libimg.a */,
-				E19202211EFDA97200247265 /* libimg.a */,
-				E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */,
 				E11F1FD01EE1B54D008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */,
 			);
@@ -417,18 +362,6 @@
 				E180A4E21F0D5D1B0036466F /* Tests.xctest */,
 				E180A4E41F0D5D1B0036466F /* Yaml.framework */,
 				E180A4E61F0D5D1B0036466F /* Tests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		E1C6125D1EFC54000084BB8E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				E1C612651EFC54010084BB8E /* SwiftSerial.framework */,
-				E1C612671EFC54010084BB8E /* RigCtrl */,
-				E1C612691EFC54010084BB8E /* SerialUtils.framework */,
-				E1C6126B1EFC54010084BB8E /* SwitcherCtrl */,
-				E1C6126D1EFC54010084BB8E /* VXMCtrl */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -524,10 +457,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = E1C6125D1EFC54000084BB8E /* Products */;
-					ProjectRef = E1C6125C1EFC54000084BB8E /* SerialTools.xcodeproj */;
-				},
-				{
 					ProductGroup = E14699C81EFD534D005967DA /* Products */;
 					ProjectRef = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
 				},
@@ -613,41 +542,6 @@
 			fileType = wrapper.cfbundle;
 			path = Tests.xctest;
 			remoteRef = E180A4E51F0D5D1B0036466F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E1C612651EFC54010084BB8E /* SwiftSerial.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SwiftSerial.framework;
-			remoteRef = E1C612641EFC54010084BB8E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E1C612671EFC54010084BB8E /* RigCtrl */ = {
-			isa = PBXReferenceProxy;
-			fileType = text;
-			path = RigCtrl;
-			remoteRef = E1C612661EFC54010084BB8E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E1C612691EFC54010084BB8E /* SerialUtils.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SerialUtils.framework;
-			remoteRef = E1C612681EFC54010084BB8E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E1C6126B1EFC54010084BB8E /* SwitcherCtrl */ = {
-			isa = PBXReferenceProxy;
-			fileType = text;
-			path = SwitcherCtrl;
-			remoteRef = E1C6126A1EFC54010084BB8E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E1C6126D1EFC54010084BB8E /* VXMCtrl */ = {
-			isa = PBXReferenceProxy;
-			fileType = text;
-			path = VXMCtrl;
-			remoteRef = E1C6126C1EFC54010084BB8E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -868,8 +762,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/imageLib",
-					"$(PROJECT_DIR)/demo_iPhone/imageLib",
-					"$(PROJECT_DIR)/demo_iPhone/activeLighting",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -897,8 +789,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/imageLib",
-					"$(PROJECT_DIR)/demo_iPhone/imageLib",
-					"$(PROJECT_DIR)/demo_iPhone/activeLighting",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
