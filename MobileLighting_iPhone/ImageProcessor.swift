@@ -179,7 +179,7 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) 
     
     
     if (shouldThreshold) {
-        //thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter()
+        //thresholdDefault = 0.035; let thresholdFilter = ThresholdFilter()
         thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
         thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
         thresholdFilter.setValue(CGFloat(0.035), forKey: "inputThreshold")

@@ -112,17 +112,19 @@ if configureDisplays() {
     print("main: ERROR — failed to configure displays.")
 }
 
-let mainQueue = DispatchQueue(label: "mainQueue")
+//let mainQueue = DispatchQueue(label: "mainQueue")
+let mainQueue = DispatchQueue.main
+
+
 mainQueue.async {
-    //waitForEstablishedCommunications()
     
-    /*
-    var receivedUpdate = false
-    photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
-    while !receivedUpdate {}
-    */
+    let settingspath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/MobileLighting/MobileLighting_Mac/cameraCalib/settings/settings.yml"
+    
+    calibrateWithSettings(swift2Cstr(settingspath))
     
     while nextCommand() {}
+    
+    NSApp.terminate(nil)    // terminates shared application
 }
 
 NSApp.run()
