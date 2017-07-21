@@ -14,10 +14,6 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case quit
     case reloadsettings
     
-    case connect
-    case disconnect, disconnectall
-    case calibrate  // 'x'
-    case calibrate2pos
     case takefull
     case readfocus, autofocus, setfocus, lockfocus
     case autoexposure, lockexposure
@@ -27,14 +23,20 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case black, white
     case diagonal, verticalbars   // displays diagonal stripes (for testing 'diagonal' DLP chip)
     
-    // serial control
+    // communications & serial control
+    case connect
+    case disconnect, disconnectall
     case movearm
     case proj
     
     // image processing
     case refine
     case disparity
-    //case refineall
+    
+    // camera calibration
+    case calibrate  // 'x'
+    case calibrate2pos
+    case getintrinsics
     
     // for debugging
     case dispres
@@ -177,7 +179,7 @@ func nextCommand() -> Bool {
             break
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
-        let subpath = sceneName+"/"+origSubdir+"/"+calibSubdir+"/other"
+        let subpath = sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
         makeDir(scenesDirectory+subpath)
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
             for i in 0..<nPhotos {
@@ -487,6 +489,28 @@ func nextCommand() -> Bool {
                 disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
             }
         }
+        
+    // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
+    // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
+        // ABSOLUTE PATHS NOT REQUIRED
+    case .getintrinsics:
+        let imgsdir = scenesDirectory+"/"+sceneName+"/"+origSubdir+"/"+calibSubdir+"/"+"chessboard"
+        let imglistdir = scenesDirectory+"/"+sceneName+"/"+settingsSubdir+"/"+calibSettingsSubdir+"/"+"imageLists"
+        
+        do {
+            try createImageList(fromDir: imgsdir, toPath: imglistdir+"/singleChessboard.xml")
+        } catch {
+            print("getintrinsics: error - could not create image list.")
+        }
+        
+        let templatepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/MobileLighting/MobileLighting_Mac/cameraCalib/settings/settingsIntrinsicChessboard.xml"
+        
+        let imglistpath: String = imglistdir+"/"+"singleChessboard.xml"
+        let settingsdir: String = scenesDirectory+"/"+sceneName+"/"+settingsSubdir+"/"+calibSettingsSubdir+"/settings"
+        let settingspath = settingsdir+"/settingsIntrinsicChessboard.yml"
+        
+        createSettingsIntrinsitcsChessboard(swift2Cstr(settingspath), swift2Cstr(imglistpath), swift2Cstr(templatepath))
+        calibrateWithSettings(swift2Cstr(settingspath))
     
     // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues

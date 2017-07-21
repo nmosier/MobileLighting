@@ -18,3 +18,5 @@ void disparitiesOfRefinedImgs(char *dirpos0, char *dirpos1, char *outpos0, char 
 
 // calibration functions
 int calibrateWithSettings(char *settingspath);
+
+void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);

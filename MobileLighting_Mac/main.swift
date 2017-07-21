@@ -33,6 +33,7 @@ var vxmController: VXMController!
 var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
 var calibSubdir: String     // used in both orig and computed dirs
 var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String
+var settingsSubdir: String, calibSettingsSubdir: String
     origSubdir = "orig"
         ambSubdir = "ambient"
         ambBallSubdir = "ambientBall"
@@ -42,6 +43,8 @@ var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, dispar
         decodedSubdir = "decoded"
         refinedSubdir = "refined"
         disparitySubdir = "disparity"
+    settingsSubdir = "settings"
+        calibSettingsSubdir = "calibration"
 
 // use minsw codes, not graycodes
 let binaryCodeSystem: BinaryCodeSystem = .MinStripeWidthCode
@@ -89,6 +92,7 @@ staticDirectoryStructure = [
         ambSubdir       : nil,
         ambBallSubdir   : nil,
         calibSubdir     : [
+            "chessboard" : nil,
             "left"  : nil,
             "right" : nil
         ] as [String : Any?],
@@ -99,6 +103,12 @@ staticDirectoryStructure = [
         decodedSubdir   : nil,
         refinedSubdir   : nil,
         disparitySubdir : nil
+    ] as [String : Any?],
+    settingsSubdir  : [
+        calibSettingsSubdir : [
+            "imageLists"    : nil,
+            "settings"      : nil
+            ] as [String : Any?]
     ] as [String : Any?]
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
@@ -117,10 +127,6 @@ let mainQueue = DispatchQueue.main
 
 
 mainQueue.async {
-    
-    let settingspath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/MobileLighting/MobileLighting_Mac/cameraCalib/settings/settings.yml"
-    
-    calibrateWithSettings(swift2Cstr(settingspath))
     
     while nextCommand() {}
     
