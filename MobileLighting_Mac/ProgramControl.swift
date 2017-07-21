@@ -510,7 +510,9 @@ func nextCommand() -> Bool {
         let settingspath = settingsdir+"/settingsIntrinsicChessboard.yml"
         
         createSettingsIntrinsitcsChessboard(swift2Cstr(settingspath), swift2Cstr(imglistpath), swift2Cstr(templatepath))
-        calibrateWithSettings(swift2Cstr(settingspath))
+        DispatchQueue.main.async {
+            calibrateWithSettings(swift2Cstr(settingspath))
+        }
     
     // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues

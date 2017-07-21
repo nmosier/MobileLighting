@@ -1,0 +1,225 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf830
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 HelveticaNeue-Bold;\f2\fnil\fcharset0 HelveticaNeue-Italic;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc1\levelnfcn1\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{upper-roman\}.}{\leveltext\leveltemplateid1\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc3\levelnfcn3\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{upper-alpha\}.}{\leveltext\leveltemplateid2\'02\'01.;}{\levelnumbers\'01;}\fi-360\li1440\lin1440 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid3\'02\'02.;}{\levelnumbers\'01;}\fi-360\li2160\lin2160 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{lower-alpha\})}{\leveltext\leveltemplateid4\'02\'03);}{\levelnumbers\'01;}\fi-360\li2880\lin2880 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker (\{decimal\})}{\leveltext\leveltemplateid5\'03(\'04);}{\levelnumbers\'02;}\fi-360\li3600\lin3600 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\margl1440\margr1440
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs22 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 MobileLighting Documentation\
+\pard\tx20\tx380\pardeftab720\li360\fi-360\partightenfactor0
+\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	I.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Requirements\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	A.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Hardware requirements\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	1.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Mac
+\f0\b0 \cf2 \strokec2 \uc0\u8232 The MobileLighting suite was developed on and has only been tested on MacBooks (my laptop is an early 2015 MacBook Air), though I imagine it would run fine on any Mac that is capable of running all the required software.\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	2.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 iPhone
+\f0\b0 \cf2 \strokec2 \uc0\u8232 MobileLighting\'92s iPhone app has been tested mainly on an iPhone 5c, although the few times we tested it on other iPhones, such as an iPhone 6s, it worked fine. Problems are most likely to arise from differences in the built-in cameras \'97\'a0for example, the cameras of different iPhone models likely have different sets of compatible resolutions. As long as generic resolution settings are specified within the MobileLighting programs (e.g. with the AVCaptureSessionPresetHigh constant instead of AVCaptureSessionPreset1920x1080), though, should help avoid issues.\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	3.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 USB to Serial cable x 2
+\f0\b0 \cf2 \strokec2 \uc0\u8232 Two USB-to-serial adaptors are required in order for the Mac to communicate with the Kramer box and the VXM controller. The current hardware configuration uses  the Cable Matters USB 2.0 to RS-232 DB9 Serial Cable.\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	4.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 VXM controller box\
+\ls1\ilvl2\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	5.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Kramer switcher box\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	B.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Software requirements\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	1.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 macOS Sierra 10.12.5+
+\f0\b0 \cf2 \strokec2 \uc0\u8232 The MobileLighting suite was written on a MacBook running the operating system 
+\f2\i \cf2 \strokec2 macOS Sierra 10.12.5
+\f0\i0 \cf2 \strokec2 . The suite is probably compatible with any Mac running any relatively recent version of OS X/macOS, though; it simply hasn\'92t been tested on another OS. Note: macOS 10.13 High Sierra will be released Fall 2017 \'97\'a0since it is slated to be a mostly revamped version of Sierra, though, I predict there will be no significant changes in the APIs the MobileLighting Mac app currently uses.\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	2.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 iOS 10.3.2+
+\f0\b0 \cf2 \strokec2 \uc0\u8232 MobileLighting\'92s iPhone app has only been tested for iOS 10.3. iOS 11 will be released in fall 2017 \'97 though, like macOS High Sierra, the iPhone app will probably be fully compatible with the API.
+\f1\b \cf2 \strokec2 \
+\ls1\ilvl2\cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	3.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Xcode 8.3.3+
+\f0\b0 \cf2 \strokec2 \uc0\u8232 The MobileLighting suite was developed using the Xcode IDE, offered for free from the Mac App Store. The most recent version of Xcode that the suite was tested on is 8.3.3. {\field{\*\fldinst{HYPERLINK "https://9to5mac.com/2017/06/05/apple-releases-swift-playgrounds-1-5-xcode-9-swift-playgrounds-2-beta-to-developers/"}}{\fldrslt \cf2 \ul \ulc2 \strokec2 Apple is planning on releasing a newer version}}, 
+\f2\i \cf2 \strokec2 Xcode 9
+\f0\i0 \cf2 \strokec2 , in the fall of 2017. Chances are the MobileLighting Xcode project will either work as-is or will be easy to migrate to the Xcode 9 environment (though in the past there have been some significant changes between Xcode versions).\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	4.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Bonjour 3.1+
+\f0\b0 \cf2 \strokec2 \uc0\u8232 Bonjour is Apple\'92s \'93zero-configuration networking\'94 software that makes discovery of and communication with other devices over LAN very easy. It is built-in on the macOS and iOS operating systems, so you only need to worry about installing it or having the most up-to-date version if the MobileLighting suite\'92s functionality is eventually extended to include communication with Android devices, for example. (some version of Bonjour is available on Android devices, I believe.)\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	5.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 USB Serial (PL-2303) Driver 3.0.3+
+\f0\b0 \cf2 \strokec2 \uc0\u8232 The MobileLighting suite requires a USB-to-serial driver in order to communicate with the USB-to-serial adaptors used for communication with the Kramer box (which controls the projector inputs) and the VXM controller box (which controls the linear robot arm). {\field{\*\fldinst{HYPERLINK "https://www.mac-usb-serial.com/dashboard/"}}{\fldrslt \cf2 \ul \ulc2 \strokec2 Here is a link}} to the 
+\f2\i \cf2 \strokec2 only (presently) available USB-to-serial driver that reliably works on macOS Sierra
+\f0\i0 \cf2 \strokec2 , provided by mac-os-serial.com. Use these account credentials to download it (it required purchase): 
+\f2\i \cf2 \strokec2 username - \'93nmosier\'94, password - \'93scharsteinmobileimagematching\'94
+\f0\i0 \cf2 \strokec2 . Beware of any other drivers you find \'97\'a0all of them except this one seem to cause kernel panics and the like.\
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	6.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 \
+\pard\tx20\tx380\pardeftab720\li360\fi-360\partightenfactor0
+\ls1\ilvl0
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	II.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Useful tools\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	A.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Carthage\uc0\u8232 Carthage is a dependency manager for Xcode that fetches an Xcode project\'92s required frameworks from GitHub and builds them. I recommend Carthage over CocoaPods because, at least in my experience, it is simpler to use (e.g. it creates a lot less scaffolding in the form of workspace files, etc, than CocoaPods). It is straightforward to install using Homebrew, and it is run at the command line. For installation instructions, usage, and more, see {\field{\*\fldinst{HYPERLINK "https://github.com/Carthage/Carthage"}}{\fldrslt \cf2 \ul \ulc2 \strokec2 Carthage\'92s GitHub page}}.\
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	B.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Swift Package Manager\uc0\u8232 Swift Package Manager is the official dependency manager for Swift. Unfortunately, it seems to currently be only partially compatible with Xcode. Kyle had success using to write his SerialTools package, though.\
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	C.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Quartz Composer\uc0\u8232 Quartz Composer is an application for Mac that is useful for composing and testing the Core Image kernels (written in OpenGL) implemented on the iPhone. Use the built-in Core Image Filter patch for writing/compiling the OpenGL kernel itself; use the built-in Image Importer patch for importing images to test the kernel on; use the built-in Billboard patch to display the result image. To save the result image, you need to install the Image Exporter plug-in patch \'97\'a0the source code is available as an (outdated) Xcode project on Apple\'92s developer website (you will need to make a couple changes to the Xcode project\'92s settings \'97\'a0first try updating the recommended settings. This option appears under the build-time warnings). See Nick\'92s log, week 8 for relevant links, including ones to guides for Core Image and the Image Exporter plug-in.\
+\pard\tx20\tx380\pardeftab720\li360\fi-360\partightenfactor0
+\ls1\ilvl0
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	III.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Idiosyncracies\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	A.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Configuring the projectors\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	1.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Forcing a resolution of an external display/projector\uc0\u8232 Sometimes, especially when only a generic driver is available for an external display/projector (as is the case for the ViewSonic and the P300 Pico projectors), the Mac will not detect the proper resolutions, even the native ones. To force a resolution, go to 
+\f1\b \cf2 \strokec2 System Preferences -> Displays
+\f0\b0 \cf2 \strokec2 , find the display window for the corresponding projector, hold down the 
+\f1\b \cf2 \strokec2 Option key
+\f0\b0 \cf2 \strokec2  and then click on \'93
+\f1\b \cf2 \strokec2 Scaled
+\f0\b0 \cf2 \strokec2 \'94. The full list of all possible resolutions should appear (note: many of these will stretch the image, so beware). I had to do this to force the native resolution of 1024x768 for the ViewSonic projectors as well as the pico projector.\
+\pard\tx20\tx380\pardeftab720\li360\fi-360\partightenfactor0
+\ls1\ilvl0
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	IV.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 MobileLighting structure\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	A.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Main Mac/iPhone app suite (demo-mobile-scene-capture)\
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	B.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Dependencies\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	1.	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 SerialTools
+\f0\b0 \cf2 \strokec2 \uc0\u8232 SerialTools offers functionality for interfacing with the VXM robot arm controller as well as the Kramer switcher box. It is comprised of 3 different modules, each with a different build target.\
+\pard\tx1080\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls1\ilvl3
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	a)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Targets\
+\pard\tx1440\tx1800\pardeftab720\li1800\fi-1800\partightenfactor0
+\ls1\ilvl4
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	(1)	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 SwitcherCtrl
+\f0\b0 \cf2 \strokec2  \'96 functionality for controlling Kramer switcher box\
+\ls1\ilvl4
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	(2)	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 VXMCtrl
+\f0\b0 \cf2 \strokec2  \'96\'a0functionality for controlling VXM robot arm controller box\
+\ls1\ilvl4
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	(3)	}\cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 SerialUtils
+\f0\b0 \cf2 \strokec2  \'96\'a0provides underlying functions for SwitcherCtrl and VXMCtrl\
+\pard\tx1080\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls1\ilvl3
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	b)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Dependencies\
+\pard\tx1440\tx1800\pardeftab720\li1800\fi-1800\partightenfactor0
+\ls1\ilvl4
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	(1)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 SwiftSerial \'96\'a0library for interfacing with serial ports;\'a0see{\field{\*\fldinst{HYPERLINK "https://github.com/yeokm1/SwiftSerial"}}{\fldrslt \cf2 \ul \ulc2 \strokec2  GitHub page}}\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	2.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 YamlSwift\uc0\u8232 YamlSwift is a library that provides a basic API for reading strings written in Yaml (which MobileLighting uses for its settings files) and representing them as a recursively defined enum. See {\field{\*\fldinst{HYPERLINK "https://github.com/behrang/YamlSwift"}}{\fldrslt \cf2 \ul \ulc2 \strokec2 YamlSwift\'92s GitHub page}} for documentation. Note: there are multiple libraries named \'93YamlSwift\'94; make sure to install the correct one (linked above). Unfortunately, it does 
+\f2\i \cf2 \strokec2 not
+\f0\i0 \cf2 \strokec2  provide functionality for writing Yaml files.\
+\pard\tx20\tx380\pardeftab720\li360\fi-360\partightenfactor0
+\ls1\ilvl0
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	V.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 Directory structure\uc0\u8232 (parent directory)\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	A.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 MobileLighting \'97\'a0the project folder for the MobileLighting suite (clone from GitHub)\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	1.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 MobileLighting_Mac \'97 folder for Mac target; contains source code files\
+\pard\tx1080\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls1\ilvl3
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	a)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 activeLighting \'97\'a0contains source code 
+\f2\i \cf2 \strokec2 and
+\f0\i0 \cf2 \strokec2  static library for refinement & disparity matching steps of image processing\
+\pard\tx1440\tx1800\pardeftab720\li1800\fi-1800\partightenfactor0
+\ls1\ilvl4
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	(1)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 imageLib \'97\'a0contains source code 
+\f2\i \cf2 \strokec2 and
+\f0\i0 \cf2 \strokec2  static library; required for activeLighting library\
+\pard\tx1080\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls1\ilvl3
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	b)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 cameraCalib \'97\'a0contents of {\field{\*\fldinst{HYPERLINK "https://github.com/kylebmeredith/Camera-Calibration"}}{\fldrslt \cf2 \ul \ulc2 \strokec2 Camera-Calibration repository on GitHub}}\
+\pard\tx720\tx1080\pardeftab720\li1080\fi-1080\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	2.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 MobileLighting_iPhone \'97 folder for iPhone target; contains source code files\
+\pard\tx1080\tx1440\pardeftab720\li1440\fi-1440\partightenfactor0
+\ls1\ilvl3
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	a)	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 kernels \'97\'a0contains the source for the graphics kernels used in image processing\
+\pard\tx360\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	B.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 SerialTools \'97\'a0this folder contains the SerialTools package\
+\ls1\ilvl1
+\f1\b \cf2 \kerning1\expnd0\expndtw0 \up0 \nosupersub \ulnone \outl0\strokewidth0 {\listtext	C.	}
+\f0\b0 \cf2 \expnd0\expndtw0\kerning0
+\up0 \nosupersub \ulnone \outl0\strokewidth0 \strokec2 YamlSwift \'97\'a0the project folder for YamlSwift package\
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec2 \
+Troubleshooting: watch out when switching between projectors w/ diff. resolutions\
+NOTE: displays take time to display images; always wait about 0.1 sec or so between displaying & capturing\
+\
+DispatchQueues!}
