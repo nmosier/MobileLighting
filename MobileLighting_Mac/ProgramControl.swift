@@ -496,13 +496,13 @@ func nextCommand() -> Bool {
     case .getintrinsics:
         let imgsdir = scenesDirectory+"/"+sceneName+"/"+origSubdir+"/"+calibSubdir+"/"+"chessboard"
         let imglistdir = scenesDirectory+"/"+sceneName+"/"+settingsSubdir+"/"+calibSettingsSubdir+"/"+"imageLists"
-        
+        /*
         do {
             try createImageList(fromDir: imgsdir, toPath: imglistdir+"/singleChessboard.xml")
         } catch {
             print("getintrinsics: error - could not create image list.")
         }
-        
+ 
         let templatepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/MobileLighting/MobileLighting_Mac/cameraCalib/settings/settingsIntrinsicChessboard.xml"
         
         let imglistpath: String = imglistdir+"/"+"singleChessboard.xml"
@@ -513,6 +513,7 @@ func nextCommand() -> Bool {
         DispatchQueue.main.async {
             calibrateWithSettings(swift2Cstr(settingspath))
         }
+        */
     
     // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues
