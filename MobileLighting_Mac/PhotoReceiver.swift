@@ -234,7 +234,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             try photoData.write(to: fileURL, options: .atomic)
             print("Successfully saved photo data to file \(fileURL).")
         } catch {
-            print("Could not write photo data to file.")
+            print("Could not write photo data to file \(fileURL)")
         }
         
         // call handler if there is one

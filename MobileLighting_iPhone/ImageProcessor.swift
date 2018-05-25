@@ -171,15 +171,17 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) 
     
     ///////////////////////////////////
     // TEMP: for sending pre-threshold combined intensity buffer
+    /*
     var prethresh: CVPixelBuffer? = nil
     CVPixelBufferCreate(nil, buffers[0].width, buffers[0].height, kCVPixelFormatType_32BGRA, nil, &prethresh)
     context.render(resultImage, to: prethresh!)
     prethreshPGM = PGMFile(buffer: prethresh!)
+ */
     ///////////////////////////////////
-    
     
     if (shouldThreshold) {
         //thresholdDefault = 0.035; let thresholdFilter = ThresholdFilter()
+        /*
         thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
         thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
         thresholdFilter.setValue(CGFloat(0.035), forKey: "inputThreshold")
@@ -188,6 +190,9 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) 
         //thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
         let thresheldImage = thresholdFilter.outputImage!
         context.render(thresheldImage, to: buffers[0])
+        */
+        context.render(resultImage, to: buffers[0])
+        threshold(img: buffers[0], thresh: 0.035, angle: 0.758)
     } else {
         context.render(resultImage, to: buffers[0])
     }
@@ -420,4 +425,71 @@ class PGMFile {
         data.append(&body, count: imageWidth*imageHeight)
         return data
     }
+}
+
+
+func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) {
+    // kCVPixelFormatType_32BGRA
+    // 32 bits per pixel
+    let w = img.width
+    let h = img.height
+    let dx = Int(round(cos(angle)))
+    let dy = Int(round(sin(angle)))
+    
+    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
+    CVPixelBufferLockBaseAddress(img, lockFlags)
+    
+    
+    let img_ptr_raw: UnsafeMutableRawPointer = CVPixelBufferGetBaseAddress(img)!
+    let img_ptr = img_ptr_raw.bindMemory(to: UInt8.self, capacity: w*h)
+    for y in 0..<h {
+        for x in 0..<w {
+            let val: Double = Double(img_ptr[4*y*w + 4*x]) / 255.0
+            var out: UInt8
+            if (min(x+dx, x-dx) < 0 || max(x+dx, x-dx) >= w || min(y+dy, y-dy) < 0 || max(y+dy, y-dy) >= h) {
+                if (val - 0.5 >= thresh) {
+                    out = 255
+                } else if (0.5 - val >= thresh) {
+                    out = 0
+                } else {
+                    out = 128
+                }
+            } else {
+                let val_l = Double(img_ptr[4*w*(y+dy) + 4*(x+dx)]) / 255.0
+                let val_r = Double(img_ptr[4*w*(y-dy) + 4*(x-dx)]) / 255.0
+                if (sign(val_l) == sign(val_r) || min( abs(val_l - 0.5), abs(val_r - 0.5) ) < thresh) {
+                    if (val - 0.5 >= thresh) {
+                        out = 255
+                    } else if (0.5 - val >= thresh) {
+                        out = 0
+                    } else {
+                        out = 128
+                    }
+                } else {
+                    if val == 0.5 {
+                        out = 128
+                    } else if val > 0.5 {
+                        out = 255
+                    } else {
+                        out = 0
+                    }
+                }
+            }
+            
+            /*
+            if val - 0.5 >= thresh {
+                out = 255
+            } else if 0.5 - val >= thresh {
+                out = 0
+            } else {
+                out = 128
+            } */
+            img_ptr[4*w*y + 4*x] = out
+            img_ptr[4*w*y + 4*x + 1] = out
+            img_ptr[4*w*y + 4*x + 2] = out
+        }
+    }
+    
+    CVPixelBufferUnlockBaseAddress(img, lockFlags)
+    
 }

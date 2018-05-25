@@ -294,7 +294,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 // decode threshold image for current bit using decoder
                 decoder!.decodeThreshold(combinedIntensityBuffer, forBit: currentBinaryCodeBit!)
                 
-                
+                /*
                 let sendJPG: Bool = false
                 let photoData: Data
                 if (sendJPG) {
@@ -303,6 +303,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     photoData = jpegData
                 } else {
                     // send PGM(s)
+                    
                     if let prethresh = prethreshPGM {
                         photoSender.sendPacket(PhotoDataPacket(photoData: prethresh.getPGMData()))
                         prethreshPGM = nil
@@ -310,8 +311,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     
                     let pgm = PGMFile(buffer: combinedIntensityBuffer)
                     photoData = pgm.getPGMData()
+     
                 }
                 let packet = PhotoDataPacket(photoData: photoData, bracketedPhotoID: 0)
+                photoSender.sendPacket(packet)
+                */
+                let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
                 photoSender.sendPacket(packet)
                 
                 capturingNormalInvertedPair = false

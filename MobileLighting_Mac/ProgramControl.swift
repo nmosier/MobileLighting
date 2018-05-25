@@ -650,12 +650,15 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             cameraServiceBrowser.sendPacket(packet)
             
             // uncomment this when iPhone no longer configured to send prethreshold & threshold images:
-            /*
+            
             photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
-            */
+ 
             
             // comment this out when iPhone no longer configured to send prethresholded & thresholded images:
+            
+            /*
             photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+            */
             
             currentCodeBit += 1
         }
