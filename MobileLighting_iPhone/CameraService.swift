@@ -375,6 +375,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             case .StartStructuredLightingCaptureFull:
                 // for now, specify hard-code in resolution
+                print("CURRENT ISO=\(self.cameraController.captureDevice.iso)")
+                
                 let resolutionStr = packet.resolution ?? AVCaptureSessionPresetPhoto
                 guard let binaryCodeSystem = packet.binaryCodeSystem, let dir = packet.binaryCodeDirection else {
                     print("CameraService: error - binary code must be specified for StartStructuredLightingCaptureFull instruction.")

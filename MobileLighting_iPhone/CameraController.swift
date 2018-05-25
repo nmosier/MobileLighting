@@ -58,7 +58,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     }
                     
                     let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
-                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
+                    //bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
+                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: 133.081))
                 }
                 let pixelFormat = kCVPixelFormatType_32BGRA
                 let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
@@ -289,8 +290,6 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_inverted.removeAll()
                 
                 let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers, shouldThreshold: true)
-                let intensityImage = CIImage(cvPixelBuffer: combinedIntensityBuffer)
-                
                 // decode threshold image for current bit using decoder
                 decoder!.decodeThreshold(combinedIntensityBuffer, forBit: currentBinaryCodeBit!)
                 
