@@ -235,10 +235,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     return
                 }
                 //self.cameraController.captureDevice.whiteBalanceMode = .locked
-                self.cameraController.captureDevice.unlockForConfiguration()
-                
-                //self.cameraController.zeroWhiteBalance()
-                
+                self.cameraController.captureDevice.unlockForConfiguration()                
                 let queueFinishWhiteBalance = DispatchQueue(label: "queueFinishWhiteBalance")
                 queueFinishWhiteBalance.async {
                     while self.cameraController.captureDevice.isAdjustingWhiteBalance {}

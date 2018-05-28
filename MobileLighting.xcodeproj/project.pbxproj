@@ -51,6 +51,8 @@
 		E1B5A4EF1F1D4A9800C23350 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */; };
 		E1B6BAF31EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
+		E1BBBAD020BC76A100E57123 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BBBACF20BC76A100E57123 /* Debug.swift */; };
+		E1BBBAD120BC76A100E57123 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BBBACF20BC76A100E57123 /* Debug.swift */; };
 		E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */; };
 		E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */; };
 		E1F4FF931EE9CFF6008E0096 /* ProgramControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */; };
@@ -246,6 +248,7 @@
 		E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "MobileLighting_Mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "MobileLighting_Mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
+		E1BBBACF20BC76A100E57123 /* Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debug.swift; sourceTree = "<group>"; };
 		E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomImageFilters.swift; sourceTree = "<group>"; };
 		E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgramControl.swift; sourceTree = "<group>"; };
@@ -286,6 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				E136681D1F1E505800BC561A /* Utils.swift */,
+				E1BBBACF20BC76A100E57123 /* Debug.swift */,
 				E1765EB51EF9B997003A2BB3 /* minSW.dat */,
 				E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */,
 				E11F1FED1EE1B90F008F9F0F /* CameraInstructionPacket.swift */,
@@ -599,6 +603,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E11F1FFC1EE1BC36008F9F0F /* CameraInstructionPacket.swift in Sources */,
+				E1BBBAD020BC76A100E57123 /* Debug.swift in Sources */,
 				E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
 				E136681E1F1E505800BC561A /* Utils.swift in Sources */,
@@ -632,6 +637,7 @@
 				E11F1FE91EE1B7C1008F9F0F /* CameraServiceBrowser.swift in Sources */,
 				E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */,
 				E11F1FEA1EE1B7C1008F9F0F /* DisplayController.swift in Sources */,
+				E1BBBAD120BC76A100E57123 /* Debug.swift in Sources */,
 				E11F1FF21EE1B90F008F9F0F /* Timing.swift in Sources */,
 				E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */,
 			);

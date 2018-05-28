@@ -297,36 +297,23 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 
                 
                 //MARK: send prethreshold images?
-                let prethreshData: Data
-                let threshData: Data
-                /*
-                if (sendJPG) {
-                    let colorspace = CGColorSpaceCreateDeviceRGB()
-                    guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
-                    photoData = jpegData
+                if (shouldSendThreshImgs) {
+                    let prethreshData: Data
+                    let threshData: Data
+                    
+                    let prethreshPgm = PGMFile(buffer: combinedIntensityBuffer)
+                    prethreshData = prethreshPgm.getPGMData()
+                    let threshPgm = PGMFile(buffer: threshBuffer)
+                    threshData = threshPgm.getPGMData()
+         
+                    let prethresh_packet = PhotoDataPacket(photoData: prethreshData, bracketedPhotoID: 0)
+                    photoSender.sendPacket(prethresh_packet)
+                    let thresh_packet = PhotoDataPacket(photoData: threshData, bracketedPhotoID: 0)
+                    photoSender.sendPacket(thresh_packet)
                 } else {
-                    // send PGM(s)
-                let prethreshPGM = PGMFile(buffer: threshBuffer)
-                if let prethresh = prethreshPGM {
-                    photoSender.sendPacket(PhotoDataPacket(photoData: prethresh.getPGMData()))
-                    prethreshPGM = nil
+                    let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
+                    photoSender.sendPacket(packet)
                 }
-     */
-                
-                let prethreshPgm = PGMFile(buffer: combinedIntensityBuffer)
-                prethreshData = prethreshPgm.getPGMData()
-                let threshPgm = PGMFile(buffer: threshBuffer)
-                threshData = threshPgm.getPGMData()
-     
-                let prethresh_packet = PhotoDataPacket(photoData: prethreshData, bracketedPhotoID: 0)
-                photoSender.sendPacket(prethresh_packet)
-                let thresh_packet = PhotoDataPacket(photoData: threshData, bracketedPhotoID: 0)
-                photoSender.sendPacket(thresh_packet)
-            
-                
-                /*
-                let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
-                photoSender.sendPacket(packet) */
                 
                 capturingNormalInvertedPair = false
             } else {
@@ -434,18 +421,4 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureDevice.unlockForConfiguration()
     }
     
-    func zeroWhiteBalance() {
-        let gains = AVCaptureWhiteBalanceGains(redGain: 0.0, greenGain: 0.0, blueGain: 0.0)
-        
-        do {
-            try captureDevice.lockForConfiguration()
-        } catch {
-            print("Could not lock for config.")
-            return
-        }
-        
-        captureDevice.setWhiteBalanceModeLockedWithDeviceWhiteBalanceGains(gains, completionHandler: {time in return})
-        
-        captureDevice.unlockForConfiguration()
-    }
 }
