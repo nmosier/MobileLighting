@@ -279,12 +279,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     return
                 }
                 
-                var intensityBuffers = [CVPixelBuffer]()   // store intermediate buffers provided by processPixelBufferPair() for later combination
+                var intensityBuffers = [CVPixelBuffer]()
                 for i in 0..<pixelBuffers_normal.count {
                     let normalBuffer = pixelBuffers_normal[i]
                     let invertedBuffer = pixelBuffers_inverted[i]
                     
-                    let intensityBuffer = processPixelBufferPair(normal: normalBuffer, inverted: invertedBuffer)
+                    let intensityBuffer = intensityDifference(normal: normalBuffer, inverted: invertedBuffer)
                     intensityBuffers.append(intensityBuffer)
                 }
                 pixelBuffers_normal.removeAll()
