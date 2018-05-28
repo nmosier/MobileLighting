@@ -28,7 +28,8 @@ class InitSettings {
     
     // optional
     var nProjectors: Int?
-    var exposures: [Double]?
+    var exposureDurations: [Double]?
+    var exposureISOs: [Double]?
     var positionCoords: [Int]?
 }
 
@@ -50,8 +51,9 @@ class SceneParameters {
 class StructuredLightingParameters {
     var nProjectors: Int!
     var resolution: String!
-    var nExposures: Int { get { return self.exposures.count } }
-    var exposures: [Double]!
+    var nExposures: Int { get { return self.exposureDurations.count } }
+    var exposureDurations: [Double]!
+    var exposureISOs: [Double]!
     var lensPosition: Float!
     var focusPoint: CGPoint?
 }
@@ -99,7 +101,11 @@ func loadInitSettings(filepath: String) throws -> InitSettings {
     
     // read in optional properties
     initSettings.nProjectors = mainDict[Yaml.string("projectors")]?.int
-    initSettings.exposures = mainDict[Yaml.string("exposures")]?.array?.filter({return $0.double != nil}).map{
+    initSettings.exposureDurations = mainDict[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
+        (val: Yaml) -> Double in
+        return val.double!
+    }
+    initSettings.exposureISOs = mainDict[Yaml.string("exposureISOs")]?.array?.filter({return $0.double != nil}).map{
         (val: Yaml) -> Double in
         return val.double!
     }

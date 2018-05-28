@@ -45,14 +45,15 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             return capturePhotoOutput.maxBracketedCapturePhotoCount
         }
     }
-    var photoBracketExposures: [Double]?
+    var photoBracketExposureDurations: [Double]?
+    var photoBracketExposureISOs: [Double]?
     
     var photoBracketSettings: AVCapturePhotoBracketSettings {
         get {
-            if let photoBracketExposures = self.photoBracketExposures {
+            if let photoBracketExposureDurations = self.photoBracketExposureDurations {
                 // use specified exposure settings
                 var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
-                for exposure in photoBracketExposures {
+                for exposure in photoBracketExposureDurations {
                     guard exposure >= minExposureDuration.seconds && exposure <= maxExposureDuration.seconds else {
                         fatalError("Exposures not within allowed range.\nExposure must be between \(minExposureDuration) and \(maxExposureDuration).")
                     }
@@ -155,7 +156,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     //MARK: Entry-point capture functions
     
     func takePhoto(photoSettings: AVCapturePhotoSettings) {
-        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+        guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
             print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
             return
         }
@@ -174,7 +175,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     // main function for capturing normal-inverted pair
     func takeNormalInvertedPair(settings: AVCapturePhotoSettings) {
-        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+        guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
             print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
             return
         }
@@ -193,7 +194,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     // sister function for capturing inverted bracket in normal-inverted pair
     func resumeWithTakingInverted(settings: AVCapturePhotoSettings) {
-        guard photoBracketExposures == nil || photoBracketExposures!.count <= maxBracketedPhotoCount else {
+        guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
             print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
             return
         }
@@ -289,34 +290,43 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_normal.removeAll()
                 pixelBuffers_inverted.removeAll()
                 
-                let combinedIntensityBuffer = combineIntensityBuffers(intensityBuffers, shouldThreshold: true)
+                let combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
+                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, angle: 3.14/2.0)
                 // decode threshold image for current bit using decoder
-                decoder!.decodeThreshold(combinedIntensityBuffer, forBit: currentBinaryCodeBit!)
+                decoder!.decode(threshBuffer, forBit: currentBinaryCodeBit!)
                 
+                
+                //MARK: send prethreshold images?
+                let prethreshData: Data
+                let threshData: Data
                 /*
-                let sendJPG: Bool = false
-                let photoData: Data
                 if (sendJPG) {
                     let colorspace = CGColorSpaceCreateDeviceRGB()
                     guard let jpegData = CIContext().jpegRepresentation(of: intensityImage, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9]) else { fatalError("COULDNT GET JPEG DATA") }
                     photoData = jpegData
                 } else {
                     // send PGM(s)
-                    
-                    if let prethresh = prethreshPGM {
-                        photoSender.sendPacket(PhotoDataPacket(photoData: prethresh.getPGMData()))
-                        prethreshPGM = nil
-                    }
-                    
-                    let pgm = PGMFile(buffer: combinedIntensityBuffer)
-                    photoData = pgm.getPGMData()
-     
+                let prethreshPGM = PGMFile(buffer: threshBuffer)
+                if let prethresh = prethreshPGM {
+                    photoSender.sendPacket(PhotoDataPacket(photoData: prethresh.getPGMData()))
+                    prethreshPGM = nil
                 }
-                let packet = PhotoDataPacket(photoData: photoData, bracketedPhotoID: 0)
-                photoSender.sendPacket(packet)
-                */
+     */
+                
+                let prethreshPgm = PGMFile(buffer: combinedIntensityBuffer)
+                prethreshData = prethreshPgm.getPGMData()
+                let threshPgm = PGMFile(buffer: threshBuffer)
+                threshData = threshPgm.getPGMData()
+     
+                let prethresh_packet = PhotoDataPacket(photoData: prethreshData, bracketedPhotoID: 0)
+                photoSender.sendPacket(prethresh_packet)
+                let thresh_packet = PhotoDataPacket(photoData: threshData, bracketedPhotoID: 0)
+                photoSender.sendPacket(thresh_packet)
+            
+                
+                /*
                 let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
-                photoSender.sendPacket(packet)
+                photoSender.sendPacket(packet) */
                 
                 capturingNormalInvertedPair = false
             } else {

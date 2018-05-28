@@ -112,8 +112,8 @@ func nextCommand() -> Bool {
         
         if tokens[1] == "exposures" {
             print("Reloading exposures...")
-            exposures = initSettings.exposures ?? exposures
-            print("New exposures: \(exposures)")
+            exposureDurations = initSettings.exposureDurations ?? exposureDurations
+            print("New exposures: \(exposureDurations)")
         }
     
     // connect: use to connect external devices
@@ -621,7 +621,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -642,7 +642,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
         
@@ -651,14 +651,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             
             // uncomment this when iPhone no longer configured to send prethreshold & threshold images:
             
-            photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+            //photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
  
             
             // comment this out when iPhone no longer configured to send prethresholded & thresholded images:
             
-            /*
+            
             photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
-            */
+            
             
             currentCodeBit += 1
         }

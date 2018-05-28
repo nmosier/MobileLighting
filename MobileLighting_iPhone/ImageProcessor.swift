@@ -131,7 +131,7 @@ func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPix
     return normal
 }
 
-func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CVPixelBuffer {
+func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CVPixelBuffer {
     guard buffers.count > 0 else {
         fatalError("ImageProcessor: fatal error — number of buffers supplied must be >= 1.")
     }
@@ -153,27 +153,20 @@ func combineIntensityBuffers(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) 
         resultImage = extremeIntensitiesFilter.outputImage!
     }
     
+    context.render(resultImage, to: buffers[0])
+    
+    /*
     if (shouldThreshold) {
-        //thresholdDefault = 0.035; let thresholdFilter = ThresholdFilter()
-        /*
-        thresholdDefault = 0.03; let thresholdFilter = ThresholdFilter2()
-        thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
-        thresholdFilter.setValue(CGFloat(0.035), forKey: "inputThreshold")
-        thresholdFilter.setValue(CGFloat(-Double.pi/4.0), forKey: "inputAngle")
         
-        //thresholdFilter.setValue(resultImage, forKey: kCIInputImageKey)
-        let thresheldImage = thresholdFilter.outputImage!
-        context.render(thresheldImage, to: buffers[0])
-        */
-        context.render(resultImage, to: buffers[0])
          let threshold_buf: CVPixelBuffer = buffers[0].deepcopy()!
         threshold(img: buffers[0], to: threshold_buf, thresh: 0.035, angle: 0.758)
         return threshold_buf
-        //return buffers[0]
     } else {
         context.render(resultImage, to: buffers[0])
         return buffers[0]
-    }
+    } */
+    
+    return buffers[0]
 }
 
 extension CVPixelBuffer {
@@ -252,7 +245,7 @@ class Decoder {
         }
     }
     
-    func decodeThreshold(_ thresholdBuffer: CVPixelBuffer, forBit bit: Int) {
+    func decode(_ thresholdBuffer: CVPixelBuffer, forBit bit: Int) {
         guard width == thresholdBuffer.width &&
             height == thresholdBuffer.height else {
                 print("ImageProcessor Decoder: ERROR — mismatch in dimensions of provided threshold image with existing decoder pixel array.")
@@ -357,7 +350,6 @@ class PGMFile {
         
         let ptr = buffer.baseAddress!.bindMemory(to: UInt8.self, capacity: imageWidth*imageHeight*4)
         
-        let arrlenm1 = imageHeight*imageWidth - 1
         var body: [UInt8] = Array<UInt8>(repeating: 0, count: imageWidth*imageHeight)
         for i in 0..<imageWidth*imageHeight {
             let value = ptr.advanced(by: i*4).pointee
@@ -379,17 +371,22 @@ class PGMFile {
 
 // implements zero-crossing thresholding algorithm
 //  using pixel loop
-// edits img directly; doesn't save to other buffer
-func threshold(img: CVPixelBuffer, to out_img: CVPixelBuffer, thresh: Double, angle: Double) {
+func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) -> CVPixelBuffer {
     // kCVPixelFormatType_32BGRA
     // 32 bits per pixel
+    let out_img: CVPixelBuffer = img.deepcopy()!
     guard img.width == out_img.width && img.height == out_img.height else {
         fatalError("zc-threshold: cannot write thresheld image to CVPixelBuffer of mismatched dimensions")
     }
+    
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(img)
     let w = img.width
     let h = img.height
     let dx = Int(round(cos(angle)))
     let dy = Int(round(sin(angle)))
+    
+    print("(dx,dy)=(\(dx),\(dy))")
+    print("thresh - bytes per row \(bytesPerRow), width \(CVPixelBufferGetWidth(img))")
     
     let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(img, lockFlags)
@@ -397,14 +394,14 @@ func threshold(img: CVPixelBuffer, to out_img: CVPixelBuffer, thresh: Double, an
     
     
     let img_ptr_raw: UnsafeMutableRawPointer = CVPixelBufferGetBaseAddress(img)!
-    let img_ptr = img_ptr_raw.bindMemory(to: UInt8.self, capacity: w*h)
+    let img_ptr = img_ptr_raw.bindMemory(to: UInt8.self, capacity: bytesPerRow*h)
     let out_ptr_raw: UnsafeMutableRawPointer = CVPixelBufferGetBaseAddress(out_img)!
-    let out_ptr = out_ptr_raw.bindMemory(to: UInt8.self, capacity: w*h)
+    let out_ptr = out_ptr_raw.bindMemory(to: UInt8.self, capacity: bytesPerRow*h)
     for y in 0..<h {
         for x in 0..<w {
-            let val: Double = Double(img_ptr[4*y*w + 4*x]) / 255.0
+            let val: Double = Double(img_ptr[y*bytesPerRow + 4*x]) / 255.0
             var out: UInt8
-            if (min(x+dx, x-dx) < 0 || max(x+dx, x-dx) >= w || min(y+dy, y-dy) < 0 || max(y+dy, y-dy) >= h) {
+            if (min( x+dx, x-dx) < 0 || max(x+dx, x-dx) >= w || min(y+dy, y-dy) < 0 || max(y+dy, y-dy) >= h) {
                 if (val - 0.5 >= thresh) {
                     out = 255
                 } else if (0.5 - val >= thresh) {
@@ -413,9 +410,9 @@ func threshold(img: CVPixelBuffer, to out_img: CVPixelBuffer, thresh: Double, an
                     out = 128
                 }
             } else {
-                let val_l = Double(img_ptr[4*w*(y+dy) + 4*(x+dx)]) / 255.0
-                let val_r = Double(img_ptr[4*w*(y-dy) + 4*(x-dx)]) / 255.0
-                if (sign(val_l) == sign(val_r) || min( abs(val_l - 0.5), abs(val_r - 0.5) ) < thresh) {
+                let val_l = Double(img_ptr[bytesPerRow*(y+dy) + 4*(x+dx)]) / 255.0
+                let val_r = Double(img_ptr[bytesPerRow*(y-dy) + 4*(x-dx)]) / 255.0
+                if (sign(val_l-0.5) == sign(val_r-0.5) || min( abs(val_l - 0.5), abs(val_r - 0.5) ) < thresh) {
                     if (val - 0.5 >= thresh) {
                         out = 255
                     } else if (0.5 - val >= thresh) {
@@ -423,6 +420,7 @@ func threshold(img: CVPixelBuffer, to out_img: CVPixelBuffer, thresh: Double, an
                     } else {
                         out = 128
                     }
+                    
                 } else {
                     if val == 0.5 {
                         out = 128
@@ -434,21 +432,14 @@ func threshold(img: CVPixelBuffer, to out_img: CVPixelBuffer, thresh: Double, an
                 }
             }
             
-            /*
-            if val - 0.5 >= thresh {
-                out = 255
-            } else if 0.5 - val >= thresh {
-                out = 0
-            } else {
-                out = 128
-            } */
-
-            out_ptr[4*w*y + 4*x] = out
-            out_ptr[4*w*y + 4*x + 1] = out
-            out_ptr[4*w*y + 4*x + 2] = out
+            out_ptr[bytesPerRow*y + 4*x] = out
+            out_ptr[bytesPerRow*y + 4*x + 1] = out
+            out_ptr[bytesPerRow*y + 4*x + 2] = out
+            out_ptr[bytesPerRow*y + 4*x + 3] = 255
         }
     }
     
     CVPixelBufferUnlockBaseAddress(img, lockFlags)
     CVPixelBufferUnlockBaseAddress(out_img, lockFlags)
+    return out_img
 }

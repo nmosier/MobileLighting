@@ -58,7 +58,8 @@ var minSWfilepath: String
 
 // optional settings vars
 var projectors: Int?
-var exposures: [Double]
+var exposureDurations: [Double]
+var exposureISOs: [Double]
 var positions: [Int]
 
 let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
@@ -78,10 +79,12 @@ minSWfilepath = initSettings.minSWfilepath
 
 // setup optional settings
 projectors = initSettings.nProjectors
-exposures = initSettings.exposures ?? [Double]()
+exposureDurations = initSettings.exposureDurations ?? [Double]()
+exposureISOs = initSettings.exposureISOs ?? [Double]()
 positions = initSettings.positionCoords ?? [Int]()
 
-print("Exposures: \(exposures)")
+print("Exposure durations: \(exposureDurations)")
+print("Exposure ISOs: \(exposureISOs)")
 print("Positions: \(positions)")
 print("Projectors: \(projectors ?? 0)")
 
