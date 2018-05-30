@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreVideo
 
 func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
     let nsstr = str as NSString
@@ -20,3 +21,5 @@ func makeDir(_ str: String) -> Void {
         print("make dir - error - could not make directory.")
     }
 }
+
+let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write

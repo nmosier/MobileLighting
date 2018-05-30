@@ -13,6 +13,7 @@ import CoreImage
 // used by custom threshold filter as default when no input threshold specified
 var thresholdDefault: Float = 0.06
 var binaryCodeDirection: Bool?
+var brightnessChangeDirection: (Int, Int)?
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
@@ -156,7 +157,7 @@ func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CV
 
 // implements zero-crossing thresholding algorithm
 //  using pixel loop
-func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) -> CVPixelBuffer {
+func threshold(img: CVPixelBuffer, thresh: Double, dir: (Int, Int)) -> CVPixelBuffer {
     // kCVPixelFormatType_32BGRA
     // 32 bits per pixel
     let out_img: CVPixelBuffer = img.deepcopy()!
@@ -167,8 +168,7 @@ func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) -> CVPixelBuff
     let bytesPerRow = CVPixelBufferGetBytesPerRow(img)
     let w = img.width
     let h = img.height
-    let dx = Int(round(cos(angle)))
-    let dy = Int(round(sin(angle)))
+    let (dx, dy) = dir
     
     print("(dx,dy)=(\(dx),\(dy))")
     print("thresh - bytes per row \(bytesPerRow), width \(CVPixelBufferGetWidth(img))")
@@ -228,6 +228,82 @@ func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) -> CVPixelBuff
     CVPixelBufferUnlockBaseAddress(out_img, lockFlags)
     return out_img
 }
+
+func brightnessChange(_ srcBuffer: CVPixelBuffer) -> (Int, Int) {
+    let w = srcBuffer.width
+    let h = srcBuffer.height
+    let bytesPerRow = srcBuffer.bytesPerRow
+    
+    CVPixelBufferLockBaseAddress(srcBuffer, lockFlags)
+    let raw_ptr: UnsafeMutableRawPointer = CVPixelBufferGetBaseAddress(srcBuffer)!
+    let ptr = raw_ptr.bindMemory(to: UInt8.self, capacity: bytesPerRow*h)
+    
+    var sum_0 = 0, sum_pi4 = 0, sum_pi2 = 0, sum_3pi4 = 0
+    var avg_0: Double, avg_pi4: Double, avg_pi2: Double, avg_3pi4: Double
+    
+    // find avg brightness change for right dir
+    for y in 0..<h {
+        for x in 0..<(w-1) {
+            let val_l: Int = Int(ptr[bytesPerRow*y + 4*x])
+            let val_r: Int = Int(ptr[bytesPerRow*y + 4*x + 4])
+            sum_0 += abs(val_l - val_r)
+        }
+    }
+    avg_0 = Double(sum_0) / Double(h*(w-1))
+    
+    // down
+    for x in 0..<w {
+        for y in 0..<(h-1) {
+            let val_l: Int = Int(ptr[bytesPerRow*y + 4*x])
+            let val_r: Int = Int(ptr[bytesPerRow*(y+1) + 4*x])
+            sum_pi2 += abs(val_l - val_r)
+        }
+    }
+    avg_pi2 = Double(sum_pi2) / Double(w*(h-1))
+    
+    // down & right
+    for y in 0..<(h-1) {
+        for x in 0..<(w-1) {
+            let val_l: Int = Int(ptr[bytesPerRow*y + 4*x])
+            let val_r: Int = Int(ptr[bytesPerRow*(y+1) + 4*(x+1)])
+            sum_pi4 += abs(val_l - val_r)
+        }
+    }
+    avg_pi4 = Double(sum_pi4) / Double((w-1)*(h-1))
+    
+    // down & left
+    for y in 0..<(h-1) {
+        for x in 0..<(w-1) {
+            let val_l: Int = Int(ptr[bytesPerRow*y + 4*(x+1)])
+            let val_r: Int = Int(ptr[bytesPerRow*(y+1) + 4*x])
+            sum_3pi4 += abs(val_l - val_r)
+        }
+    }
+    avg_3pi4 = Double(sum_3pi4) / Double((w-1)*(h-1))
+    
+    let ratio_xy = max(avg_0 / avg_pi2, avg_pi2 / avg_0)
+    let ratio_diag = max(avg_pi4 / avg_3pi4, avg_3pi4 / avg_pi4)
+    
+    print("avg_0 = \(avg_0), avg_pi4=\(avg_pi4), avg_pi2=\(avg_pi2), avg_3pi4=\(avg_3pi4)")
+    
+    let dx: Int, dy: Int
+    if (ratio_xy >= ratio_diag) {
+        if (avg_0 >= avg_pi2) {
+            (dx, dy) = (1, 0)
+        } else {
+            (dx, dy) = (0, 1)
+        }
+    } else {
+        if (avg_pi4 >= avg_3pi4) {
+            (dx, dy) = (1, 1)
+        } else {
+            (dx, dy) = (1, -1)
+        }
+    }
+    CVPixelBufferUnlockBaseAddress(srcBuffer, lockFlags)
+    return (dx, dy)
+}
+
 
 extension CVPixelBuffer {
     var baseAddress: UnsafeMutableRawPointer? {

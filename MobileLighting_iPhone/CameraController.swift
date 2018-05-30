@@ -291,7 +291,14 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_inverted.removeAll()
                 
                 let combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
-                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, angle: 3.14/2.0)
+                
+                // get prominent stripe direction
+                // if this is for the first structured lighting image
+                if (currentBinaryCodeBit! == 0) {
+                    brightnessChangeDirection = brightnessChange(combinedIntensityBuffer)
+                }
+                
+                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, dir: brightnessChangeDirection ?? (0,0) )
                 // decode threshold image for current bit using decoder
                 decoder!.decode(threshBuffer, forBit: currentBinaryCodeBit!)
                 
