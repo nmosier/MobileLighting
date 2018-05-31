@@ -82,7 +82,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
     }
     
-    var photoSender: PhotoSender!
+    //var photoSender: PhotoSender!
     
     //MARK: Initialization
     override init() {
@@ -99,8 +99,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureSession.startRunning()
         
         // set up photo sender service browser
-        self.photoSender = PhotoSender()
-        self.photoSender.startBrowsing()
+        //photoSender = PhotoSender()
+        //photoSender.startBrowsing()
     }
     
     func configureNewSession(sessionPreset: String) {
@@ -346,7 +346,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
                 }
                 let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
-                self.photoSender.sendPacket(photoPacket)
+                photoSender.sendPacket(photoPacket)
             }
             self.photoSampleBuffers.removeAll()
             self.lensPositions.removeAll()

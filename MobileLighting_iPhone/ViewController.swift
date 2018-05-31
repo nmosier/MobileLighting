@@ -12,7 +12,6 @@ import AVFoundation
 import Photos
 
 class ViewController: UIViewController {
-    var cameraService: CameraService!
     @IBOutlet var videoPreviewView: VideoPreviewView!
     @IBOutlet weak var focusPointLabel: UILabel!
     @IBOutlet weak var lockExposureSwitch: UISwitch!
@@ -22,7 +21,7 @@ class ViewController: UIViewController {
     @IBAction func updateExposureMode(_ sender: UISwitch) {
         let mode: AVCaptureExposureMode = sender.isOn ? .locked : .autoExpose
         do {
-            try self.cameraService.cameraController.configureCaptureDevice(exposureMode: mode)
+            try cameraController.configureCaptureDevice(exposureMode: mode)
         } catch {
             // failed — set back to prev. state
             sender.setOn(!sender.isOn, animated: false)
@@ -32,7 +31,7 @@ class ViewController: UIViewController {
     @IBAction func updateFocusMode(_ sender: UISwitch) {
         let mode: AVCaptureFocusMode = sender.isOn ? .locked : .autoFocus
         do {
-            try self.cameraService.cameraController.configureCaptureDevice(focusMode: mode)
+            try cameraController.configureCaptureDevice(focusMode: mode)
         } catch {
             sender.setOn(!sender.isOn, animated: false)
         }
@@ -48,7 +47,7 @@ class ViewController: UIViewController {
         let focusPoint = videoPreviewView.videoPreviewLayer.captureDevicePointOfInterest(for: rawPos)
         print("ViewController: focusing to point: (\(focusPoint.x), \(focusPoint.y))")
         do {
-            try self.cameraService.cameraController.configureCaptureDevice(focusMode: .autoFocus, focusPointOfInterest: focusPoint)
+            try cameraController.configureCaptureDevice(focusMode: .autoFocus, focusPointOfInterest: focusPoint)
         } catch {
             lockFocusSwitch.setOn(false, animated: false)
         }
@@ -57,26 +56,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.cameraService = CameraService()
-        self.videoPreviewView.session = self.cameraService.cameraController.captureSession
-        
+        cameraService = CameraService()
+        self.videoPreviewView.session = cameraController.captureSession
         cameraService.startBroadcast()
-        
-        
-        // testing ActiveLighting bridging header
-        var cmd = "./activeLighting".utf8CString
-        
-        var ptr = UnsafeMutableRawPointer(mutating: &cmd)
-        var cmdptr = ptr.assumingMemoryBound(to: Int8.self)
-        var ptr2 = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: 1)
-        defer {
-            ptr2.deallocate(capacity: 1)
-        }
-        ptr2.pointee = cmdptr
-        
-        //activeLighting(1, ptr2)
-        //ALmain2(1, ptr2)
-        
     }
     
     override func didReceiveMemoryWarning() {

@@ -8,4 +8,4 @@
 
 import Foundation
 
-let shouldSendThreshImgs = true
+let shouldSendThreshImgs = false
