@@ -15,7 +15,7 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
     var serviceBrowser: NetServiceBrowser!
     var service: NetService!
     var readyToSendPacket = false
-    var packetsToSend = [PhotoDataPacket]()
+    var packetsToSend = [PhotoDataPacket]()    
     
     //MARK: Public functions
     

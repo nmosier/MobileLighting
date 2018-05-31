@@ -8,6 +8,7 @@
 
 import Foundation
 
+@objc(CameraStatusUpdate)
 enum CameraStatusUpdate: Int {
     case None
     case LockedWhiteBalance, SetAutoWhiteBalance
@@ -15,6 +16,7 @@ enum CameraStatusUpdate: Int {
     case CurrentLensPosition
 }
 
+@objc(PhotoDataType)
 enum PhotoDataType: Int {
     case None
     case Ambient
@@ -26,6 +28,7 @@ enum PhotoDataType: Int {
     case StructuredLight_Filtered
     case StructuredLight_HoleFilled
     case StructuredLight_Refined
+    case SceneMetadata  // in this case, photoData is just a .txt file
 }
 
 @objc(PhotoDataPacket)

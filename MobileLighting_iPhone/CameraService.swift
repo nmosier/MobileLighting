@@ -320,11 +320,15 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
                 }
+                
+                sceneMetadata.exposureDurations = exposureDurations
+                
                 /*
                 guard let exposureISOs = packet.photoBracketExposureISOs else {
                     print("ERROR: exposure ISO values not provided for bracketed photo sequence.")
                     break
                 } */
+                
                 self.cameraController.currentBinaryCodeBit = packet.binaryCodeBit
                 self.cameraController.photoBracketExposureDurations = exposureDurations
                 /* self.cameraController.photoBracketExposureISOs = exposureISOs */
@@ -386,6 +390,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 // for now, specify hard-code in resolution
                 print("CURRENT ISO=\(self.cameraController.captureDevice.iso)")
                 
+                // save current focus
+                sceneMetadata.focus = self.cameraController.captureDevice.lensPosition
                 let resolutionStr = packet.resolution ?? AVCaptureSessionPresetPhoto
                 guard let binaryCodeSystem = packet.binaryCodeSystem, let dir = packet.binaryCodeDirection else {
                     print("CameraService: error - binary code must be specified for StartStructuredLightingCaptureFull instruction.")

@@ -40,8 +40,6 @@ class BinaryCodeDrawer {
     }
     
     func drawCode(forBit bit: Int, system: BinaryCodeSystem, horizontally: Bool? = nil, inverted: Bool? = nil, positionLimit: Int? = nil) {
-        print("A: starting to draw code - \(timestampToString(date: Date()))")
-        
         NSGraphicsContext.setCurrent(self.context)
         let context = self.context.cgContext
         let horizontally = horizontally ?? self.drawHorizontally
@@ -79,8 +77,6 @@ class BinaryCodeDrawer {
             break
         }
         
-        print("A0: starting to go thru loop - \(timestampToString(date: Date()))")
-        
         var horizontalBar: Array<Pixel> = (inverted ? whiteHorizontalBar : blackHorizontalBar)
         let max: Int
         
@@ -106,17 +102,13 @@ class BinaryCodeDrawer {
             }
         }
  
-        print("A1: finished generating bitmap - \(timestampToString(date: Date()))")
-        
         let provider = CGDataProvider(data: NSData(bytes: bitmap, length: width*height*4))
         let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
         let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
         let image = CGImage(width: width, height: height,
                             bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
                             decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
-        context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
-        
-        print("B: finished drawing code - \(timestampToString(date: Date()))")
+        context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))        
     }
     
     

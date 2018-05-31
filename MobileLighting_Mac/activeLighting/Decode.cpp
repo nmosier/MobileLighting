@@ -157,26 +157,26 @@ void refineCodesLine(float *v, float *f, int stride, int n0, int rad, float maxg
         int x = x0 * stride;
         float sum = 0;
         float sumw = 0;
-	int cnt = 0;
+		int cnt = 0;
         float v0 = v[x];
         f[x] = v0;
         if (v0 == UNK)
             continue;
-	//int debug = 0;//(debugy > 0) && ((x0 >= 996) && (x0 <= 999));
-	//if (debug)
-	//printf("x=%d, y=%d, v0 = %.2f\n", x0, debugy, v0);
+		//int debug = 0;//(debugy > 0) && ((x0 >= 996) && (x0 <= 999));
+		//if (debug)
+		//printf("x=%d, y=%d, v0 = %.2f\n", x0, debugy, v0);
         // compare pixels over window to v0 and include in average if close enough
         for (int r0 = -rad; r0 <= rad; r0++) {
             int r = r0 * stride;
             int x1 = x + r;
-	    //float v1 = v[x1];
+	 	   //float v1 = v[x1];
             int mirror = 0;
             float maxdiff = fabs(r0) * maxgrad + 1;
-	    float w = 1.0  - (fabs(r0) / (rad + 1.0));
-	    //float w = 1.0; // old (original) box filter
-	    //float diff = fabs(v0 - v1);
-	    //if (debug)
-	    //printf("r0=%5d, v1=%.2f, w=%.2f, diff=%.2f, maxdiff=%.2f: ", r0, v1, w, diff, maxdiff);
+	    	float w = 1.0  - (fabs(r0) / (rad + 1.0));
+	 	   //float w = 1.0; // old (original) box filter
+	 	   //float diff = fabs(v0 - v1);
+	 	   //if (debug)
+	 	   //printf("r0=%5d, v1=%.2f, w=%.2f, diff=%.2f, maxdiff=%.2f: ", r0, v1, w, diff, maxdiff);
             // if out of bounds, or unknown value, or difference too big, try mirrored
             if (x1 < 0 || x1 >= n || fabs(v0 - v[x1]) > maxdiff || v[x1] == UNK) {
                 x1 = x - r;
@@ -184,16 +184,16 @@ void refineCodesLine(float *v, float *f, int stride, int n0, int rad, float maxg
             }
             // if (now) out of bounds or (still) unknown or differnce too big, don't use
             if (x1 < 0 || x1 >= n || fabs(v0 - v[x1]) > maxdiff || v[x1] == UNK) {
-		//if (debug)
-		//printf("skip\n");
+				//if (debug)
+				//printf("skip\n");
                 continue;
-	    }
+	    	}
             // close enough: add difference to center value (subtract if x was mirrored)
-	    float vv = (mirror ? (v0 - v[x1]) : (v[x1] - v0));
-	    //if (debug)
-	    //printf("vv=%.2f\n", vv);
+		    float vv = (mirror ? (v0 - v[x1]) : (v[x1] - v0));
+		    //if (debug)
+		    //printf("vv=%.2f\n", vv);
             sum += w * vv;
-	    sumw += w;
+	   		sumw += w;
             cnt++;
         }
         if (cnt >= minsupport) {
@@ -482,7 +482,7 @@ CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForegro
 
 }
 
-
+// *** MobileLighting (Mac) currently calls this to do post-decoding refinement ***
 CFloatImage refine(char *outdir, int direction, char* decodedIm) {
 	CFloatImage fval, fval1, fval2;
 	CShape sh;

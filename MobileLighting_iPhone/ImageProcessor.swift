@@ -286,18 +286,22 @@ func brightnessChange(_ srcBuffer: CVPixelBuffer) -> (Int, Int) {
     
     print("avg_0 = \(avg_0), avg_pi4=\(avg_pi4), avg_pi2=\(avg_pi2), avg_3pi4=\(avg_3pi4)")
     
-    let dx: Int, dy: Int
+    let dx: Int, dy: Int, angle: Double
     if (ratio_xy >= ratio_diag) {
         if (avg_0 >= avg_pi2) {
             (dx, dy) = (1, 0)
+            angle = 0.0
         } else {
             (dx, dy) = (0, 1)
+            angle = M_PI_2
         }
     } else {
         if (avg_pi4 >= avg_3pi4) {
             (dx, dy) = (1, 1)
+            angle = M_PI_4
         } else {
             (dx, dy) = (1, -1)
+            angle = 3.0 * M_PI_4
         }
     }
     CVPixelBufferUnlockBaseAddress(srcBuffer, lockFlags)

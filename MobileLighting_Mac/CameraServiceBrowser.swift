@@ -21,7 +21,7 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
     var readyToSendPacket = false
     var packetsToSend = [CameraInstructionPacket]()
     
-    var readyToSendObserver: ((Void)->Void)?
+    var readyToSendObserver: (()->Void)?
     
     //MARK: Public functions
     

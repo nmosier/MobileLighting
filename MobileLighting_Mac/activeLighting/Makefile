@@ -1,6 +1,7 @@
 # Makefile for Active lighting code
 # DS Sep 2013
 # DS fixed 6/2017 to compile in MBH 632
+# NM modified 7/2017 to compile as static library for use in MobileLighting
 
 # SRC = Calibrate.cpp DetectForeground.cpp Disparities.cpp Decode.cpp \
  #     Threshold.cpp Main.cpp Rectify.cpp Reproject.cpp Utils.cpp
