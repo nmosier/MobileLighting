@@ -293,15 +293,15 @@ func brightnessChange(_ srcBuffer: CVPixelBuffer) -> (Int, Int) {
             angle = 0.0
         } else {
             (dx, dy) = (0, 1)
-            angle = M_PI_2
+            angle = Double.pi/2
         }
     } else {
         if (avg_pi4 >= avg_3pi4) {
             (dx, dy) = (1, 1)
-            angle = M_PI_4
+            angle = Double.pi/4
         } else {
             (dx, dy) = (1, -1)
-            angle = 3.0 * M_PI_4
+            angle = 3*Double.pi/4
         }
     }
     CVPixelBufferUnlockBaseAddress(srcBuffer, lockFlags)

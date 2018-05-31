@@ -32,7 +32,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     
     
-    var cameraController = CameraController()
+    // var cameraController = CameraController()
     
     // startBroadcast: sets up CameraService on new socket
     // -causes netServiceDidPublish() to be called if successfully published
@@ -122,7 +122,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func handlePacket(_ packet: CameraInstructionPacket) {
         print("CameraService: received camera instruction: \(packet.cameraInstruction!) — \(timestampToString(date: Date()))")
         
-        if let pointOfFocus = packet.pointOfFocus, self.cameraController.captureDevice.isFocusPointOfInterestSupported {
+        if let pointOfFocus = packet.pointOfFocus, cameraController.captureDevice.isFocusPointOfInterestSupported {
             do {
                 try cameraController.configureCaptureDevice(focusMode: AVCaptureFocusMode.autoFocus, focusPointOfInterest: pointOfFocus)
                 print("Adjusting point of focus.")
@@ -132,7 +132,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         }
         
         do {
-            try self.cameraController.configureCaptureDevice(torchMode: packet.torchMode, torchLevel: packet.torchLevel)    // if not provided, already defaults to nil
+            try cameraController.configureCaptureDevice(torchMode: packet.torchMode, torchLevel: packet.torchLevel)    // if not provided, already defaults to nil
         } catch {
             print("Could not change torch mode settings. Using defaults.")
         }
@@ -141,27 +141,27 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         let handleInstructionQueue = DispatchQueue(label: "com.CameraService.handleInstructionQueue")
         handleInstructionQueue.async {
-            while (self.cameraController.captureDevice.isAdjustingFocus) {}
+            while (cameraController.captureDevice.isAdjustingFocus) {}
             
             switch packet.cameraInstruction! {
             case .GetLensPosition:
-                let pos: Float = self.cameraController.captureDevice.lensPosition
+                let pos: Float = cameraController.captureDevice.lensPosition
                 let packet = PhotoDataPacket(photoData: Data(), lensPosition: pos)
-                self.cameraController.photoSender.sendPacket(packet)
+                photoSender.sendPacket(packet)
             
             case .LockLensPosition:
                 do {
-                    try self.cameraController.captureDevice.lockForConfiguration()
-                    self.cameraController.captureDevice.focusMode = .locked
+                    try cameraController.captureDevice.lockForConfiguration()
+                    cameraController.captureDevice.focusMode = .locked
                 } catch {
                     fatalError("Unable to lock capture device for configuration.")
                 }
-                self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 
             case .SetLensPosition:
                 guard var lensPosition = packet.lensPosition else {
                     print("CameraService: error — lens position is nil, cannot be set.")
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
                 
@@ -172,37 +172,37 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
                 // completion handler function -> sends packet PhotoDataPacket confirming completion
                 func didSetLensPosition(time: CMTime) {
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 }
                 do {
-                    try self.cameraController.captureDevice.lockForConfiguration()
+                    try cameraController.captureDevice.lockForConfiguration()
                 } catch {
                     fatalError("unable to lock for configuration")
                 }
                 print("TRIED TO SET LENS POSITION: \(lensPosition)")
                 if lensPosition < 0.0 || lensPosition > 1.0 {
-                    self.cameraController.captureDevice.focusMode = .autoFocus
+                    cameraController.captureDevice.focusMode = .autoFocus
                 } else {
-                    self.cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
+                    cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
                 }
                 
-                self.cameraController.captureDevice.unlockForConfiguration()
+                cameraController.captureDevice.unlockForConfiguration()
                 
                 let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
                 queueFinishFocus.async {
-                    while self.cameraController.captureDevice.isAdjustingFocus {}
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                    while cameraController.captureDevice.isAdjustingFocus {}
+                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 }
                 
                 break
             
             case .SetPointOfFocus:
-                guard self.cameraController.captureDevice.isFocusPointOfInterestSupported else {
+                guard cameraController.captureDevice.isFocusPointOfInterestSupported else {
                     print("CameraService: error - cannot set focus point of interest; function not supported.")
                     return
                 }
                 do {
-                    try self.cameraController.captureDevice.lockForConfiguration()
+                    try cameraController.captureDevice.lockForConfiguration()
                 } catch {
                     print("CameraService: error - could not lock capture device for configuration.")
                     return
@@ -211,83 +211,81 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("CameraService: error - point of focus missing in packet.")
                     return
                 }
-                self.cameraController.captureDevice.focusPointOfInterest = pointOfFocus
-                self.cameraController.captureDevice.focusMode = .autoFocus
-                self.cameraController.captureDevice.unlockForConfiguration()
+                cameraController.captureDevice.focusPointOfInterest = pointOfFocus
+                cameraController.captureDevice.focusMode = .autoFocus
+                cameraController.captureDevice.unlockForConfiguration()
                 
                 let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
                 queueFinishFocus.async {
-                    while self.cameraController.captureDevice.isAdjustingFocus {}
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: self.cameraController.captureDevice.lensPosition))
+                    while cameraController.captureDevice.isAdjustingFocus {}
+                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 }
                 break
                 
             case .LockWhiteBalance:
-                guard self.cameraController.captureDevice.isWhiteBalanceModeSupported(.locked) else {
+                guard cameraController.captureDevice.isWhiteBalanceModeSupported(.locked) else {
                     print("CameraService: error - cannot auto focus & lock: one mode is not supported.")
                     return
                 }
                 
                 do {
-                    try self.cameraController.captureDevice.lockForConfiguration()
+                    try cameraController.captureDevice.lockForConfiguration()
                 } catch {
                     print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                //self.cameraController.captureDevice.whiteBalanceMode = .locked
-                self.cameraController.captureDevice.unlockForConfiguration()                
+                cameraController.captureDevice.unlockForConfiguration()
                 let queueFinishWhiteBalance = DispatchQueue(label: "queueFinishWhiteBalance")
                 queueFinishWhiteBalance.async {
-                    while self.cameraController.captureDevice.isAdjustingWhiteBalance {}
-                    //while self.cameraController.captureDevice.whiteBalanceMode != .locked {}
+                    while cameraController.captureDevice.isAdjustingWhiteBalance {}
                     let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .LockedWhiteBalance)
-                    self.cameraController.photoSender.sendPacket(packet)
+                    photoSender.sendPacket(packet)
                 }
             
             case .AutoWhiteBalance:
-                guard self.cameraController.captureDevice.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) else {
+                guard cameraController.captureDevice.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) else {
                     print("CameraService: error - cannot auto focus & lock: one mode is not supported.")
                     return
                 }
                 
                 do {
-                    try self.cameraController.captureDevice.lockForConfiguration()
+                    try cameraController.captureDevice.lockForConfiguration()
                 } catch {
                     print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                self.cameraController.captureDevice.whiteBalanceMode = .continuousAutoWhiteBalance
-                self.cameraController.captureDevice.unlockForConfiguration()
+                cameraController.captureDevice.whiteBalanceMode = .continuousAutoWhiteBalance
+                cameraController.captureDevice.unlockForConfiguration()
                 
                 let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .SetAutoWhiteBalance)
-                self.cameraController.photoSender.sendPacket(packet)
+                photoSender.sendPacket(packet)
                 
                 
             case .LockExposure:
-                do { try self.cameraController.captureDevice.lockForConfiguration()
+                do { try cameraController.captureDevice.lockForConfiguration()
                 } catch { print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                self.cameraController.captureDevice.exposureMode = .locked
-                self.cameraController.captureDevice.unlockForConfiguration()
+                cameraController.captureDevice.exposureMode = .locked
+                cameraController.captureDevice.unlockForConfiguration()
             
             case .AutoExposure:
-                do { try self.cameraController.captureDevice.lockForConfiguration()
+                do { try cameraController.captureDevice.lockForConfiguration()
                 } catch { print("CameraService: error - could not lock capture device for configuration.")
                     return
                 }
-                self.cameraController.captureDevice.exposureMode = .autoExpose
-                self.cameraController.captureDevice.unlockForConfiguration()
+                cameraController.captureDevice.exposureMode = .autoExpose
+                cameraController.captureDevice.unlockForConfiguration()
                 
             case CameraInstruction.CaptureStillImage:
                 do {
-                    try self.cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)
+                    try cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)
                 } catch {
                     print("CameraService: error — capture session preset \(String(describing: packet.resolution)) not supported by device.")
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
-                self.cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
+                cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
                 break
                 
             case CameraInstruction.CapturePhotoBracket:
@@ -295,22 +293,22 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
                 }
-                self.cameraController.photoBracketExposureDurations = exposureDurations
+                cameraController.photoBracketExposureDurations = exposureDurations
                 guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
                     print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
                     return
                 }
                 do {
-                    try self.cameraController.useCaptureSessionPreset(preset)
+                    try cameraController.useCaptureSessionPreset(preset)
                 } catch {
                     print("CameraService: error — capture session preset \(packet.resolution ?? "?") not supported by device.")
                     for i in 0..<exposureDurations.count {
-                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                        photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }
                     return
                 }
-                let settings = self.cameraController.photoBracketSettings
-                self.cameraController.takePhoto(photoSettings: settings)
+                let settings = cameraController.photoBracketSettings
+                cameraController.takePhoto(photoSettings: settings)
                 break
                
             // main case for capturing normal inverted pair instruction
@@ -329,24 +327,24 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     break
                 } */
                 
-                self.cameraController.currentBinaryCodeBit = packet.binaryCodeBit
-                self.cameraController.photoBracketExposureDurations = exposureDurations
+                cameraController.currentBinaryCodeBit = packet.binaryCodeBit
+                cameraController.photoBracketExposureDurations = exposureDurations
                 /* self.cameraController.photoBracketExposureISOs = exposureISOs */
                 guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
                     print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
                     return
                 }
                 do {
-                    try self.cameraController.useCaptureSessionPreset(preset)
+                    try cameraController.useCaptureSessionPreset(preset)
                 } catch {
                     print("CameraService: error — capture session preset \(packet.resolution ?? "?") not supported by device.")
                     for i in 0..<exposureDurations.count {
-                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                        photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }
                     return
                 }
-                let settings = self.cameraController.photoBracketSettings
-                self.cameraController.takeNormalInvertedPair(settings: settings)
+                let settings = cameraController.photoBracketSettings
+                cameraController.takeNormalInvertedPair(settings: settings)
                 break
                 
             // "sister" case for capturing inverted bracket of normal-inverted pair
@@ -360,58 +358,58 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("ERROR: exposure ISOs not provided for bracketed photo sequence.")
                     break
                 } */
-                self.cameraController.photoBracketExposureDurations = exposureDurations
+                cameraController.photoBracketExposureDurations = exposureDurations
                 // self.cameraController.photoBracketExposureISOs = exposureISOs
                 guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
                     print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
                     return
                 }
                 do {
-                    try self.cameraController.useCaptureSessionPreset(preset)
+                    try cameraController.useCaptureSessionPreset(preset)
                 } catch {
                     print("CameraService: error — capture session preset \(packet.resolution ?? "?") not supported by device.")
                     for i in 0..<exposureDurations.count {
-                        self.cameraController.photoSender.sendPacket(PhotoDataPacket.error(onID: i))
+                        photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }
                     return
                 }
-                let settings = self.cameraController.photoBracketSettings
+                let settings = cameraController.photoBracketSettings
                 /*
                 self.cameraController.takeNormalInvertedPair(settings: settings)
                 break
                 */
                 
                 
-                self.cameraController.resumeWithTakingInverted(settings: settings)
+                cameraController.resumeWithTakingInverted(settings: settings)
                 break
             
             
             case .StartStructuredLightingCaptureFull:
                 // for now, specify hard-code in resolution
-                print("CURRENT ISO=\(self.cameraController.captureDevice.iso)")
+                print("CURRENT ISO=\(cameraController.captureDevice.iso)")
                 
                 // save current focus
-                sceneMetadata.focus = self.cameraController.captureDevice.lensPosition
+                sceneMetadata.focus = cameraController.captureDevice.lensPosition
                 let resolutionStr = packet.resolution ?? AVCaptureSessionPresetPhoto
                 guard let binaryCodeSystem = packet.binaryCodeSystem, let dir = packet.binaryCodeDirection else {
                     print("CameraService: error - binary code must be specified for StartStructuredLightingCaptureFull instruction.")
-                    self.cameraController.photoSender.sendPacket(PhotoDataPacket.error())
+                    photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
-                self.cameraController.decoder = Decoder(width: 1920, height: 1080, binaryCodeSystem: binaryCodeSystem)
+                cameraController.decoder = Decoder(width: 1920, height: 1080, binaryCodeSystem: binaryCodeSystem)
                 binaryCodeDirection = dir
                 print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
             
             case .EndStructuredLightingCaptureFull:
                 // need to send off decoded image
-                let data = self.cameraController.decoder!.getPFMData()
+                let data = cameraController.decoder!.getPFMData()
                 let packet = PhotoDataPacket(photoData: data)
-                self.cameraController.photoSender.sendPacket(packet)
-                self.cameraController.decoder = nil
+                photoSender.sendPacket(packet)
+                cameraController.decoder = nil
                 binaryCodeDirection = nil
                 
             case CameraInstruction.EndCaptureSession:
-                self.cameraController.captureSession.stopRunning()
+                cameraController.captureSession.stopRunning()
                 print("Capture session ended.")
                 
             }
