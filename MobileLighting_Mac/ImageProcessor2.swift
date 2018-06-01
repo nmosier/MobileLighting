@@ -12,6 +12,8 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
     let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
     makeDir(outdir)
     refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath))
+    let completionHandler = { }
+    photoReceiver.receiveSceneMetadata(completionHandler: completionHandler)
 }
 
 //MARK: disparity matching functions

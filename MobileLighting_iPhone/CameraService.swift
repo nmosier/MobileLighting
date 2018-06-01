@@ -403,10 +403,15 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             case .EndStructuredLightingCaptureFull:
                 // need to send off decoded image
                 let data = cameraController.decoder!.getPFMData()
-                let packet = PhotoDataPacket(photoData: data)
+                var packet = PhotoDataPacket(photoData: data)
                 photoSender.sendPacket(packet)
                 cameraController.decoder = nil
                 binaryCodeDirection = nil
+                
+                //MARK: SEND METADATA
+                let metadata = sceneMetadata.getMetadataYAMLData()
+                packet = PhotoDataPacket(photoData: metadata as Data)
+                photoSender.sendPacket(packet)
                 
             case CameraInstruction.EndCaptureSession:
                 cameraController.captureSession.stopRunning()

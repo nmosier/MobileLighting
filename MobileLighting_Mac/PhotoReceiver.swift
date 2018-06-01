@@ -41,6 +41,9 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var decodedImageCompletionHandler: ((String)->Void)?
     var decodedImageAbsDir: String!
     
+    var receivingSceneMetadata = false
+    var sceneMetadataCompletionHandler: (() -> Void)?
+    
     var readyToReceive: Bool = false
 
     init(_ workingDirectory: String) {
@@ -207,15 +210,17 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             // save as PFM file
             filePath = decodedImageAbsDir+"/result\(decodedImageHorizontal ? 1:0).pfm"
             fileURL = URL(fileURLWithPath: filePath)
-            //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_decoded/img\(decodedImageHorizontal ? "_y" : "_x").pfm")
             receivingDecodedImage = false
             if decodedImageCompletionHandler != nil {
                 // so decoded image file will already have been saved; otherwise calls handler before im written
-                //handler(filePath)
                 handler = {
                     self.decodedImageCompletionHandler!(filePath)
                 }
             }
+        } else if receivingSceneMetadata {
+            print("Receiving scene metadata...")
+            filePath = [filePath, sceneName, "metadata", decodedImageHorizontal ? "h" : "v" ,  "metadata.yml"].joined(separator: "/")
+            fileURL = URL(fileURLWithPath: filePath)
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
             
@@ -278,5 +283,10 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         decodedImageHorizontal = horizontal
         decodedImageCompletionHandler = completionHandler
         decodedImageAbsDir = absDir
+    }
+    
+    func receiveSceneMetadata(completionHandler: @escaping () -> Void) {
+        receivingSceneMetadata = true
+        sceneMetadataCompletionHandler = completionHandler
     }
 }

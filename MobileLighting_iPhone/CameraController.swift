@@ -183,7 +183,6 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         capturingNormalInvertedPair = true
         capturingInverted = false
-        //currentBinaryCodeBit = 0
         pixelBuffers_normal.removeAll()
         pixelBuffers_inverted.removeAll()
         
@@ -296,9 +295,10 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 // if this is for the first structured lighting image
                 if (currentBinaryCodeBit! == 0) {
                     brightnessChangeDirection = brightnessChange(combinedIntensityBuffer)
+                    sceneMetadata.angle = brightnessChangeDirection
                 }
                 
-                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, dir: brightnessChangeDirection ?? (0,0) )
+                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, angle: brightnessChangeDirection ?? 0.0 )
                 // decode threshold image for current bit using decoder
                 decoder!.decode(threshBuffer, forBit: currentBinaryCodeBit!)
                 

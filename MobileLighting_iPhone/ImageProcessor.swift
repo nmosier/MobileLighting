@@ -13,7 +13,7 @@ import CoreImage
 // used by custom threshold filter as default when no input threshold specified
 var thresholdDefault: Float = 0.06
 var binaryCodeDirection: Bool?
-var brightnessChangeDirection: (Int, Int)?
+var brightnessChangeDirection: Double?
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
@@ -157,7 +157,7 @@ func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CV
 
 // implements zero-crossing thresholding algorithm
 //  using pixel loop
-func threshold(img: CVPixelBuffer, thresh: Double, dir: (Int, Int)) -> CVPixelBuffer {
+func threshold(img: CVPixelBuffer, thresh: Double, angle: Double) -> CVPixelBuffer {
     // kCVPixelFormatType_32BGRA
     // 32 bits per pixel
     let out_img: CVPixelBuffer = img.deepcopy()!
@@ -168,7 +168,8 @@ func threshold(img: CVPixelBuffer, thresh: Double, dir: (Int, Int)) -> CVPixelBu
     let bytesPerRow = CVPixelBufferGetBytesPerRow(img)
     let w = img.width
     let h = img.height
-    let (dx, dy) = dir
+    let dx = Int(round(cos(angle)))
+    let dy = Int(round(sin(angle)))
     
     print("(dx,dy)=(\(dx),\(dy))")
     print("thresh - bytes per row \(bytesPerRow), width \(CVPixelBufferGetWidth(img))")
@@ -229,7 +230,7 @@ func threshold(img: CVPixelBuffer, thresh: Double, dir: (Int, Int)) -> CVPixelBu
     return out_img
 }
 
-func brightnessChange(_ srcBuffer: CVPixelBuffer) -> (Int, Int) {
+func brightnessChange(_ srcBuffer: CVPixelBuffer) -> Double {
     let w = srcBuffer.width
     let h = srcBuffer.height
     let bytesPerRow = srcBuffer.bytesPerRow
@@ -289,23 +290,23 @@ func brightnessChange(_ srcBuffer: CVPixelBuffer) -> (Int, Int) {
     let dx: Int, dy: Int, angle: Double
     if (ratio_xy >= ratio_diag) {
         if (avg_0 >= avg_pi2) {
-            (dx, dy) = (1, 0)
+            // (dx, dy) = (1, 0)
             angle = 0.0
         } else {
-            (dx, dy) = (0, 1)
+            // (dx, dy) = (0, 1)
             angle = Double.pi/2
         }
     } else {
         if (avg_pi4 >= avg_3pi4) {
-            (dx, dy) = (1, 1)
+            // (dx, dy) = (1, 1)
             angle = Double.pi/4
         } else {
-            (dx, dy) = (1, -1)
+            // (dx, dy) = (1, -1)
             angle = 3*Double.pi/4
         }
     }
     CVPixelBufferUnlockBaseAddress(srcBuffer, lockFlags)
-    return (dx, dy)
+    return angle //(dx, dy)
 }
 
 

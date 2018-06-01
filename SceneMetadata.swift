@@ -12,8 +12,7 @@ class SceneMetadata {
     var focus: Float!
     var exposureDurations: [Double]!
     //var exposureISOs: [Double]!
-    var angle_v: Double!
-    var angle_h: Double!
+    var angle: Double!
     
     func getMetadataYAMLData() -> NSData {
         var out: String = String()
@@ -22,8 +21,7 @@ class SceneMetadata {
         for exposureDuration in self.exposureDurations  {
             out += "\t- " + String(exposureDuration) + "\n"
         }
-        out += "angle_v:\t" + String(angle_v) + "\n"
-        out += "angle_h:\t" + String(angle_h) + "\n"
+        out += "angle:\t" + String(angle) + "\n"
         
         guard let data: NSData = out.data(using: .utf8) as  NSData? else {
             fatalError("SceneMetadata error: cannot get data from string")
