@@ -5,6 +5,7 @@ import Foundation
 import Cocoa
 import VXMCtrl
 import SwitcherCtrl
+import Yaml
 
 
 //MARK: COMMAND-LINE INPUT
@@ -451,7 +452,17 @@ func nextCommand() -> Bool {
             print("refine: error - improper direction (0=x, 1=y).")
             break
         }
-        refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath))
+        
+        let filepath = [scenesDirectory, sceneName, "metadata", (direction == 0) ? "v" : "h", "metadata.yml"].joined(separator: "/")
+        do {
+            let metadataStr = try String(contentsOfFile: filepath)
+            let metadata: Yaml = try Yaml.load(metadataStr)
+            if let angle: Double = metadata.dictionary?["angle"]?.double {
+                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle)
+            }
+        } catch {
+            print("refine error: could not load metadata file.")
+        }
         break
     
     // computes disparity maps from decoded & refined images; saves them to 'disparity' directories

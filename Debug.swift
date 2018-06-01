@@ -9,3 +9,4 @@
 import Foundation
 
 let shouldSendThreshImgs = false
+let useNewRefineAlg = false

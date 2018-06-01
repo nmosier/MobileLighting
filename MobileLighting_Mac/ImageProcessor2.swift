@@ -7,12 +7,25 @@
 //
 
 import Foundation
+import Yaml
 
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
     let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
     makeDir(outdir)
-    refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath))
-    let completionHandler = { }
+    let completionHandler: () -> Void = {
+        let filepath = [scenesDirectory, sceneName, "metadata", horizontal ? "h" : "v", "metadata.yml"].joined(separator: "/")
+        do {
+            let metadataStr = try String(contentsOfFile: filepath)
+            let metadata: Yaml = try Yaml.load(metadataStr)
+            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
+            } else {
+                print("refine error: could not load angle (double) from YML file.")
+            }
+        } catch {
+            print("refine error: could not load metadata file.")
+        }
+    }
     photoReceiver.receiveSceneMetadata(completionHandler: completionHandler)
 }
 

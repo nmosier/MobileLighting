@@ -16,12 +16,12 @@ class SceneMetadata {
     
     func getMetadataYAMLData() -> NSData {
         var out: String = String()
-        out += "focus:\t" + String(self.focus) + "\n"   // focus
-        out += "exposureDurations:\t\n"
+        out += "focus: " + String(self.focus) + "\n"   // focus
+        out += "exposureDurations:\n"
         for exposureDuration in self.exposureDurations  {
-            out += "\t- " + String(exposureDuration) + "\n"
+            out += "   - " + String(exposureDuration) + "\n"
         }
-        out += "angle:\t" + String(angle) + "\n"
+        out += "angle: " + String(angle)
         
         guard let data: NSData = out.data(using: .utf8) as  NSData? else {
             fatalError("SceneMetadata error: cannot get data from string")

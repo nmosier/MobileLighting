@@ -221,6 +221,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             print("Receiving scene metadata...")
             filePath = [filePath, sceneName, "metadata", decodedImageHorizontal ? "h" : "v" ,  "metadata.yml"].joined(separator: "/")
             fileURL = URL(fileURLWithPath: filePath)
+            handler = sceneMetadataCompletionHandler
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
             print("Is bracketed photo with ID \(bracketedPhotoID).")
             
