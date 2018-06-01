@@ -458,7 +458,7 @@ func nextCommand() -> Bool {
             let metadataStr = try String(contentsOfFile: filepath)
             let metadata: Yaml = try Yaml.load(metadataStr)
             if let angle: Double = metadata.dictionary?["angle"]?.double {
-                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle)
+                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle, useNewRefineAlg ? 1 : 0)
             }
         } catch {
             print("refine error: could not load metadata file.")

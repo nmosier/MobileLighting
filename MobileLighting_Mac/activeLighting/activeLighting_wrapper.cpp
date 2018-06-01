@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include "ImgProcessor.h"
 
-extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle) {
-    refine(outdir, direction, decodedIm, angle);	// returns final CFloatImage, ignore
+extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, int mode) {
+    refine(outdir, direction, decodedIm, angle, mode);	// returns final CFloatImage, ignore
 }
 
 extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outpos0, char *outpos1, int dXmin, int dXmax, int dYmin, int dYmax) {

@@ -26,9 +26,7 @@
 int pixelToCode[MAXCODES];
 int codeToPixel[MAXCODES];
 
-void test(void) {
-	printf("Decode.cpp: IT WORKED.\n");
-}
+int refine_mode = 0;
 
 // load code file
 void loadCodes(char* file){
@@ -206,13 +204,14 @@ void refineCodesLine(float *v, float *f, int stride, int n0, int rad, float maxg
 }
 
 // refine codes using angle of prominent stripe direction
-void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, double angle)	// int direction)
+// - mode: determines refinement algorithm to use
+void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, double angle, int mode)
 {
     CShape sh = val.Shape();
     fval.ReAllocate(sh);
     int x, y, w = sh.width, h = sh.height;
 		
-	if (1) {
+	if (mode == 0) {
 		double dx, dy;
 		dx = cos(angle);
 		dy = sin(angle);
@@ -242,67 +241,67 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 		    }
 		}
 		return;
-    }
-    
-    int dx = round(cos(angle)), dy = round(sin(angle));
-    if (dy < 0) {	// ensures stride is a positive number
-		dx = -dx;
-		dy = -dy;
-	}
-	
-	int stride;
-	float *v, *f;
-	if (dx == 1 && dy == 0) {
-		stride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
-		for (y = 0; y < h; ++y) {
-			v = &val.Pixel(0, y, 0);
-			f = &fval.Pixel(0, y, 0);
-			refineCodesLine(v, f, stride, w, rad, maxgrad);
+    } else {
+	    int dx = round(cos(angle)), dy = round(sin(angle));
+	    if (dy < 0) {	// ensures stride is a positive number
+			dx = -dx;
+			dy = -dy;
 		}
-	} else if (dx == 0 && dy == 1) {
-		stride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
-		for (x = 0; x < w; ++x) {
-			v = &val.Pixel(x, 0, 0);
-			f = &fval.Pixel(x, 0, 0);
-			refineCodesLine(v, f, stride, h, rad, maxgrad);
+		
+		int stride;
+		float *v, *f;
+		if (dx == 1 && dy == 0) {
+			stride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
+			for (y = 0; y < h; ++y) {
+				v = &val.Pixel(0, y, 0);
+				f = &fval.Pixel(0, y, 0);
+				refineCodesLine(v, f, stride, w, rad, maxgrad);
+			}	
+		} else if (dx == 0 && dy == 1) {
+			stride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
+			for (x = 0; x < w; ++x) {
+				v = &val.Pixel(x, 0, 0);
+				f = &fval.Pixel(x, 0, 0);
+				refineCodesLine(v, f, stride, h, rad, maxgrad);
+			}
+		} else if (dx == 1 && dy == 1) {
+			int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
+			float maxgrad_adj = maxgrad * 2;//sqrt(2);
+			stride = &val.Pixel(1, 1, 0) - &val.Pixel(0, 0, 0);
+			for (x = 0; x < w; ++x) {
+				v = &val.Pixel(x, 0, 0);
+				f = &fval.Pixel(x, 0, 0);
+				int n = min(w-x, h);	// the maximum number of windows (center pixels) to consider
+				refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
+			}
+			for (y = 1; y < h; ++y) {		// don't count (0,0) twice
+				v = &val.Pixel(0, y, 0);
+				f = &fval.Pixel(0, y, 0);
+				int n = min(w, h-y);
+				refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
+			}
+		} else if (dx == -1 && dy == 1) {
+			int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
+			float maxgrad_adj = maxgrad * 2; //sqrt(2);
+			stride = &val.Pixel(0, 1, 0) - &val.Pixel(1, 0, 0);
+			for (x = 0; x < w; ++x) {
+				v = &val.Pixel(x, 0, 0);
+				f = &fval.Pixel(x, 0, 0);
+				int n = min(x+1, h);	// the maximum number of windows (center pixels) to consider
+				refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
+			}
+			for (y = 1; y < h; ++y) {
+				//printf("refining line %d\n", y);
+				v = &val.Pixel(w-1, y, 0);
+				f = &fval.Pixel(w-1, y, 0);
+				int n = min(w, h-y);
+				refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
+			}
+		} else {
+			char error[100];
+			sprintf(error, "refine: unsupported direction (%d, %d)", dx, dy);
+			throw CError(error);
 		}
-	} else if (dx == 1 && dy == 1) {
-		int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
-		float maxgrad_adj = maxgrad * 2;//sqrt(2);
-		stride = &val.Pixel(1, 1, 0) - &val.Pixel(0, 0, 0);
-		for (x = 0; x < w; ++x) {
-			v = &val.Pixel(x, 0, 0);
-			f = &fval.Pixel(x, 0, 0);
-			int n = min(w-x, h);	// the maximum number of windows (center pixels) to consider
-			refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
-		}
-		for (y = 1; y < h; ++y) {		// don't count (0,0) twice
-			v = &val.Pixel(0, y, 0);
-			f = &fval.Pixel(0, y, 0);
-			int n = min(w, h-y);
-			refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
-		}
-	} else if (dx == -1 && dy == 1) {
-		int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
-		float maxgrad_adj = maxgrad * 2; //sqrt(2);
-		stride = &val.Pixel(0, 1, 0) - &val.Pixel(1, 0, 0);
-		for (x = 0; x < w; ++x) {
-			v = &val.Pixel(x, 0, 0);
-			f = &fval.Pixel(x, 0, 0);
-			int n = min(x+1, h);	// the maximum number of windows (center pixels) to consider
-			refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
-		}
-		for (y = 1; y < h; ++y) {
-			//printf("refining line %d\n", y);
-			v = &val.Pixel(w-1, y, 0);
-			f = &fval.Pixel(w-1, y, 0);
-			int n = min(w, h-y);
-			refineCodesLine(v, f, stride, n, rad_adj, maxgrad_adj);
-		}
-	} else {
-		char error[100];
-		sprintf(error, "refine: unsupported direction (%d, %d)", dx, dy);
-		throw CError(error);
 	}
 }
 
@@ -438,6 +437,7 @@ void foregroundErase(CFloatImage fval, CByteImage mask)
 // 2. decode binary codes (considering unk) into val
 // 3. fill holes in val
 // 4. refine code values into float values fval
+/*
 CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForeground, char* maskdir, char **imList, int numIm)
 {
     CByteImage im;
@@ -526,8 +526,8 @@ CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForegro
     int radius = 7;// try larger radius since higher resolution
     float maxgrad0 = 1.0; // expected maximum gradient of code values per pixel in code direction
     float maxgrad1 = 0.1; // expected maximum gradient of code values per pixel in perpendicular direction
-    refineCodes(fval,  fval1, radius, maxgrad0, direction);
-    refineCodes(fval1, fval2, radius, maxgrad1, 1 - direction); // also refine in perpendicular direction
+    refineCodes(fval,  fval1, radius, maxgrad0, direction, refine_mode);
+    refineCodes(fval1, fval2, radius, maxgrad1, 1 - direction, refine_mode); // also refine in perpendicular direction
 
 
     if (1) { // save refined image
@@ -583,9 +583,10 @@ CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForegro
     return fval2;
 
 }
+*/
 
 // *** MobileLighting (Mac) currently calls this to do post-decoding refinement ***
-CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
+CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, int mode) {
 	CFloatImage fval, fval1, fval2;
 	CShape sh;
 	int verbose = 1;
@@ -633,8 +634,8 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
     int radius = 7;// try larger radius since higher resolution
     float maxgrad0 = 1.0; // expected maximum gradient of code values per pixel in code direction
     float maxgrad1 = 0.1; // expected maximum gradient of code values per pixel in perpendicular direction
-    refineCodes(fval,  fval1, radius, maxgrad0, angle);
-    refineCodes(fval1, fval2, radius, maxgrad1, M_PI/2.0 - angle); // also refine in perpendicular direction
+    refineCodes(fval,  fval1, radius, maxgrad0, angle, mode);
+    refineCodes(fval1, fval2, radius, maxgrad1, M_PI/2.0 - angle, mode); // also refine in perpendicular direction
 
 
     if (1) { // save refined image
