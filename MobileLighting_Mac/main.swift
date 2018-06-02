@@ -17,6 +17,7 @@ import CocoaAsyncSocket
 import AVFoundation
 import SwitcherCtrl
 import VXMCtrl
+import Yaml
 
 // creates shared application instance
 //  required in order for windows (for displaying binary codes) to display properly,
