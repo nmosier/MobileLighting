@@ -69,6 +69,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: pixelFormat)) else {
                     fatalError("Does not contain \(pixelFormat)")
                 }
+                
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
             } else {
                 // use default exposure settings
@@ -93,7 +94,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         checkPhotoLibraryAuthorization(checkedCameraAuthorization(_:))
         
         // configure first capture session
-        configureNewSession(sessionPreset: AVCaptureSessionPresetHigh)  // use 'high' preset (not 'photo') so that preview layer fills entire screen
+        configureNewSession(sessionPreset: AVCaptureSessionPresetPhoto) //AVCaptureSessionPresetHigh)  // use 'high' preset (not 'photo') so that preview layer fills entire screen
         
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
@@ -290,12 +291,13 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_inverted.removeAll()
                 
                 let combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
+                intensityBuffers.removeAll()
                 
                 // get prominent stripe direction
                 // if this is for the first structured lighting image
                 if (currentBinaryCodeBit! == 0) {
                     brightnessChangeDirection = brightnessChange(combinedIntensityBuffer)
-                    sceneMetadata.angle = brightnessChangeDirection
+                    sceneMetadata.angle = brightnessChangeDirection! - Double.pi/2
                 }
                 
                 let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, angle: brightnessChangeDirection ?? 0.0 )

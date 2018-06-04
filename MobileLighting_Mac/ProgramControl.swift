@@ -441,21 +441,35 @@ func nextCommand() -> Bool {
     // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine:
-        let usage = "usage: refine [imageFilename] [direction (0/1)]"   // direction: 0 = x, 1 = y
-        let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
-        guard tokens.count == 3 else {
+        let params = ["refine", "proj", "pos", "direction"]
+        let usage = "usage: refine [proj #] [pos #] [direction [0,1]]"
+        let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir].joined(separator: "/")
+        guard tokens.count == params.count else {
             print(usage)
             break
         }
-        let imgpath = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/"+tokens[1]
-        guard let direction = Int32(tokens[2]) else {
-            print("refine: error - improper direction (0=x, 1=y).")
+        guard let proj = Int(tokens[1]) else {
+            print("refine: error - improper projector number \(tokens[1])")
             break
         }
+        guard let pos = Int(tokens[2]) else {
+            print("refine: error - improper position number \(tokens[2])")
+            break
+        }
+        guard let direction = Int32(tokens[3]) else {
+            print("refine: error - improper direction \(tokens[3])")
+            break
+        }
+        let imgpath: String = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
+        //let imgpath = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/"+tokens[1]
+        /* guard let direction = Int32(tokens[2]) else {
+            print("refine: error - improper direction (0=x, 1=y).")
+            break
+        } */
         
-        let filepath = [scenesDirectory, sceneName, "metadata", (direction == 0) ? "v" : "h", "metadata.yml"].joined(separator: "/")
+        let metadatapath = [scenesDirectory, sceneName, "metadata", (direction == 0) ? "v" : "h", "metadata.yml"].joined(separator: "/")
         do {
-            let metadataStr = try String(contentsOfFile: filepath)
+            let metadataStr = try String(contentsOfFile: metadatapath)
             let metadata: Yaml = try Yaml.load(metadataStr)
             if let angle: Double = metadata.dictionary?["angle"]?.double {
                 refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle, useNewRefineAlg ? 1 : 0)
@@ -579,7 +593,7 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 //      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
 //      on from the Kramer box.)
 func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, position: Int) {
-    let resolution = "high"
+    // let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
@@ -632,7 +646,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, /*resolution: resolution,*/ photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -653,9 +667,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
-        
-        //let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CapturePhotoBracket, resolution: resolution, photoBracketExposures: exposures, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, /*resolution: resolution,*/ photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)

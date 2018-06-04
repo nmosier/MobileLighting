@@ -54,13 +54,15 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var torchMode: AVCaptureTorchMode?
     var torchLevel: Float?
     
+    // this beauty will supercede all those properties above
+    var yamlSettings: String?
     
     //MARK: INITIALIZERS
     
     // public initializer for CameraInstructionPacket
     // NOTE: most values are optional, so they are safe to omit when calling this function unless
     //   you need to use them
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, yamlSettings: String? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -74,6 +76,8 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeDirection = binaryCodeDirection
         self.binaryCodeInverted = binaryCodeInverted
         self.binaryCodeSystem = binaryCodeSystem
+        
+        self.yamlSettings = yamlSettings
     }
     
     // for decoding packet (never called by programmer)
@@ -100,6 +104,8 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeBit = decoder.decodeObject(forKey: "binaryCodeBit") as! Int?
         self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
         self.binaryCodeDirection = decoder.decodeObject(forKey: "binaryCodeDirection") as! Bool?
+        
+        self.yamlSettings = decoder.decodeObject(forKey: "yamlSettings") as! String?
     }
     
     // never called by programmer
@@ -118,6 +124,8 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.binaryCodeBit, forKey: "binaryCodeBit")
         coder.encode(self.binaryCodeInverted, forKey: "binaryCodeInverted")
         coder.encode(self.binaryCodeDirection, forKey: "binaryCodeDirection")
+        
+        coder.encode(self.yamlSettings, forKey: "yamlSettings")
     }
     
 }

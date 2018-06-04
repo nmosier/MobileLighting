@@ -24,6 +24,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         "3840x2160":AVCaptureSessionPreset3840x2160
     ];
     
+    let resolutionDim: [String : (Int, Int)] = [
+        "max"   : (3840, 2160),
+        "high"  : (1920, 1080),
+        "3840x2160" : (3840, 2160),
+        "1920x1080" : (1920, 1080),
+    ];
+    
     
     //MARK: Properties
     var service: NetService?
@@ -77,8 +84,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func readPacket() {
         // read header, which contains the number of bytes that follow
         // using tag 1 for header
-        socket.readData(toLength: UInt(MemoryLayout<UInt16>.size), withTimeout: -1, tag: 1)
-        // when header is read, socketDidReadData delegate function (directly below) will be called
+        if self.socket.isConnected {
+            socket.readData(toLength: UInt(MemoryLayout<UInt16>.size), withTimeout: -1, tag: 1)
+        } else {
+            print("readPacket: CameraService socket not connected.")
+        }
     }
     
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
@@ -279,7 +289,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
             case CameraInstruction.CaptureStillImage:
                 do {
-                    try cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto]!)
+                    try cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[packet.resolution ?? "max"]!)
                 } catch {
                     print("CameraService: error — capture session preset \(String(describing: packet.resolution)) not supported by device.")
                     photoSender.sendPacket(PhotoDataPacket.error())
@@ -294,14 +304,14 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     break
                 }
                 cameraController.photoBracketExposureDurations = exposureDurations
-                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
-                    print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? "max"] else {
+                    print("Error: resolution \(packet.resolution ?? AVCaptureSessionPresetPhoto) is not compatable with this device.")
                     return
                 }
                 do {
                     try cameraController.useCaptureSessionPreset(preset)
                 } catch {
-                    print("CameraService: error — capture session preset \(packet.resolution ?? "?") not supported by device.")
+                    print("CameraService: error — capture session preset \(packet.resolution ?? AVCaptureSessionPresetPhoto) not supported by device.")
                     for i in 0..<exposureDurations.count {
                         photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }
@@ -330,14 +340,14 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 cameraController.currentBinaryCodeBit = packet.binaryCodeBit
                 cameraController.photoBracketExposureDurations = exposureDurations
                 /* self.cameraController.photoBracketExposureISOs = exposureISOs */
-                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
-                    print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? "max"] else {
+                    print("Error: resolution \(packet.resolution ?? AVCaptureSessionPresetPhoto) is not compatable with this device.")
                     return
                 }
                 do {
                     try cameraController.useCaptureSessionPreset(preset)
                 } catch {
-                    print("CameraService: error — capture session preset \(packet.resolution ?? "?") not supported by device.")
+                    print("CameraService: error — capture session preset \(packet.resolution ?? AVCaptureSessionPresetPhoto) not supported by device.")
                     for i in 0..<exposureDurations.count {
                         photoSender.sendPacket(PhotoDataPacket.error(onID: i))
                     }
@@ -360,8 +370,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 } */
                 cameraController.photoBracketExposureDurations = exposureDurations
                 // self.cameraController.photoBracketExposureISOs = exposureISOs
-                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? AVCaptureSessionPresetPhoto] else {
-                    print("Error: resolution \(packet.resolution ?? "?") is not compatable with this device.")
+                guard let preset = self.resolutionToSessionPreset[packet.resolution ?? "max"] else {
+                    print("Error: resolution \(packet.resolution ?? AVCaptureSessionPresetPhoto) is not compatable with this device.")
                     return
                 }
                 do {
@@ -396,7 +406,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
-                cameraController.decoder = Decoder(width: 1920, height: 1080, binaryCodeSystem: binaryCodeSystem)
+                guard let (width, height) = self.resolutionDim[packet.resolution ?? "max"] else {
+                    print("CameraService: error - could not find dimensions of resolution \(packet.resolution ?? "max")")
+                    fatalError()
+                }
+                cameraController.decoder = Decoder(width: width, height: height, binaryCodeSystem: binaryCodeSystem)
                 binaryCodeDirection = dir
                 print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
             

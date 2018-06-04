@@ -80,8 +80,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // instruction is sent by the CameraServiceBrowser
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
         print("Accepted new socket.")
-        socket = newSocket
-        socket.delegate = self
+        self.socket = newSocket
+        self.socket.delegate = self
         self.readyToReceive = true
         
         readPacket()
@@ -92,7 +92,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func readPacket() {
         // read header, which contains the number of bytes that follow
         // using tag 1 for header
-        socket.readData(toLength: UInt(4), withTimeout: -1, tag: 1)
+        if self.socket.isConnected {
+            self.socket.readData(toLength: UInt(4), withTimeout: -1, tag: 1)
+        } else {
+            print("readPacket: cannot read packet; socket disconnected.")
+        }
         // when header is read, socketDidReadData delegate function (directly below) will be called
     }
     
