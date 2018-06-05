@@ -1,18 +1,19 @@
 # Makefile for Active lighting code
 # DS Sep 2013
 # DS fixed 6/2017 to compile in MBH 632
+# NM modified 7/2017 to compile as static library for use in MobileLighting
 
 # SRC = Calibrate.cpp DetectForeground.cpp Disparities.cpp Decode.cpp \
  #     Threshold.cpp Main.cpp Rectify.cpp Reproject.cpp Utils.cpp
 
-SRC = Disparities.cpp Decode.cpp Utils.cpp flowIO.cpp
+SRC = Disparities.cpp Decode.cpp Utils.cpp flowIO.cpp Debug.cpp
 
 BIN = ActiveLighting # FloVis
 
 ARCH := $(shell arch)
 
 # IMGLIB = /home/schar/summer2017/MiddStereo/imageLib
-IMGLIB = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/demo-mobile-scene-capture/demo_mac/imageLib"
+IMGLIB = "imageLib"
 
 DBG = -g
 CC = g++

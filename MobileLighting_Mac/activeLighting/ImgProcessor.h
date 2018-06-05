@@ -5,5 +5,5 @@
 #include "flowIO.h"
 #include "Utils.h"
 
-CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, int mode);
+CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle);
 void computeDisparities(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);

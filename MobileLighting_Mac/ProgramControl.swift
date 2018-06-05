@@ -179,7 +179,7 @@ func nextCommand() -> Bool {
             print("usage: calibrate [# of photos]")
             break
         }
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "high")
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "max")
         let subpath = sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
         makeDir(scenesDirectory+subpath)
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
@@ -443,7 +443,6 @@ func nextCommand() -> Bool {
     case .refine:
         let params = ["refine", "proj", "pos", "direction"]
         let usage = "usage: refine [proj #] [pos #] [direction [0,1]]"
-        let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir].joined(separator: "/")
         guard tokens.count == params.count else {
             print(usage)
             break
@@ -461,6 +460,7 @@ func nextCommand() -> Bool {
             break
         }
         let imgpath: String = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
+        let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
         //let imgpath = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/"+tokens[1]
         /* guard let direction = Int32(tokens[2]) else {
             print("refine: error - improper direction (0=x, 1=y).")
@@ -472,7 +472,7 @@ func nextCommand() -> Bool {
             let metadataStr = try String(contentsOfFile: metadatapath)
             let metadata: Yaml = try Yaml.load(metadataStr)
             if let angle: Double = metadata.dictionary?["angle"]?.double {
-                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle, useNewRefineAlg ? 1 : 0)
+                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle)
             }
         } catch {
             print("refine error: could not load metadata file.")
@@ -593,7 +593,6 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 //      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
 //      on from the Kramer box.)
 func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, position: Int) {
-    // let resolution = "high"
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
@@ -606,7 +605,6 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     do {
         try FileManager.default.createDirectory(atPath: decodedDir, withIntermediateDirectories: true, attributes: nil)
     } catch { fatalError("Failed to create directory at \(decodedDir).") }
-    
     
     // DESCRIPTION OF FLOW OF EXECUTION
     //   There are two different subfunctions that drive the capture of the scene. They are:
@@ -628,7 +626,6 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     //      thresholded image - and save them to the 'tmp' directory (ultimately, this part of the image 
     //      processing will only take place on the iPhone). After incrementing the current binary code 
     //      bit, the photo receiver will then call captureBinaryCode(), starting the loop all over again
-    
     func captureNextBinaryCode() {
         guard cameraServiceBrowser.readyToSendPacket else {
             print("Program Control: error - camera service browser not ready to send packet.")
@@ -646,7 +643,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, /*resolution: resolution,*/ photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -667,7 +664,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, /*resolution: resolution,*/ photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -686,7 +683,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     horizontal = false
     currentCodeBit = 0  // reset to 0
     
-    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
+    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, resolution: resolution, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
     cameraServiceBrowser.sendPacket(packet)
     while !cameraServiceBrowser.readyToSendPacket {}
     
@@ -702,7 +699,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     currentCodeBit = 0
     horizontal = true
     
-    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
+    packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, resolution: resolution, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
     cameraServiceBrowser.sendPacket(packet)
     while !cameraServiceBrowser.readyToSendPacket {}
     

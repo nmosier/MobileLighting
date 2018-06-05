@@ -38,7 +38,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
     // Parameters
     //---IN USE---
     var cameraInstruction: CameraInstruction!
-    var resolution: String?   // for setting photo resolution (use constants "AVCaptureSessionPreset...")
+    var resolution: String = "max"   // for setting photo resolution (use constants "AVCaptureSessionPreset...")
     var photoBracketExposureDurations: [Double]?   // values are in seconds
     //var photoBracketExposureISOs: [Double]?
     var pointOfFocus: CGPoint?  // point of focus: represents where to focus in field of view
@@ -55,14 +55,14 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var torchLevel: Float?
     
     // this beauty will supercede all those properties above
-    var yamlSettings: String?
+    var settings: String?
     
     //MARK: INITIALIZERS
     
     // public initializer for CameraInstructionPacket
     // NOTE: most values are optional, so they are safe to omit when calling this function unless
     //   you need to use them
-    convenience init(cameraInstruction: CameraInstruction, resolution: String? = nil, photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, yamlSettings: String? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String = "max", photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, settings: String? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -77,14 +77,14 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeInverted = binaryCodeInverted
         self.binaryCodeSystem = binaryCodeSystem
         
-        self.yamlSettings = yamlSettings
+        self.settings = settings
     }
     
     // for decoding packet (never called by programmer)
     required convenience init?(coder decoder: NSCoder) {
         self.init()
         self.cameraInstruction = CameraInstruction(rawValue: decoder.decodeInteger(forKey: "cameraInstruction"))
-        self.resolution = decoder.decodeObject(forKey: "captureSessionPreset") as! String?
+        self.resolution = decoder.decodeObject(forKey: "resolution") as! String
         self.photoBracketExposureDurations = decoder.decodeObject(forKey: "photoBracketExposureDurations") as! [Double]?
         //self.photoBracketExposureISOs = decoder.decodeObject(forKey: "photoBracketExposureISOs") as! [Double]?
         self.pointOfFocus = decoder.decodeObject(forKey: "pointOfFocus") as! CGPoint?
@@ -105,14 +105,14 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
         self.binaryCodeDirection = decoder.decodeObject(forKey: "binaryCodeDirection") as! Bool?
         
-        self.yamlSettings = decoder.decodeObject(forKey: "yamlSettings") as! String?
+        self.settings = decoder.decodeObject(forKey: "settings") as! String?
     }
     
     // never called by programmer
     // encodes packet before being sent
     func encode(with coder: NSCoder) {
         coder.encode(self.cameraInstruction.rawValue, forKey: "cameraInstruction")
-        coder.encode(self.resolution, forKey: "captureSessionPreset")
+        coder.encode(self.resolution, forKey: "resolution")
         coder.encode(self.photoBracketExposureDurations, forKey: "photoBracketExposureDurations")
         //coder.encode(self.photoBracketExposureISOs, forKey: "photoBracketExposureISOs")
         coder.encode(self.pointOfFocus, forKey: "pointOfFocus")
@@ -125,7 +125,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.binaryCodeInverted, forKey: "binaryCodeInverted")
         coder.encode(self.binaryCodeDirection, forKey: "binaryCodeDirection")
         
-        coder.encode(self.yamlSettings, forKey: "yamlSettings")
+        coder.encode(self.settings, forKey: "settings")
     }
     
 }

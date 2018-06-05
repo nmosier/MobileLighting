@@ -18,7 +18,7 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
             let metadataStr = try String(contentsOfFile: filepath)
             let metadata: Yaml = try Yaml.load(metadataStr)
             if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
-                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle, useNewRefineAlg ? 1:0)
+                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
             } else {
                 print("refine error: could not load angle (double) from YML file.")
             }

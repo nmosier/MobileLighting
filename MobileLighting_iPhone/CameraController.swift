@@ -236,6 +236,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
         print("CameraController: lens position is \(self.captureDevice.lensPosition)")
         
+        if (shouldSaveOriginals) {
+            if (!photoSampleBuffer.save()) {
+                print("could not save original to Photos.")
+            }
+        }
+        
         if capturingNormalInvertedPair {
             // select correct buffer array (normal/inverted)
             guard var pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else {
@@ -261,6 +267,8 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             self.lensPositions.append(self.captureDevice.lensPosition)
         }
     }
+    
+    
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
         guard error == nil else {
@@ -300,7 +308,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     sceneMetadata.angle = brightnessChangeDirection! - Double.pi/2
                 }
                 
-                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: 0.035, angle: brightnessChangeDirection ?? 0.0 )
+                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: threshold_val, angle: brightnessChangeDirection ?? 0.0 )
                 // decode threshold image for current bit using decoder
                 decoder!.decode(threshBuffer, forBit: currentBinaryCodeBit!)
                 

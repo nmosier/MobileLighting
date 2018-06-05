@@ -20,13 +20,12 @@
 #include <iostream>
 #include <fstream>
 #include "Utils.h"
+#include "Debug.h"
 
 #define MAXCODES 1024
 
 int pixelToCode[MAXCODES];
 int codeToPixel[MAXCODES];
-
-int refine_mode = 0;
 
 // load code file
 void loadCodes(char* file){
@@ -203,15 +202,57 @@ void refineCodesLine(float *v, float *f, int stride, int n0, int rad, float maxg
     }
 }
 
+// refine codes using a planar fitting approach
+// created by Nicholas Mosier, 06/05/2018
+void refineCodesPlanePixel(CFloatImage val, CFloatImage &fval, int x0, int y0, int rad, float maxdiff, int minsupport)
+{
+	CShape sh = val.Shape();
+	int w = sh.width, h = sh.height;
+	vector<float> vx, vy, vz;
+	float v = val.Pixel(x0,y0,0);		// center input pixel
+	float *f = &fval.Pixel(x0,y0,0);	// output pixel
+	
+	int x, y;
+	for (x = max(x0-rad,0); x <= min(x0+rad,w-1); ++x) {
+		for (y = max(y0-rad,0); y <= min(y0+rad,h-1); ++y) {
+			// (x,y) guaranteed to be w/i bounds
+			float zval = val.Pixel(x,y,0);
+			if (zval != UNK) {
+				vx.push_back(x-x0);
+				vy.push_back(y-y0);
+				vz.push_back(zval);
+			}
+		}
+	}
+	
+	float a,b,c;	// constants for fitted plane z = ax + by + c
+	fitPlane(vx, vy, vz, a, b, c);
+	
+	int cnt = 0;
+	for (int i = 0; i < vz.size(); ++i) {
+		if (fabs(vz[i] - (a*vx[i] + b*vy[i] + c)) <= maxdiff) {
+			++cnt;
+		}
+	}
+	
+	if (cnt >= minsupport) {	// check if enough pixels had known values
+		*f = c;
+	} else {
+		*f = v;
+	}
+}
+
 // refine codes using angle of prominent stripe direction
 // - mode: determines refinement algorithm to use
-void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, double angle, int mode)
+void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, double angle)
 {
     CShape sh = val.Shape();
     fval.ReAllocate(sh);
     int x, y, w = sh.width, h = sh.height;
-		
-	if (mode == 0) {
+	
+	switch (refine_mode) {
+	case refine_old:
+	{
 		double dx, dy;
 		dx = cos(angle);
 		dy = sin(angle);
@@ -240,8 +281,10 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 	        refineCodesLine(v, f, stride, h, rad, maxgrad); //, debugy);
 		    }
 		}
-		return;
-    } else {
+		break;
+	}
+    case refine_angle:
+    {
 	    int dx = round(cos(angle)), dy = round(sin(angle));
 	    if (dy < 0) {	// ensures stride is a positive number
 			dx = -dx;
@@ -302,38 +345,30 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 			sprintf(error, "refine: unsupported direction (%d, %d)", dx, dy);
 			throw CError(error);
 		}
+		break;
 	}
+	case refine_planar:
+	{
+		// refine_plane_windowsize is height & width of window
+		int rad = (refine_plane_windowsize-1)/2;
+		float maxdiff = refine_plane_maxdiff;
+		int minsupport = refine_plane_minsupport;
+		for (x = 0; x < w; ++x) {
+			for (y = 0; y < h; ++y) {
+				refineCodesPlanePixel(val, fval, x, y, rad, maxdiff, minsupport);
+			}
+		}
+		break;
+	}
+	default:
+	{
+		char error[100];
+		sprintf(error, "refine: unrecognized refinement mode");
+		throw CError(error);
+	}
+	}
+	return;
 }
-
-// refine codes using a running average over window of width 2*rad+1
-/*
-void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, int direction)
-{
-    CShape sh = val.Shape();
-    fval.ReAllocate(sh);
-    int x, y, w = sh.width, h = sh.height;
-
-    if (direction == 0) {
-    	for (y = 0; y < h; y++) {
-	    float *v = &val.Pixel(0, y, 0);
-	    float *f = &fval.Pixel(0, y, 0);
-            int stride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
-            // assume that f has same stride!
-	    //int debugy = (y == 617) ? y : 0;
-            refineCodesLine(v, f, stride, w, rad, maxgrad); //, debugy);
-        }
-    } else {
-    	for (x = 0; x < w; x++) {
-	    float *v = &val.Pixel(x, 0, 0);
-	    float *f = &fval.Pixel(x, 0, 0);
-            int stride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
-            // assume that f has same stride!
-	    //int debugy = (x == 998) ? x : 0;
-            refineCodesLine(v, f, stride, h, rad, maxgrad); //, debugy);
-        }
-    }
-} */
-
 
 // map float code values to color map
 void fval2rgb(int N, CFloatImage val, CByteImage &result)
@@ -432,161 +467,8 @@ void foregroundErase(CFloatImage fval, CByteImage mask)
 }
 
 
-// Decode images.  if direction==0, code goes (mainly) in x direction, otherwise in y-direction
-// 1. combine all numIm thresholded images into CIntImages val and unk
-// 2. decode binary codes (considering unk) into val
-// 3. fill holes in val
-// 4. refine code values into float values fval
-/*
-CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForeground, char* maskdir, char **imList, int numIm)
-{
-    CByteImage im;
-    CShape sh;
-    int i, verbose=1;
-    char filename[1000];
-    CIntImage val, unk;
-    CFloatImage fval, fval1, fval2;
-    
-    loadCodes(codefile);
-
-	
-    if (numIm > 0) {
-   
-	// combine all numIm thresholded images into CIntImages val and unk
-	// for both x and y directions
-	for (i = 0; i < numIm; i++) {
-	    ReadImageVerb(im, imList[i], verbose);
-	    if (i == 0) {
-		sh = im.Shape();
-		val.ReAllocate(sh, true);
-		val.ClearPixels();
-		unk.ReAllocate(sh, true);
-		unk.ClearPixels();
-	    }
-	    if (sh != im.Shape() || sh.nBands != 1)
-		throw CError("decode: all images need to have same size and 1 band");
-	    
-	    store_bit(im, val, unk, i);
-	}
-	
-
-	// decode binary code (considering unk) into val
-	
-	decodeCode(val, unk, fval);
-
-	// save original decoded image
-	sprintf(filename, "%s/result%d-0initial.pfm", outdir, direction);
-	WriteImageVerb(fval, filename, verbose);
-    
-    } else { // if no images are given, reload initial result and rerun subsequent processing steps
-
-	sprintf(filename, "%s/result%d-0initial.pfm", outdir, direction);
-	ReadImageVerb(fval, filename, verbose);
-
-    }
-    
-    
-    // fval is float
-
-    // filter to remove isolated pixels with different code values
-    if (1) {
-	int rad = 4;
-	float fraction = 0.25;
-	float maxdiff = 4.0;
-	printf("Filtering image with radius %d, fraction %g, and maxdiff %g\n", rad, fraction, maxdiff);
-	filter(fval, rad, fraction, maxdiff);
-    }	
-	
-    if (1) { // save filtered image
-	sprintf(filename, "%s/result%d-1filtered.pfm", outdir, direction);
-	WriteImageVerb(fval, filename, verbose);
-    }
-
-    if (1) {
-	// fill holes
-	if (verbose) printf("filling holes\n");
-	//int maxwidth = 7; // since higher resolution, try filling larger holes
-	int maxwidth = 5; // nope, back to 5 pixels, seems to be a good compromise
-	float maxborderdiff = 2; // still sometimes need 2, e.g. Newkuba/P4 on the lamp
-	fillCodeHoles(fval, maxwidth, maxborderdiff, direction);
-	maxborderdiff = 0;
-	fillCodeHoles(fval, maxwidth, maxborderdiff, 1-direction);
-	maxborderdiff = 1;
-	fillCodeHoles(fval, maxwidth, maxborderdiff, direction);
-    }
-
-    if (1) { // save hole-filled image
-	sprintf(filename, "%s/result%d-2holefilled.pfm", outdir, direction);
-	WriteImageVerb(fval, filename, verbose);
-    }
-
-    // refine code values
-    if (verbose) printf("refining code values\n");
-    //int radius = 3;
-    int radius = 7;// try larger radius since higher resolution
-    float maxgrad0 = 1.0; // expected maximum gradient of code values per pixel in code direction
-    float maxgrad1 = 0.1; // expected maximum gradient of code values per pixel in perpendicular direction
-    refineCodes(fval,  fval1, radius, maxgrad0, direction, refine_mode);
-    refineCodes(fval1, fval2, radius, maxgrad1, 1 - direction, refine_mode); // also refine in perpendicular direction
-
-
-    if (1) { // save refined image
-	sprintf(filename, "%s/result%d-3refined1.pfm", outdir, direction);
-	WriteImageVerb(fval1, filename, verbose);
-	sprintf(filename, "%s/result%d-4refined2.pfm", outdir, direction);
-	WriteImageVerb(fval2, filename, verbose);
-    }
-
-
-    // optionally erase foreground pixels
-    // TODO: if I really use this, probably should do before holefilling and refining
-    if (eraseForeground == 1) {
-	printf("Erasing foreground pixels from background-only images\n");
-        CByteImage mask;
-        ReadImageVerb(mask, maskdir, verbose);
-	foregroundErase(fval2, mask);	
-	sprintf(filename, "%s/result%d-5foregroundremoved.pfm", outdir, direction);
-	WriteImageVerb(fval2, filename, verbose);
-    }
-
-
-    if (0) { // don't need anymore now that I can view pfms in color
-	fprintf(stderr, "encoding in ppm:\n");
-	CByteImage result;
-
-	fval2rgb(numIm, fval, result);
-	sprintf(filename, "%s/cresult%da.ppm", outdir,direction);
-	WriteImageVerb(result, filename, verbose);
-
-	fval2rgb(numIm, fval1, result);
-	sprintf(filename, "%s/cresult%db.ppm", outdir,direction);
-	WriteImageVerb(result, filename, verbose);
-
-	fval2rgb(numIm, fval2, result);
-	sprintf(filename, "%s/cresult%dc.ppm", outdir,direction);
-	WriteImageVerb(result, filename, verbose);
-    }
-
-
-
-    // save .pgm file that contains grey-level encoding of refined code values
-    //if (0) { // pgm
-    //fprintf(stderr, "encoding in pgm - ");
-    //sh.nBands = 1;
-    //CByteImage result(sh);
-    //int mode = 1; // 0 - use fixed scaling, 3 - use val*4 modulo 256
-    //fval2byte(fval2, result, mode);
-    //sprintf(filename, "%s/result%d.pgm", outdir, direction);
-    //WriteImageVerb(result, filename, verbose);
-    //}
-
-    return fval2;
-
-}
-*/
-
 // *** MobileLighting (Mac) currently calls this to do post-decoding refinement ***
-CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, int mode) {
+CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
 	CFloatImage fval, fval1, fval2;
 	CShape sh;
 	int verbose = 1;
@@ -632,10 +514,8 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, i
 	if (verbose) printf("refining code values\n");
     //int radius = 3;
     int radius = 7;// try larger radius since higher resolution
-    float maxgrad0 = 1.0; // expected maximum gradient of code values per pixel in code direction
-    float maxgrad1 = 0.1; // expected maximum gradient of code values per pixel in perpendicular direction
-    refineCodes(fval,  fval1, radius, maxgrad0, angle, mode);
-    refineCodes(fval1, fval2, radius, maxgrad1, M_PI/2.0 - angle, mode); // also refine in perpendicular direction
+    refineCodes(fval,  fval1, radius, maxgrad0, angle);
+    refineCodes(fval1, fval2, radius, maxgrad1, M_PI/2.0 - angle); // also refine in perpendicular direction
 
 
     if (1) { // save refined image
@@ -647,251 +527,3 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, i
 	
 	return fval2;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////
-// old code, no longer needed
-
-/* -------------
-
-#define IUNK -9999	// label for unknown pixel in Int image
-
-// map integer code values to float
-void val2float(CIntImage val, CFloatImage &fval)
-{
-    CShape sh = val.Shape();
-    int x, y, w = sh.width, h = sh.height;
-    fval.ReAllocate(sh);
-	
-    for (y = 0; y < h; y++) {
-	int *v = &val.Pixel(0, y, 0);
-	float *r = &fval.Pixel(0, y, 0);
-		
-	for (x = 0; x < w; x++) {
-	    if (v[x] == IUNK)
-		r[x] = UNK; // label for unknown pixels
-	    else
-		r[x] = v[x];
-	}
-    }
-}
-
-void iWriteImageVerb(CIntImage val, char *filename, int verbose)
-{
-    CFloatImage fval;
-    val2float(val, fval);
-    WriteImageVerb(fval, filename, verbose);
-}
-
-
-
-
-
-// map integer code values to color map
-void val2rgb(int N, CIntImage val, CByteImage result)
-{
-    CShape sh = val.Shape();
-    int x, y, w = sh.width, h = sh.height;
-	
-    float scale = 1.0/(1<<N);
-    for (y = 0; y < h; y++) {
-	int *v = &val.Pixel(0, y, 0);
-	uchar *r = &result.Pixel(0, y, 0);
-		
-	for (x = 0; x < w; x++) {
-	    if (v[x] == IUNK) {
-		r[3*x] = r[3*x+1] = r[3*x+2] = 0;
-	    } else {
-		unsigned int c = v[x];
-		float f = c * scale;
-		hueshade(f, &r[3*x]);
-	    }
-	}
-    }
-}
-
-
-
-// not sure what this code was used for anymore...
-// subtract average plane from code values, by looking at pixel grid 'step' apart
-void subtractPlane(CIntImage val, int step)
-{
-    CShape sh = val.Shape();
-    int x, y, w = sh.width, h = sh.height;
-    float ax, ay, b;
-	
-    // old code: estimate ax, ay separately using two line fits
-	
-    // estimate horizontal slope in center of image
-    //int *xline = &val.Pixel(0, h/2, 0);
-    //int xstride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
-    //fitLine(xline, w, xstride, ax, b, IUNK);
-    //printf("horizontal line: a=%g, b=%g\n", ax, b);
-	  
-    // estimate vertical slope in center of image
-    //int *yline = &val.Pixel(w/2, 0, 0);
-    //int ystride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
-    //fitLine(yline, h, ystride, ay, b, IUNK);
-    //printf("vertical line: a=%g, b=%g\n", ay, b);
-    //b = 0; // don't need b here
-
-    int *data = &val.Pixel(0, 0, 0);
-    int xstride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
-    int ystride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
-    fitPlane(data, w, h, step, step, xstride, ystride, ax, ay, b, IUNK);
-    //printf("plane params: ax=%g, ay=%g, b=%g\n", ax, ay, b);
-
-    // subtract average plane
-    for (y = 0; y < h; y++) {
-	int *v = &val.Pixel(0, y, 0);
-	for (x = 0; x < w; x++) {
-	    if (v[x] != IUNK) {
-		float vf = v[x];
-		vf -= ax * x + ay * y + b;	// subtract plane
-		if (vf == IUNK)
-		    vf += 0.001f;	// make sure we're not introducing IUNK by accident
-		v[x] = vf;
-	    }
-	}
-    }
-}
-
-
-// old filter by York
-//Surveys the image and finds pixels that are too bright compared to other
-//pixels around them and changes them to IUNK
-// prints total number of pixels filtered
-void filter2(CIntImage val, int radius, int maxDiff) 
-{
-    CShape sh = val.Shape();
-    int w = sh.width, h = sh.height, nB = sh.nBands;
-    CIntImage tmp;
-    CShape sh2(w, h, nB);
-    tmp.ReAllocate(sh2);
-    int nfiltered = 0;
-    
-    for (int y = 0; y < h; y++) {
-	for (int x = 0; x < w; x++) {
-	    int r0 = val.Pixel(x, y, 0);
-	    if (r0 != IUNK) {
-		int cnt = 0;
-		int avg = 0;
-		int unk = 0;
-		int total = 0;
-		for (int px = x-radius; px <= x+radius; px++) {
-		    for (int py = y-radius; py <= y+radius; py++) {
-			if (px >= 0 && py >= 0 && px < w && py < h) {
-			    if (px == x && py == y){
-				continue;
-			    }
-			    else {
-				if (val.Pixel(px, py, 0) == IUNK) {
-				    unk++;
-				}
-				else {
-				    total = total+val.Pixel(px, py, 0);
-				}
-				cnt++;
-			    }
-			}
-		    }
-		}
-		int denom = abs(cnt-unk);
-		if (denom != 0)
-		    avg = total/denom;
-		else 
-		    avg = total/cnt;
-		if (abs(avg-r0) > maxDiff) {
-		    tmp.Pixel(x, y, 0) = IUNK; 
-		    nfiltered ++;
-		}
-		else
-		    tmp.Pixel(x, y, 0) = r0;
-	    }	
-	}
-    }
-    for (int y = 0; y < h; y++) {
-	for (int x = 0; x < w; x++) {
-	    val.Pixel(x, y, 0) = tmp.Pixel(x, y, 0);
-	}
-    }
-    printf("%d pixels filtered (%.3f%%)\n", nfiltered, (float)nfiltered * 100.0 / (w * h));
-}
-
-
-
-// map float codes to grey image by scaling and clipping to 0..255
-// if mode == 0, use FIXEDMIN, FIXEDMAX
-// if mode == 1, use actual min, actual max
-// if mode == 2, use min = mean - FACT * stddev, max = mean + FACT * stddev
-// if mode == 3, use values * 4 modulo 256
-void fval2byte(CFloatImage fval, CByteImage result, int mode) 
-{
-    float FIXEDMIN = 200;
-    float FIXEDMAX = 900;
-    float FACT = 0.5;
-
-    CShape sh = fval.Shape();
-    int x, y, w = sh.width, h = sh.height;
-    float minv, maxv;
-
-    if (mode == 0 || mode == 3) {
-	minv = FIXEDMIN;
-	maxv = FIXEDMAX;
-    } else {
-	// compute min, max, mean and stddev
-	minv = 1e20f;
-	maxv = -1e20f;
-	int s1 = 0;
-	float sv = 0;
-	float svv = 0;
-	for (y = 0; y < h; y++) {
-	    float *v = &fval.Pixel(0, y, 0);
-	    for (x = 0; x < w; x++) {
-		float v0 = v[x];
-		if (v0 == UNK) 
-		    continue;
-		s1++;
-		sv += v0;
-		svv += v0*v0;
-		minv = __min(minv, v0);
-		maxv = __max(maxv, v0);
-	    }
-	}
-	if (mode == 2) { // use mean +/- FACT * stddev
-	    float mean = sv / s1;
-	    float var = svv / s1 - 2 * mean + (mean * mean);
-	    float stddev = sqrt(var);
-	    //printf("mean = %g, stddev = %g\n", mean, stddev);
-	    //printf("    min = %g, max = %g\n", minv, maxv);
-	    minv = __max(minv, mean - FACT * stddev);
-	    maxv = __min(maxv, mean + FACT * stddev);
-	}
-    }
-
-    if (mode < 3)
-    	printf("min = %g, max = %g\n", minv, maxv);
-    else
-        printf("mapping * 4 modulo 256\n");
-
-    // map to 0..255
-    for (y = 0; y < h; y++) {
-	float *v = &fval.Pixel(0, y, 0);
-	uchar *r = &result.Pixel(0, y, 0);
-	for (x = 0; x < w; x++) {
-	    if (v[x] == UNK)
-		//??? if (v[x] < 0 ) // CHANGED to make compatible with old code -1==UNK
-		r[x] = 0;
-	    else {
-		if (mode==3)
-		    r[x] = ((int)(v[x]*4 + 0.5)) % 256;
-		else
-		    r[x] = __min(255, __max(0, (v[x] - minv) * 255 / (maxv - minv)));
-	    }
-	}
-    }
-}
- 
-
------------------- 
-*/

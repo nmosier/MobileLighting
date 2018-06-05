@@ -9,6 +9,7 @@
 import Foundation
 import AVFoundation
 import CoreImage
+import Photos
 
 // used by custom threshold filter as default when no input threshold specified
 var thresholdDefault: Float = 0.06
@@ -390,7 +391,7 @@ class Decoder {
         guard width == thresholdBuffer.width &&
             height == thresholdBuffer.height else {
                 print("ImageProcessor Decoder: ERROR — mismatch in dimensions of provided threshold image with existing decoder pixel array.")
-                return
+                fatalError()
         }
         
         CVPixelBufferLockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
@@ -507,4 +508,27 @@ class PGMFile {
         data.append(&body, count: imageWidth*imageHeight)
         return data
     }
+}
+
+
+extension CMSampleBuffer {
+    func save() -> Bool {
+        guard let pixelbuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(self) else { return false }
+        let img: CIImage = CIImage(cvPixelBuffer: pixelbuffer)
+        let colorspace = CGColorSpaceCreateDeviceRGB()
+        let jpegData: Data = CIContext().jpegRepresentation(of: img, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9])!
+        
+        func completionHandler(_ success: Bool, _ error: Error?) {
+            if success {
+                print("Successfully added photo to library.")
+            }
+        }
+        
+        PHPhotoLibrary.shared().performChanges( {
+            let creationRequest = PHAssetCreationRequest.forAsset()
+            creationRequest.addResource(with: PHAssetResourceType.photo, data: jpegData, options: nil)
+        }, completionHandler: completionHandler(_:_:))
+        return true
+    }
+    
 }

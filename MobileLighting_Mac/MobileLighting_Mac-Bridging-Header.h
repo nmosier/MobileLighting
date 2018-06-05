@@ -12,7 +12,7 @@
 
 #endif
 
-void refineDecodedIm(char *outdir, int direction, char *decodedIm, double angle, int mode);
+void refineDecodedIm(char *outdir, int direction, char *decodedIm, double angle);
 //void disparitiesOfRefinedImgs(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);
 void disparitiesOfRefinedImgs(char *dirpos0, char *dirpos1, char *outpos0, char *outpos1, int dXmin, int dXmax, int dYmin, int dYmax);
 
