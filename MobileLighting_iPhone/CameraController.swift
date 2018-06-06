@@ -83,7 +83,6 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
     }
     
-    //var photoSender: PhotoSender!
     
     //MARK: Initialization
     override init() {
@@ -98,10 +97,6 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
-        
-        // set up photo sender service browser
-        //photoSender = PhotoSender()
-        //photoSender.startBrowsing()
     }
     
     func configureNewSession(sessionPreset: String) {

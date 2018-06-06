@@ -838,7 +838,7 @@ void mergeDisparityMaps(char* output, char** filenames, int count, int mingroup,
 
 		    }else{
 			outrow[x] = robustAverage(pixels, maxdiff, mingroup); // call robust avg (in Utils.cpp)
-			if(0){
+                if ((0)){
 			    printf("values were: ");
 			    for(int i = 0; i < (int)pixels.size(); i++){
 				printf(" %.2f",pixels[i]);

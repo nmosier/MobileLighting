@@ -337,7 +337,6 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
                 cameraController.currentBinaryCodeBit = packet.binaryCodeBit
                 cameraController.photoBracketExposureDurations = exposureDurations
-                /* self.cameraController.photoBracketExposureISOs = exposureISOs */
                 guard let preset = self.resolutionToSessionPreset[resolution] else {
                     print("Error: resolution \(resolution) is not compatable with this device.")
                     return

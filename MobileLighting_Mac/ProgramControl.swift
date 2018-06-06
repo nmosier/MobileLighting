@@ -461,13 +461,7 @@ func nextCommand() -> Bool {
         }
         let imgpath: String = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
         let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
-        //let imgpath = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/"+tokens[1]
-        /* guard let direction = Int32(tokens[2]) else {
-            print("refine: error - improper direction (0=x, 1=y).")
-            break
-        } */
-        
-        let metadatapath = [scenesDirectory, sceneName, "metadata", (direction == 0) ? "v" : "h", "metadata.yml"].joined(separator: "/")
+        let metadatapath = [scenesDirectory, sceneName, metadataSubdir, "proj\(proj)", "pos\(pos)", "metadata-\((direction == 0) ? "v":"h").yml"].joined(separator: "/")
         do {
             let metadataStr = try String(contentsOfFile: metadatapath)
             let metadata: Yaml = try Yaml.load(metadataStr)
@@ -596,7 +590,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
-    let decodedDir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+decodedSubdir+"/proj\(projector)/pos\(position)"
+    let decodedDir = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(projector)", "pos\(position)"].joined(separator: "/")
     var packet: CameraInstructionPacket
     
     var done: Bool = false
@@ -643,7 +637,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: exposureISOs)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -664,14 +658,16 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: exposureISOs)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
             
             
             if (shouldSendThreshImgs) {
-                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")}, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {
+                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
+                    }, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
             } else {
                photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
             }

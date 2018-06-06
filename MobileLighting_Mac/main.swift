@@ -33,7 +33,7 @@ var vxmController: VXMController!
 // Subdirectories in directory structure
 var origSubdir: String, ambSubdir: String, ambBallSubdir: String, graycodeSubdir: String
 var calibSubdir: String     // used in both orig and computed dirs
-var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String
+var computedSubdir: String, decodedSubdir: String, refinedSubdir: String, disparitySubdir: String, metadataSubdir: String
 var settingsSubdir: String, calibSettingsSubdir: String
     origSubdir = "orig"
         ambSubdir = "ambient"
@@ -46,6 +46,7 @@ var settingsSubdir: String, calibSettingsSubdir: String
         disparitySubdir = "disparity"
     settingsSubdir = "settings"
         calibSettingsSubdir = "calibration"
+    metadataSubdir = "metadata"
 
 // use minsw codes, not graycodes
 let binaryCodeSystem: BinaryCodeSystem = .MinStripeWidthCode
