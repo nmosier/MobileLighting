@@ -329,14 +329,15 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 
                 sceneMetadata.exposureDurations = exposureDurations
                 
-                /*
+                
                 guard let exposureISOs = packet.photoBracketExposureISOs else {
                     print("ERROR: exposure ISO values not provided for bracketed photo sequence.")
                     break
-                } */
+                }
                 
                 cameraController.currentBinaryCodeBit = packet.binaryCodeBit
                 cameraController.photoBracketExposureDurations = exposureDurations
+                cameraController.photoBracketExposureISOs = exposureISOs
                 guard let preset = self.resolutionToSessionPreset[resolution] else {
                     print("Error: resolution \(resolution) is not compatable with this device.")
                     return
@@ -361,12 +362,12 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
                 }
-                /* guard let exposureISOs = packet.photoBracketExposureISOs else {
+                guard let exposureISOs = packet.photoBracketExposureISOs else {
                     print("ERROR: exposure ISOs not provided for bracketed photo sequence.")
                     break
-                } */
+                }
                 cameraController.photoBracketExposureDurations = exposureDurations
-                // self.cameraController.photoBracketExposureISOs = exposureISOs
+                cameraController.photoBracketExposureISOs = exposureISOs
                 guard let preset = self.resolutionToSessionPreset[resolution] else {
                     print("Error: resolution \(resolution) is not compatable with this device.")
                     return

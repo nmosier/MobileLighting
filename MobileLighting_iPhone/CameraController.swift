@@ -40,6 +40,16 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             return self.captureDevice.activeFormat.maxExposureDuration
         }
     }
+    var minISO: Float {
+        get {
+            return self.captureDevice.activeFormat.minISO
+        }
+    }
+    var maxISO: Float {
+        get {
+            return self.captureDevice.activeFormat.maxISO
+        }
+    }
     var maxBracketedPhotoCount: Int {
         get {
             return capturePhotoOutput.maxBracketedCapturePhotoCount
@@ -50,17 +60,24 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     var photoBracketSettings: AVCapturePhotoBracketSettings {
         get {
-            if let photoBracketExposureDurations = self.photoBracketExposureDurations {
-                // use specified exposure settings
+            if let photoBracketExposureDurations = self.photoBracketExposureDurations, let photoBracketExposureISOs = self.photoBracketExposureISOs {
                 var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
-                for exposure in photoBracketExposureDurations {
-                    guard exposure >= minExposureDuration.seconds && exposure <= maxExposureDuration.seconds else {
-                        fatalError("Exposures not within allowed range.\nExposure must be between \(minExposureDuration) and \(maxExposureDuration).")
+                //for exposure in photoBracketExposureDurations {
+                for i in 0..<min(photoBracketExposureDurations.count, photoBracketExposureISOs.count) {
+                    var duration: Double = photoBracketExposureDurations[i]
+                    var iso: Float = Float(photoBracketExposureISOs[i])
+                    // make sure duration within bounds
+                    if duration < minExposureDuration.seconds || duration > maxExposureDuration.seconds {
+                        print("Exposure duration not within allowed range.\nExposure must be between \(minExposureDuration.seconds) and \(maxExposureDuration.seconds).")
+                        duration = max(min(maxExposureDuration.seconds, duration), minExposureDuration.seconds)
+                    }
+                    if iso < minISO || iso > maxISO {
+                        print("Exposure ISO not within allowed range. Exposure must be between \(minISO) and \(maxISO)")
+                        iso = max(min(maxISO, iso), minISO)
                     }
                     
-                    let exposureTime = CMTime(seconds: exposure, preferredTimescale: CameraController.preferredExposureTimescale)
-                    //bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: AVCaptureISOCurrent))
-                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: 133.081))
+                    let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
+                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: iso))
                 }
                 let pixelFormat = kCVPixelFormatType_32BGRA
                 let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA

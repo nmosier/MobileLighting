@@ -223,7 +223,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             }
         } else if receivingSceneMetadata {
             print("Receiving scene metadata...")
-            filePath = [filePath, sceneName, metadataSubdir, "metadata-\(decodedImageHorizontal ? "h":"v").yml"].joined(separator: "/")
+            let direction: Int = decodedImageHorizontal ? 1 : 0
+            filePath = dirStruc.metadataFile(direction)//[filePath, sceneName, metadataSubdir, "metadata-\(decodedImageHorizontal ? "h":"v").yml"].joined(separator: "/")
             fileURL = URL(fileURLWithPath: filePath)
             handler = sceneMetadataCompletionHandler
         } else if let bracketedPhotoID = packet.bracketedPhotoID {

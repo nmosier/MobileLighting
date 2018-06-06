@@ -224,12 +224,13 @@ func nextCommand() -> Bool {
     //  NOTE: this command does not move the arm; it must already be in the correct positions
     //      BUT it does configure the projectors
     case .takefull:
-        let usage = "usage: takefull [projector #] [position #] [code system]?"
+        let parameters = ["takefull", "projector", "position"]
+        let usage = "usage: takefull [projector #] [position #]"
         // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
         let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         
-        guard tokens.count >= 2 && tokens.count <= 4 else {
+        guard tokens.count >= parameters.count else {
             print(usage)
             break
         }
@@ -242,10 +243,23 @@ func nextCommand() -> Bool {
             break
         }
         
+        currentPos = position       // update current position
+        
+        currentProj = projector     // update current projector
+        
+        system = .MinStripeWidthCode
+        /*
         if tokens.count == 4 {
             system = systems[tokens[3]] ?? .MinStripeWidthCode
         } else {
             system = .MinStripeWidthCode
+        }
+        */
+        let resolution: String
+        if tokens.count >= 4 {
+            resolution = tokens[3]
+        } else {
+            resolution = defaultResolution
         }
         
         displayController.switcher?.turnOff(0)   // turns off all projs
@@ -255,7 +269,7 @@ func nextCommand() -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
         
-        captureWithStructuredLighting(system: system, projector: projector, position: position)
+        captureWithStructuredLighting(system: system, projector: projector, position: position, resolution: resolution)
         break
     
     // requests current lens position from iPhone camera, prints it
@@ -416,12 +430,15 @@ func nextCommand() -> Bool {
             switch tokens[2] {
             case "on", "1":
                 displayController.switcher?.turnOn(projector)
+                currentProj = projector
             case "off", "0":
                 displayController.switcher?.turnOff(projector)
+                currentProj = -1
             default:
                 print("Unrecognized argument: \(tokens[2])")
             }
         } else if tokens[1] == "all" {
+            currentProj = -1
             switch tokens[2] {
             case "on", "1":
                 displayController.switcher?.turnOn(0)
@@ -459,9 +476,9 @@ func nextCommand() -> Bool {
             print("refine: error - improper direction \(tokens[3])")
             break
         }
-        let imgpath: String = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
-        let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
-        let metadatapath = [scenesDirectory, sceneName, metadataSubdir, /* "proj\(proj)", "pos\(pos)", */ "metadata-\((direction == 0) ? "v":"h").yml"].joined(separator: "/")
+        let imgpath: String = dirStruc.decodedFile(Int(direction), proj: proj, pos: pos) //[scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
+        let outdir: String = dirStruc.subdir(dirStruc.refined, proj: proj, pos: pos)//[scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
+        let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
         do {
             let metadataStr = try String(contentsOfFile: metadatapath)
             let metadata: Yaml = try Yaml.load(metadataStr)
@@ -508,6 +525,7 @@ func nextCommand() -> Bool {
                 disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
             }
         }
+        
         
     // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
     // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
@@ -586,11 +604,11 @@ func setLensPosition(_ lensPosition: Float) -> Float {
 //  NOTE: before calling this function, be sure that the correct projector is on and properly configured.
 //      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
 //      on from the Kramer box.)
-func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, position: Int) {
+func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, position: Int, resolution: String) {
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
-    let decodedDir = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(projector)", "pos\(position)"].joined(separator: "/")
+    let decodedDir = dirStruc.subdir(dirStruc.decoded, proj: projector, pos: position)
     var packet: CameraInstructionPacket
     
     var done: Bool = false
@@ -665,9 +683,15 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             
             
             if (shouldSendThreshImgs) {
-                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: {
-                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: captureNextBinaryCode, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
-                    }, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+                let direction = horizontal ? 1 : 0
+                let prethreshpath = dirStruc.subdir(dirStruc.prethresh)
+                let threshpath = dirStruc.subdir(dirStruc.thresh)
+                let handler2 = captureNextBinaryCode
+                let handler1 = {
+                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: handler2, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
+                }
+                //MARK: NEED TO FIX THIS AFTER HANDLE PHOTO RECEIPT BETTER
+                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: handler1, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
             } else {
                photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
             }

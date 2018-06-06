@@ -16,6 +16,3 @@ let threshold_val = 0.035
 // refinement parameters
 let maxdiff0: Float = 1.0
 let maxdiff1: Float = 0.1
-
-// image capture parameters
-let resolution = "high"

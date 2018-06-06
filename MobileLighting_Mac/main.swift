@@ -64,8 +64,8 @@ var exposureDurations: [Double]
 var exposureISOs: [Double]
 var positions: [Int]
 
-let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
-let initSettings: InitSettings
+
+// load init settings
 do {
     initSettings = try loadInitSettings(filepath: initSettingsPath)
     print("Successfully loaded initial settings.")
@@ -73,6 +73,8 @@ do {
     print("Fatal error: could not load init settings")
     exit(0)
 }
+
+
 
 // save required settings
 scenesDirectory = initSettings.scenesDirectory
@@ -85,11 +87,22 @@ exposureDurations = initSettings.exposureDurations ?? [Double]()
 exposureISOs = initSettings.exposureISOs ?? [Double]()
 positions = initSettings.positionCoords ?? [Int]()
 
+// setup directory structure
+dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
+do {
+    try dirStruc.createDirs()
+} catch {
+    print("Could not create directory structure at \(dirStruc.scenes)")
+    exit(0)
+}
+
 print("Exposure durations: \(exposureDurations)")
 print("Exposure ISOs: \(exposureISOs)")
 print("Positions: \(positions)")
 print("Projectors: \(projectors ?? 0)")
 
+
+/*
 // create scene's directory structure
 let staticDirectoryStructure: [String : Any?]
 staticDirectoryStructure = [
@@ -117,8 +130,10 @@ staticDirectoryStructure = [
     ] as [String : Any?]
 ]
 createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
+*/
 
 // publish PhotoReceiver service & set up Camera Service Browser
+
 initializeIPhoneCommunications()
 
 if configureDisplays() {

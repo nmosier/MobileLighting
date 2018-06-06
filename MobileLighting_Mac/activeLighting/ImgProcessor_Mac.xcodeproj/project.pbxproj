@@ -25,6 +25,7 @@
 		E186059E20C816E700206D40 /* libopencv_calib3d.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E186059D20C816E700206D40 /* libopencv_calib3d.dylib */; };
 		E18605A020C816F300206D40 /* libopencv_features2d.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E186059F20C816F300206D40 /* libopencv_features2d.dylib */; };
 		E18605A220C8175600206D40 /* imageLib.h in Headers */ = {isa = PBXBuildFile; fileRef = E18605A120C8175600206D40 /* imageLib.h */; };
+		E1A2165820C8764A0016DFC6 /* Debug.h in Sources */ = {isa = PBXBuildFile; fileRef = E186056E20C813E900206D40 /* Debug.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -182,6 +183,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1A2165820C8764A0016DFC6 /* Debug.h in Sources */,
 				E186057220C813E900206D40 /* activeLighting_wrapper.cpp in Sources */,
 				E186056F20C813E900206D40 /* flowIO.cpp in Sources */,
 				E186058B20C813E900206D40 /* Utils.cpp in Sources */,
