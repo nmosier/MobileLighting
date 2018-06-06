@@ -18,4 +18,4 @@ let maxdiff0: Float = 1.0
 let maxdiff1: Float = 0.1
 
 // image capture parameters
-let resolution = "max"
+let resolution = "high"

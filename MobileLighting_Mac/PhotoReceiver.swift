@@ -223,7 +223,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             }
         } else if receivingSceneMetadata {
             print("Receiving scene metadata...")
-            filePath = [filePath, sceneName, metadataSubdir, decodedImageHorizontal ? "h" : "v" ,  "metadata.yml"].joined(separator: "/")
+            filePath = [filePath, sceneName, metadataSubdir, "metadata-\(decodedImageHorizontal ? "h":"v").yml"].joined(separator: "/")
             fileURL = URL(fileURLWithPath: filePath)
             handler = sceneMetadataCompletionHandler
         } else if let bracketedPhotoID = packet.bracketedPhotoID {
@@ -241,6 +241,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         }
         
         do {
+            makeDir(filePath.split(separator: "/").dropLast().joined(separator: "/"))
             try photoData.write(to: fileURL, options: .atomic)
             print("Successfully saved photo data to file \(fileURL).")
         } catch {

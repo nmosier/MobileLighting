@@ -13,7 +13,7 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
     let outdir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
     makeDir(outdir)
     let completionHandler: () -> Void = {
-        let filepath = [scenesDirectory, sceneName, "metadata", horizontal ? "h" : "v", "metadata.yml"].joined(separator: "/")
+        let filepath = [scenesDirectory, sceneName, metadataSubdir, "metadata-\(horizontal ? "h" : "v").yml" ].joined(separator: "/")
         do {
             let metadataStr = try String(contentsOfFile: filepath)
             let metadata: Yaml = try Yaml.load(metadataStr)

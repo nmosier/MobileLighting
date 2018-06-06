@@ -461,7 +461,7 @@ func nextCommand() -> Bool {
         }
         let imgpath: String = [scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
         let outdir: String = [scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
-        let metadatapath = [scenesDirectory, sceneName, metadataSubdir, "proj\(proj)", "pos\(pos)", "metadata-\((direction == 0) ? "v":"h").yml"].joined(separator: "/")
+        let metadatapath = [scenesDirectory, sceneName, metadataSubdir, /* "proj\(proj)", "pos\(pos)", */ "metadata-\((direction == 0) ? "v":"h").yml"].joined(separator: "/")
         do {
             let metadataStr = try String(contentsOfFile: metadatapath)
             let metadata: Yaml = try Yaml.load(metadataStr)
@@ -469,7 +469,7 @@ func nextCommand() -> Bool {
                 refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle)
             }
         } catch {
-            print("refine error: could not load metadata file.")
+            print("refine error: could not load metadata file \(metadatapath).")
         }
         break
     
