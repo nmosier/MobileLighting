@@ -10,8 +10,7 @@ import Foundation
 import Yaml
 
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
-    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position) //scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(position)"
-    //makeDir(outdir)
+    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
     let completionHandler: () -> Void = {
         let direction: Int = horizontal ? 1 : 0
         let filepath = dirStruc.metadataFile(direction)
@@ -37,66 +36,69 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
 
 // computes & saves disparity maps for images of the given image position pair taken with the given projector
 func disparityMatch(projector: Int, leftpos: Int, rightpos: Int) {
-    let refinedDirLeft = dirStruc.subdir(dirStruc.refined, proj: projector, pos: leftpos)//scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(leftpos)"
-    let refinedDirRight = dirStruc.subdir(dirStruc.refined, proj: projector, pos: rightpos) // scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)/pos\(rightpos)"
-    //let disparityDirLeft = dirStruc.subdir(dirStruc.disparity, proj: projector, pos: leftpos) //scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+disparitySubdir+"/proj\(projector)"
-    //let disparityDirRight = dirStruc.subdir(dirStruc.disparity, proj: projector, pos: rightpos) // scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+disparitySubdir+"/proj\(projector)"
-    let disparityFileLeft = dirStruc.disparityFloFile(l: leftpos, r: rightpos, proj: projector)//"disp\(leftpos)\(rightpos).flo"
-    let disparityFileRight = dirStruc.disparityFloFile(l: rightpos, r: leftpos, proj: projector) //"disp\(rightpos)\(leftpos).flo"
-    /*
-    let fileman = FileManager.default
-    do {
-        try fileman.createDirectory(atPath: disparityDirLeft, withIntermediateDirectories: true, attributes: nil)
-        try fileman.createDirectory(atPath: disparityDirRight, withIntermediateDirectories: true, attributes: nil)
-    } catch {
-        print("ImageProcessor2: could not create directory at either:\n\t\(disparityDirLeft)\n\t\(disparityDirRight)")
-        return
-    }
- */
-    //disparitiesOfRefinedImgs(swift2Cstr(refinedDirLeft), swift2Cstr(refinedDirRight))
+    let refinedDirLeft = dirStruc.subdir(dirStruc.refined, proj: projector, pos: leftpos)
+    let refinedDirRight = dirStruc.subdir(dirStruc.refined, proj: projector, pos: rightpos)
+    let disparityDirLeft = dirStruc.subdir(dirStruc.disparity, proj: projector, pos: leftpos)
+    let disparityDirRight = dirStruc.subdir(dirStruc.disparity, proj: projector, pos: rightpos)
+    let l = Int32(leftpos)
+    let r = Int32(rightpos)
     disparitiesOfRefinedImgs(swift2Cstr(refinedDirLeft), swift2Cstr(refinedDirRight),
-                             swift2Cstr(disparityFileLeft),
-                             swift2Cstr(disparityFileRight),
+                             swift2Cstr(disparityDirLeft),
+                             swift2Cstr(disparityDirRight),
+                             l, r,
                              0, 0, 0, 0)
-    
-    
 }
 
 // computes & saves disparity maps for all positions taken for the given projector
 func disparityMatch(projector: Int) {
-    let dir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)"
-    let fileman = FileManager.default
+    let dir = dirStruc.subdir(dirStruc.refined, proj: projector)//scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir+"/proj\(projector)"
     let subdirs: [String]
     do {
-        subdirs = try fileman.contentsOfDirectory(atPath: dir)
+        subdirs = try FileManager.default.contentsOfDirectory(atPath: dir)
     } catch {
         print("disparityMatch: error enumerating subpaths of directory \(dir)")
         return
     }
-    let validDirs = subdirs.filter { subdir in
-        return subdir.hasPrefix("pos")
+    
+    
+    
+    var positions: [Int?] = subdirs.map { subdir in
+        guard let range = subdir.range(of: "pos"), subdir.hasPrefix("pos") else {
+            return nil
+        }
+        var subdir2 = subdir
+        subdir2.removeSubrange(range)
+        return Int(subdir2)  // valid iff of form pos%d
     }
-    for pos in 0..<validDirs.count-1 {    // 'posX'
-        disparityMatch(projector: projector, leftpos: pos, rightpos: pos+1)
+    positions = positions.filter { pos in
+        return pos != nil
+    }
+    var valid: [Int] = positions.map { pos in
+        return pos!
+    }
+    valid.sort()
+    for i in 0..<valid.count-1 {
+        disparityMatch(projector: projector, leftpos: valid[i], rightpos: valid[i+1])
     }
 }
 
 // computes & saves disparity maps for all adjacent positions taken from all projectors
 func disparityMatch() {
-    let dir = scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
-    let fileman = FileManager.default
+    let dir = dirStruc.refined //scenesDirectory+"/"+sceneName+"/"+computedSubdir+"/"+refinedSubdir
     let subdirs: [String]
     do {
-        subdirs = try fileman.subpathsOfDirectory(atPath: dir)
+        subdirs = try FileManager.default.subpathsOfDirectory(atPath: dir)
     } catch {
         print("disparityMatch: error enumerating subpaths of directory \(dir)")
         return
     }
     
     for subdir in subdirs {
-        guard subdir.hasPrefix("proj") else { continue }
+        guard let range = subdir.range(of: "proj") else {
+            continue
+        }
         var subdir2 = subdir
-        subdir2.removeSubrange(subdir2.range(of: "proj")!)
+        subdir2.removeSubrange(range)
         guard let projID = Int(subdir2) else {
             continue
         }

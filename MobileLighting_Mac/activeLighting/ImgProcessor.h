@@ -6,4 +6,4 @@
 #include "Utils.h"
 
 CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle);
-void computeDisparities(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);
+void computeDisparities(CFloatImage &fim0, CFloatImage &fim1, CFloatImage &fout0, CFloatImage &fout1, int dXmin, int dXmax, int dYmin, int dYmax);

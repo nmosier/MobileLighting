@@ -12,11 +12,19 @@
 
 #endif
 
+
+//MARK: Image Processor
 void refineDecodedIm(char *outdir, int direction, char *decodedIm, double angle);
 //void disparitiesOfRefinedImgs(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);
-void disparitiesOfRefinedImgs(char *dirpos0, char *dirpos1, char *outpos0, char *outpos1, int dXmin, int dXmax, int dYmin, int dYmax);
+void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int dXmin, int dXmax, int dYmin, int dYmax);
 
 // calibration functions
 int calibrateWithSettings(char *settingspath);
 
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
+
+//MARK: Robot Control
+int Client();
+int Server();
+int Next();
+int Restore();

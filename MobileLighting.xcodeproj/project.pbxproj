@@ -38,7 +38,6 @@
 		E136681F1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E14248001F2105D300DDCCB8 /* calibrationLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14247FF1F2105D300DDCCB8 /* calibrationLib.a */; };
 		E142480C1F210AB900DDCCB8 /* libaruco.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E142480B1F210AB900DDCCB8 /* libaruco.a */; };
-		E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */; };
 		E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */; };
 		E15D3BC120BF47880058AD1A /* SceneMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15D3BC020BF47880058AD1A /* SceneMetadata.swift */; };
 		E15F3A291F0427DA00FB11B6 /* ImageProcessor2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */; };
@@ -53,6 +52,7 @@
 		E1860DCA20C83F2100206D40 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1860DC920C83F2100206D40 /* Globals.swift */; };
 		E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */; };
 		E1A2165720C841000016DFC6 /* DirectoryStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A2165620C841000016DFC6 /* DirectoryStructure.swift */; };
+		E1A2172B20C9B6670016DFC6 /* libRobotControl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A2172A20C9B6590016DFC6 /* libRobotControl.a */; };
 		E1B5A4ED1F1D4A8700C23350 /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */; };
 		E1B6BAF31EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
 		E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
@@ -156,6 +156,13 @@
 			remoteGlobalIDString = 8313C4321C8DC2CB00DEF215;
 			remoteInfo = "Tests tvOS";
 		};
+		E1A2172920C9B6590016DFC6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E1A2171320C9B50F0016DFC6;
+			remoteInfo = RobotControl;
+		};
 		E1FB1C7E1F1E406C00E654B8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E14699C71EFD534D005967DA /* SerialTools.xcodeproj */;
@@ -237,7 +244,6 @@
 		E136681D1F1E505800BC561A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E14247FF1F2105D300DDCCB8 /* calibrationLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = calibrationLib.a; path = MobileLighting_Mac/cameraCalib/calibrationLib.a; sourceTree = "<group>"; };
 		E142480B1F210AB900DDCCB8 /* libaruco.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaruco.a; path = "MobileLighting_Mac/cameraCalib/include/aruco-2.0.19/build/libaruco.a"; sourceTree = "<group>"; };
-		E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = activeLighting_wrapper.cpp; path = activeLighting/activeLighting_wrapper.cpp; sourceTree = "<group>"; };
 		E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImgProcessor.h; path = activeLighting/ImgProcessor.h; sourceTree = "<group>"; };
 		E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobileLighting_Mac-Bridging-Header.h"; sourceTree = "<group>"; };
 		E14699C71EFD534D005967DA /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = ../../SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
@@ -257,6 +263,7 @@
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E1A0415220C2DEEC0079B55C /* Yaml.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Yaml.xcodeproj; path = ../YamlSwift/Yaml.xcodeproj; sourceTree = "<group>"; };
 		E1A2165620C841000016DFC6 /* DirectoryStructure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryStructure.swift; sourceTree = "<group>"; };
+		E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RobotControl.xcodeproj; path = RobotControl/RobotControl.xcodeproj; sourceTree = "<group>"; };
 		E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "MobileLighting_Mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "MobileLighting_Mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
@@ -279,6 +286,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1A2172B20C9B6670016DFC6 /* libRobotControl.a in Frameworks */,
 				E1860DC820C81A2300206D40 /* libImgProcessor_Mac.a in Frameworks */,
 				E162D52720B5CE93001702BD /* libpng16.a in Frameworks */,
 				E162D52320B5CE1C001702BD /* libopencv_core.3.4.1.dylib in Frameworks */,
@@ -369,8 +377,8 @@
 		E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXGroup;
 			children = (
+				E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */,
 				E1860DC020C8199200206D40 /* ImgProcessor_Mac.xcodeproj */,
-				E14473F81F03DD9D0029B3F0 /* activeLighting_wrapper.cpp */,
 				E11F1FF41EE1BA96008F9F0F /* CocoaAsyncSocket.framework */,
 				E14473FA1F03DDC40029B3F0 /* ImgProcessor.h */,
 				E14699C71EFD534D005967DA /* SerialTools.xcodeproj */,
@@ -419,6 +427,14 @@
 				E1A0416920C2DEEC0079B55C /* Tests.xctest */,
 				E1A0416B20C2DEEC0079B55C /* Yaml.framework */,
 				E1A0416D20C2DEEC0079B55C /* Tests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E1A2172620C9B6590016DFC6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E1A2172A20C9B6590016DFC6 /* libRobotControl.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -511,6 +527,10 @@
 				{
 					ProductGroup = E1860DC120C8199200206D40 /* Products */;
 					ProjectRef = E1860DC020C8199200206D40 /* ImgProcessor_Mac.xcodeproj */;
+				},
+				{
+					ProductGroup = E1A2172620C9B6590016DFC6 /* Products */;
+					ProjectRef = E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */;
 				},
 				{
 					ProductGroup = E14699C81EFD534D005967DA /* Products */;
@@ -607,6 +627,13 @@
 			remoteRef = E1A0416C20C2DEEC0079B55C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		E1A2172A20C9B6590016DFC6 /* libRobotControl.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRobotControl.a;
+			remoteRef = E1A2172920C9B6590016DFC6 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -667,7 +694,6 @@
 				E152C9FB1EE6FA8100AAD824 /* BinaryCodeDrawer.swift in Sources */,
 				E136681F1F1E505800BC561A /* Utils.swift in Sources */,
 				E10205A820C0812300A003BE /* SceneMetadata.swift in Sources */,
-				E14473F91F03DD9D0029B3F0 /* activeLighting_wrapper.cpp in Sources */,
 				E11F1FDC1EE1B5A2008F9F0F /* main.swift in Sources */,
 				E1B6BAF41EF99CDC00E7531C /* BinaryCodes.swift in Sources */,
 				E11F1FEC1EE1B7C1008F9F0F /* PhotoReceiver.swift in Sources */,

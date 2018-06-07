@@ -1,22 +1,29 @@
 //
-//  File.swift
+//  DirectoryStructure.swift
 //  MobileLighting_Mac
 //
 //  Created by Nicholas Mosier on 6/6/18.
-//  Copyright © 2018 Nicholas Mosier. All rights reserved.
 //
 
 import Foundation
 
+// manages the directory structure of the MobileLighting project
 class DirectoryStructure {
+    let scenesDir: String
+    public var currentScene: String
+    
+    init(scenesDir: String, currentScene: String) {
+        self.scenesDir = scenesDir
+        self.currentScene = currentScene
+    }
+    
     private var dirList: [String] {
         get {
             return [scenes, scene, orig, ambient, ambientBall, graycode, computed, decoded, refined, disparity, settings, calibSettings, metadata]
         }
     }
-    let scenesDir: String
-    public var currentScene: String
     
+    // MARK: generated directory paths
     var scenes: String {
         get {
             return scenesDir
@@ -42,6 +49,15 @@ class DirectoryStructure {
         get {
             return self.scene + "/" + "ambientBall"
         }
+    }
+    
+    var calibration: String {
+        get {
+            return self.scene + "/" + "calibration"
+        }
+    }
+    func calibrationPos(_ pos: Int) -> String {
+        return subdir(self.calibration, pos: pos)
     }
     
     var graycode: String {
@@ -118,38 +134,39 @@ class DirectoryStructure {
             return self.computed + "/" + "metadata"
         }
     }
-    
     func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
         return subdir(metadata, proj: proj, pos: pos) + "/metadata-\(direction).yml"
     }
-    
     func metadataFile(_ direction: Int) -> String {
         return subdir(metadata) + "/metadata-\(direction).yml"
     }
     
-    init(scenesDir: String, currentScene: String) {
-        self.scenesDir = scenesDir
-        self.currentScene = currentScene
-    }
     
+    //MARK: utility functions
     func createDirs() throws {
         for dir in dirList {
             try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
         }
     }
     
+    
+    // subdir -- get subdirectory of provided directory path
+    // indexed to current/provided projector and position
     func subdir(_ dir: String, proj: Int, pos: Int) -> String {
         let subdir = self.subdir(dir, proj: proj) + "/" + "pos\(pos)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
-    
     func subdir(_ dir: String, proj: Int) -> String {
         let subdir = dir + "/" + "proj\(proj)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
-    
+    func subdir(_ dir: String, pos: Int) -> String {
+        let subdir = dir + "/" + "pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     func subdir(_ dir: String) -> String {
         return subdir(dir, proj: currentProj, pos: currentPos)
     }

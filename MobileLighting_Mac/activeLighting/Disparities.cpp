@@ -311,7 +311,7 @@ void initRange(CFloatImage code, int ncodes, CIntImage& rmin, CIntImage& rmax)
 	    float valx = code.Pixel(x, y, 0);
 	    float valy = code.Pixel(x, y, 1);
 	    if (valx == UNK || valy == UNK)
-		continue;
+            continue;
 	    int vx = max(0, min(ncodes-1, (int)round(valx)));
 	    int vy = max(0, min(ncodes-1, (int)round(valy)));
 	    rmin0.Pixel(vx, vy, 0) = min(x, rmin0.Pixel(vx, vy, 0));
@@ -409,17 +409,16 @@ void matchImages(CFloatImage fim0, CFloatImage fim1, CFloatImage dim, int dmin, 
 	    int rxmax = rmax.Pixel(vx, vy, 0);
 	    int rymax = rmax.Pixel(vx, vy, 1);
 	    if (userange) { // further restrict to given search range
-		rxmin = max(rxmin, x0 + dmin);
-		rxmax = min(rxmax, x0 + dmax);
-		rymin = max(rymin, y0 + ymin);
-		rymax = min(rymax, y0 + ymax);
+            rxmin = max(rxmin, x0 + dmin);
+            rxmax = min(rxmax, x0 + dmax);
+            rymin = max(rymin, y0 + ymin);
+            rymax = min(rymax, y0 + ymax);
 	    }
 
 	    int bestx = 0;
 	    int besty = 0;
 	    int bestcnt = 0;
 	    float bestdiffsq = 2 * maxdiffsq; // no need updating min unless close to allowable value
-
 
 	    for(int y1 = rymin; y1 <= rymax; y1++){
 		if (y1 < 0 || y1 >= h) {
@@ -506,26 +505,29 @@ void matchImages(CFloatImage fim0, CFloatImage fim1, CFloatImage dim, int dmin, 
 
 
 // compute pair of disparity maps from code images
-void computeDisparities(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax)
+// edited 06/06/2018 by Nicholas Mosier to eliminate saving .flo files
+void computeDisparities(CFloatImage &fim0, CFloatImage &fim1, CFloatImage &fout0, CFloatImage &fout1, int dXmin, int dXmax, int dYmin, int dYmax)
 {
     int verbose=1;
 
-    CFloatImage fim0, fim1;
+ //   CFloatImage fim0, fim1;
 
-    ReadFlowFileVerb(fim0, in0, verbose);
-    ReadFlowFileVerb(fim1, in1, verbose);
+//    ReadFlowFileVerb(fim0, in0, verbose);
+//    ReadFlowFileVerb(fim1, in1, verbose);
 
     if (fim0.Shape() != fim1.Shape())
 	throw CError("computeDisparities: all images need to have same size");
 
-    CFloatImage d0(fim0.Shape());
-    CFloatImage d1(fim0.Shape());
+    //CFloatImage t(fim0.Shape());
+    //CFloatImage d1(fim0.Shape());
+    fout0.ReAllocate(fim0.Shape());
+    fout1.ReAllocate(fim0.Shape());
 
-    matchImages(fim0, fim1, d0, -dXmax, -dXmin, -dYmax, -dYmin);
-    WriteFlowFileVerb(d0, out0, verbose);
+    matchImages(fim0, fim1, fout0, -dXmax, -dXmin, -dYmax, -dYmin);
+//    WriteFlowFileVerb(d0, out0, verbose);
 
-    matchImages(fim1, fim0, d1, dXmin, dXmax, dYmin, dYmax);
-    WriteFlowFileVerb(d1, out1, verbose);
+    matchImages(fim1, fim0, fout1, dXmin, dXmax, dYmin, dYmax);
+//    WriteFlowFileVerb(d1, out1, verbose);
 }
 
 

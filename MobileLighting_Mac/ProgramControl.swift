@@ -180,8 +180,9 @@ func nextCommand() -> Bool {
             break
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "max")
-        let subpath = sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
-        makeDir(scenesDirectory+subpath)
+        let position = currentPos
+        let subpath = dirStruc.calibrationPos(position)//sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
+        // makeDir(scenesDirectory+subpath)
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
             for i in 0..<nPhotos {
                 var receivedCalibrationImage = false
@@ -215,7 +216,7 @@ func nextCommand() -> Bool {
             print("calibrate2pos: invalid argument(s).")
             break
         }
-        let resolution = (tokens.count == 5) ? tokens[4] : "high"   // high is default res
+        let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
         captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
     
@@ -743,12 +744,18 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     var receivedCalibrationImage: Bool
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
-    let leftSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/left"
-    let rightSubdir = sceneName+"/"+origSubdir+"/"+calibSubdir+"/right"
+    let leftSubdir = dirStruc.calibrationPos(pos0)
+    let rightSubdir = dirStruc.calibrationPos(pos1)
     
-    vxmController.zero()    // reset robot arm
     
-    vxmController.moveTo(dist: pos1)
+    // in the future, should set autoexposure & autofocus
+    //var packet2 = CameraInstructionPacket(cameraInstruction: .AutoExposure)
+    //cameraServiceBrowser.sendPacket(packet2)
+    //packet2 = CameraInstructionPacket(cameraInstruction: )
+    
+    let move: Bool = false
+    
+    if (move) { Restore() }
     print(msgMove)
     _ = readLine()
     cameraServiceBrowser.sendPacket(packet)
@@ -757,9 +764,15 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     while !receivedCalibrationImage {}
     
     for i in 0..<nPhotos-1 {
-        let dist = (i%2 == 0) ? pos0:pos1
+        /*
+        if i%2 == 0 {
+            Next()
+        } else {
+            Restore()
+        } */
+        //let dist = (i%2 == 0) ? pos0:pos1
         let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
-        vxmController.moveTo(dist: dist)
+        // if (move) { vxmController.moveTo(dist: dist) }
         print(msgMove)
         _ = readLine() // operator must press enter when in position; also signal to take photo
         cameraServiceBrowser.sendPacket(packet)
@@ -776,7 +789,14 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         while !receivedCalibrationImage {}
     }
     
-    vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0)
+    /*
+    if (nPhotos%2 == 0) {
+        Next()
+    } else {
+        Restore()
+    } */
+    
+    //if (move) { vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0) }
     print(msgMove)
     _ = readLine()
     cameraServiceBrowser.sendPacket(packet)
@@ -825,6 +845,9 @@ func configureDisplays() -> Bool {
     return true
 }
 
+
+// OLD CODE
+/*
 // creates a (partial) directory structure for the current scene
 // structure is specified as a recursive dictionary of strings (subdirectories) to
 //   either nil or another recursive dictionary
@@ -844,3 +867,4 @@ func createStaticDirectoryStructure(atPath path: String, structure: [String : An
         }
     }
 }
+ */

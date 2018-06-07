@@ -74,8 +74,6 @@ do {
     exit(0)
 }
 
-
-
 // save required settings
 scenesDirectory = initSettings.scenesDirectory
 sceneName = initSettings.sceneName
@@ -100,7 +98,6 @@ print("Exposure durations: \(exposureDurations)")
 print("Exposure ISOs: \(exposureISOs)")
 print("Positions: \(positions)")
 print("Projectors: \(projectors ?? 0)")
-
 
 /*
 // create scene's directory structure
@@ -133,6 +130,7 @@ createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure:
 */
 
 // publish PhotoReceiver service & set up Camera Service Browser
+
 
 initializeIPhoneCommunications()
 

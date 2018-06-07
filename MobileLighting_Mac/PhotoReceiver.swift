@@ -204,7 +204,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         var handler: (()->Void)? = nil
 
         if receivingCalibrationImage {
-            filePath += "/"+calibrationSubpath+"/IMG_\(calibrationImageID ?? 0).JPG"
+            //filePath += "/"+calibrationSubpath+"/IMG_\(calibrationImageID ?? 0).JPG"
+            filePath = calibrationSubpath + "/IMG\(calibrationImageID ?? 0).JPG"
             fileURL = URL(fileURLWithPath: filePath)
             
             //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
