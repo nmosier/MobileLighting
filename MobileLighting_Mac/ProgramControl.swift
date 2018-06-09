@@ -753,7 +753,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     //cameraServiceBrowser.sendPacket(packet2)
     //packet2 = CameraInstructionPacket(cameraInstruction: )
     
-    let move: Bool = false
+    let move: Bool = true
     
     if (move) { Restore() }
     print(msgMove)
@@ -764,12 +764,13 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     while !receivedCalibrationImage {}
     
     for i in 0..<nPhotos-1 {
-        /*
+        if (move) {
         if i%2 == 0 {
             Next()
         } else {
             Restore()
-        } */
+        }
+        }
         //let dist = (i%2 == 0) ? pos0:pos1
         let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
         // if (move) { vxmController.moveTo(dist: dist) }
@@ -788,13 +789,13 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         
         while !receivedCalibrationImage {}
     }
-    
-    /*
+    if (move) {
     if (nPhotos%2 == 0) {
-        Next()
-    } else {
         Restore()
-    } */
+    } else {
+        Next()
+    }
+    }
     
     //if (move) { vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0) }
     print(msgMove)

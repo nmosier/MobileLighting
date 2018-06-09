@@ -49,20 +49,20 @@ extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *out
     pair<CFloatImage,CFloatImage> ppos0, ppos1;
     ppos0 = splitFloImage(fdisp0);
     ppos1 = splitFloImage(fdisp1);
-    CFloatImage fu0,fv0,fu1,fv1;
-    fu0 = ppos0.first;
-    fv0 = ppos0.second;
-    fu1 = ppos1.first;
-    fv1 = ppos1.second;
+    CFloatImage fx0,fy0,fx1,fy1;
+    fx0 = ppos0.first;
+    fy0 = ppos0.second;
+    fx1 = ppos1.first;
+    fy1 = ppos1.second;
     
-    char pu0[100], pv0[100], pu1[100], pv1[100];
-    sprintf(pu0, "%s/disp%d%du.pfm", outdir0, pos0, pos1);
-    sprintf(pv0, "%s/disp%d%dv.pfm", outdir0, pos0, pos1);
-    sprintf(pu1, "%s/disp%d%du.pfm", outdir1, pos1, pos0);
-    sprintf(pv1, "%s/disp%d%dv.pfm", outdir1, pos1, pos0);
+    char px0[100], py0[100], px1[100], py1[100];
+    sprintf(px0, "%s/disp%d%dx.pfm", outdir0, pos0, pos1);
+    sprintf(py0, "%s/disp%d%dy.pfm", outdir0, pos0, pos1);
+    sprintf(px1, "%s/disp%d%dx.pfm", outdir1, pos1, pos0);
+    sprintf(py1, "%s/disp%d%dy.pfm", outdir1, pos1, pos0);
     
-    WriteImageVerb(fu0, pu0, verbose);
-    WriteImageVerb(fv0, pv0, verbose);
-    WriteImageVerb(fu1, pu1, verbose);
-    WriteImageVerb(fv1, pv1, verbose);
+    WriteImageVerb(fx0, px0, verbose);
+    WriteImageVerb(fy0, py0, verbose);
+    WriteImageVerb(fx1, px1, verbose);
+    WriteImageVerb(fy1, py1, verbose);
 }
