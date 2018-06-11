@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, graycode, computed, decoded, refined, disparity, settings, calibSettings, metadata]
+            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, settings, calibSettings, extrinsics, metadata]
         }
     }
     
@@ -33,113 +33,118 @@ class DirectoryStructure {
         return [scenesDir, currentScene].joined(separator: "/")
     }
     
-    var orig: String {
-        get {
-            return self.scene + "/" + "orig"
+        var orig: String {
+            get {
+                return self.scene + "/" + "orig"
+            }
         }
-    }
     
-    var ambient: String {
-        get {
-            return self.scene + "/" + "ambient"
+        var ambient: String {
+            get {
+                return self.scene + "/" + "ambient"
+            }
         }
-    }
     
-    var ambientBall: String {
-        get {
-            return self.scene + "/" + "ambientBall"
+        var ambientBall: String {
+            get {
+                return self.scene + "/" + "ambientBall"
+            }
         }
-    }
     
-    var calibration: String {
-        get {
-            return self.scene + "/" + "calibration"
+        var calibration: String {
+            get {
+                return self.scene + "/" + "calibration"
+            }
         }
-    }
-    func calibrationPos(_ pos: Int) -> String {
-        return subdir(self.calibration, pos: pos)
-    }
+            func calibrationPos(_ pos: Int) -> String {
+                return subdir(self.calibration, pos: pos)
+            }
     
-    var graycode: String {
-        get {
-            return self.scene + "/" + "graycode"
+        var computed: String {
+            get {
+                return self.scene + "/" + "computed"
+            }
         }
-    }
     
-    var computed: String {
-        get {
-            return self.scene + "/" + "computed"
-        }
-    }
+            var prethresh: String {
+                get {
+                    return self.computed + "/" + "prethresh"
+                }
+            }
     
-    var prethresh: String {
-        get {
-            return self.computed + "/" + "prethresh"
-        }
-    }
+            var thresh: String {
+                get {
+                    return self.computed + "/" + "thresh"
+                }
+            }
     
-    var thresh: String {
-        get {
-            return self.computed + "/" + "thresh"
-        }
-    }
+            var decoded: String {
+                get {
+                    return self.computed + "/" + "decoded"
+                }
+            }
+                func decodedFile(_ direction: Int) -> String {
+                    return decodedFile(direction, proj: currentProj, pos: currentPos)
+                }
+                func decodedFile(_ direction: Int, proj: Int, pos: Int) -> String {
+                    return subdir(decoded, proj: proj, pos: pos) + "/result\(direction).pfm"
+                }
     
-    var decoded: String {
-        get {
-            return self.computed + "/" + "decoded"
-        }
-    }
-    func decodedFile(_ direction: Int) -> String {
-        return decodedFile(direction, proj: currentProj, pos: currentPos)
-    }
-    func decodedFile(_ direction: Int, proj: Int, pos: Int) -> String {
-        return subdir(decoded, proj: proj, pos: pos) + "/result\(direction).pfm"
-    }
+            var refined: String {
+                get {
+                    return self.computed + "/" + "refined"
+                }
+            }
     
-    var refined: String {
-        get {
-            return self.computed + "/" + "refined"
-        }
-    }
+            var disparity: String {
+                get {
+                    return self.computed + "/" + "disparity"
+                }
+            }
+                func disparityPfmFile(l leftpos: Int, r rightpos: Int, proj: Int, direction: Int) -> String {
+                    return subdir(disparity, proj: proj, pos: leftpos) + "/" + "disp\(leftpos)\(rightpos)-\(direction).pfm"
+                }
     
-    var disparity: String {
-        get {
-            return self.computed + "/" + "disparity"
-        }
-    }
-    func disparityFloFile(l leftpos: Int, r rightpos: Int) -> String {
-        return disparityFloFile(l: leftpos, r: rightpos, proj: currentProj)
-    }
-    func disparityFloFile(l leftpos: Int, r rightpos: Int, proj: Int) -> String {
-        return subdir(disparity, proj: proj, pos: leftpos) + "/" + "disp\(leftpos)\(rightpos).flo"
-    }
-    func disparityPfmFile(l leftpos: Int, r rightpos: Int, proj: Int, direction: Int) -> String {
-        return subdir(disparity, proj: proj, pos: leftpos) + "/" + "disp\(leftpos)\(rightpos)-\(direction).pfm"
-    }
+            var settings: String {
+                get {
+                    return self.scene + "/" + "settings"
+                }
+            }
     
-    var settings: String {
-        get {
-            return self.scene + "/" + "settings"
-        }
-    }
+                var calibSettings: String {
+                    get {
+                        return self.settings + "/" + "calibration"
+                    }
+                }
     
-    var calibSettings: String {
-        get {
-            return self.settings + "/" + "calibration"
-        }
-    }
+                    var intrinsics: String {
+                        get {
+                            return self.calibSettings + "/" + "intrinsics.yml"
+                        }
+                    }
     
-    var metadata: String {
-        get {
-            return self.computed + "/" + "metadata"
-        }
-    }
-    func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
-        return subdir(metadata, proj: proj, pos: pos) + "/metadata-\(direction).yml"
-    }
-    func metadataFile(_ direction: Int) -> String {
-        return subdir(metadata) + "/metadata-\(direction).yml"
-    }
+                    var extrinsics: String {
+                        get {
+                            return self.calibSettings + "/" + "extrinsics"
+                        }
+                    }
+                        func extrinsicsSubdir(left: Int, right: Int) -> String {
+                            let subdir = self.extrinsics + "/\(left)\(right)"
+                            try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                            return subdir
+                        }
+    
+            var metadata: String {
+                get {
+                    return self.computed + "/" + "metadata"
+                }
+            }
+                func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
+                    return subdir(metadata, proj: proj, pos: pos) + "/metadata-\(direction).yml"
+                }
+                func metadataFile(_ direction: Int) -> String {
+                    return subdir(metadata) + "/metadata-\(direction).yml"
+                }
     
     
     //MARK: utility functions

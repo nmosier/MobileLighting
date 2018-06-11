@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Darwin
 import Yaml
 
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
@@ -104,4 +105,21 @@ func disparityMatch() {
         }
         disparityMatch(projector: projID)
     }
+}
+
+func rectify(left: Int, right: Int) {
+    let k = swift2Cstr(dirStruc.intrinsics)
+    let d = swift2Cstr(dirStruc.extrinsics + "/D.yml")
+    let r = swift2Cstr(dirStruc.extrinsics + "/R.yml")
+    let t = swift2Cstr(dirStruc.extrinsics + "/T.yml")
+    var matrices: [UnsafeMutablePointer<Int8>?] = [k, d, r, t];
+    var mat_ptr: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?
+    withUnsafeMutablePointer(to: &matrices[0]){
+        mat_ptr = $0
+    }
+    /*
+    dirStruc.extrinsics
+    // matrices: k, d, r, t
+    rectifyPFMs(<#T##nimages: Int32##Int32#>, <#T##camera: Int32##Int32#>, <#T##destdir: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##matrices: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!##UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!#>, <#T##images: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!##UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!#>)
+ */
 }

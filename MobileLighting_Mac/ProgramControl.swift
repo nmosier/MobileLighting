@@ -33,6 +33,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     // image processing
     case refine
     case disparity
+    case rectify
     
     // camera calibration
     case calibrate  // 'x'
@@ -42,6 +43,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     // for debugging
     case dispres
     case dispcode
+    
 }
 
 let commandUsage: [Command : String?] = [
@@ -62,6 +64,7 @@ let commandUsage: [Command : String?] = [
     .proj: "proj [projector_#|all] [on|off]|[1|0]",
     .refine: "refine [imageFilename] [direction (0/1)]",
     .disparity: "disparity [[projector #] [[left pos #] [right pos #]]?]?",
+    .rectify: "rectify [proj#] [pos1] [pos2]"
 ]
 
 
@@ -249,13 +252,7 @@ func nextCommand() -> Bool {
         currentProj = projector     // update current projector
         
         system = .MinStripeWidthCode
-        /*
-        if tokens.count == 4 {
-            system = systems[tokens[3]] ?? .MinStripeWidthCode
-        } else {
-            system = .MinStripeWidthCode
-        }
-        */
+
         let resolution: String
         if tokens.count >= 4 {
             resolution = tokens[3]
@@ -404,18 +401,28 @@ func nextCommand() -> Bool {
     //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
-        guard tokens.count >= 2 else {
-            print("usage: movearm [int/MAX/MIN]")
+        guard tokens.count == 2 else {
+            print("usage: movearm [pos: int]")
             break
         }
-        let dist = tokens[1]
-        if let dist = Int(dist) {
-            vxmController.moveTo(dist: dist)
-        } else if dist == "MAX" {
-            vxmController.moveTo(dist: VXM_MAXDIST)
-        } else if dist == "MIN" {
-            vxmController.zero()
+        guard let pos: Int = Int(tokens[1]) else {
+            print("movearm: \(tokens[1]) is not a valid position.")
+            break
         }
+        
+        // temporary implementation, for when only 2 positions supported
+        let newPos = pos % 2
+        switch newPos {
+        case 0:
+            Restore()
+            break
+        case 1:
+            Next()
+            break
+        default:
+            fatalError("an integer mod 2 MUST be 0 or 1")
+        }
+        
         break
     
     // used to turn projectors on or off
@@ -526,6 +533,10 @@ func nextCommand() -> Bool {
                 disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
             }
         }
+    
+    case .rectify:
+        print("rectify still needs to be implemented")
+        break
         
         
     // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard

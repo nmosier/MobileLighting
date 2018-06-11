@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E10205A820C0812300A003BE /* SceneMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15D3BC020BF47880058AD1A /* SceneMetadata.swift */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
+		E114D52720CF200E00020017 /* libopencv_imgcodecs.3.4.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E114D51D20CF200E00020017 /* libopencv_imgcodecs.3.4.1.dylib */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
 		E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11F1FB61EE1B521008F9F0F /* Main.storyboard */; };
@@ -215,6 +216,7 @@
 
 /* Begin PBXFileReference section */
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		E114D51D20CF200E00020017 /* libopencv_imgcodecs.3.4.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.3.4.1.dylib; path = ../../../../../../usr/local/Cellar/opencv/3.4.1_5/lib/libopencv_imgcodecs.3.4.1.dylib; sourceTree = "<group>"; };
 		E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaAsyncSocket.framework; path = Carthage/Build/Mac/CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E114D52720CF200E00020017 /* libopencv_imgcodecs.3.4.1.dylib in Frameworks */,
 				E1A2172B20C9B6670016DFC6 /* libRobotControl.a in Frameworks */,
 				E1860DC820C81A2300206D40 /* libImgProcessor_Mac.a in Frameworks */,
 				E162D52720B5CE93001702BD /* libpng16.a in Frameworks */,
@@ -335,6 +338,7 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E114D51D20CF200E00020017 /* libopencv_imgcodecs.3.4.1.dylib */,
 				E162D52620B5CE93001702BD /* libpng16.a */,
 				E162D52420B5CE81001702BD /* libpng16.16.dylib */,
 				E162D52220B5CE1C001702BD /* libopencv_core.3.4.1.dylib */,
@@ -923,6 +927,7 @@
 					/usr/local/Cellar/libpng/1.6.34/lib,
 					"/usr/local/Cellar/opencv/3.4.1_2/lib/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/cameraCalib/include/aruco-2.0.19/build/src",
+					/usr/local/Cellar/opencv/3.4.1_5/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -952,6 +957,7 @@
 					/usr/local/Cellar/libpng/1.6.34/lib,
 					"/usr/local/Cellar/opencv/3.4.1_2/lib/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/cameraCalib/include/aruco-2.0.19/build/src",
+					/usr/local/Cellar/opencv/3.4.1_5/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_NAME = "$(TARGET_NAME)";

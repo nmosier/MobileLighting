@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E114D51820CF0F9E00020017 /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E114D51720CF0F9D00020017 /* libpfm.a */; };
+		E114D51A20CF106600020017 /* Rectify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E114D51920CF106600020017 /* Rectify.cpp */; };
+		E114D51C20CF114300020017 /* Rectify.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E114D51B20CF114300020017 /* Rectify.hpp */; };
 		E186056F20C813E900206D40 /* flowIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186054B20C813E800206D40 /* flowIO.cpp */; };
 		E186057020C813E900206D40 /* flowIO.h in Headers */ = {isa = PBXBuildFile; fileRef = E186054C20C813E800206D40 /* flowIO.h */; };
 		E186057220C813E900206D40 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186054E20C813E800206D40 /* activeLighting_wrapper.cpp */; };
@@ -26,12 +29,13 @@
 		E18605A020C816F300206D40 /* libopencv_features2d.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E186059F20C816F300206D40 /* libopencv_features2d.dylib */; };
 		E18605A220C8175600206D40 /* imageLib.h in Headers */ = {isa = PBXBuildFile; fileRef = E18605A120C8175600206D40 /* imageLib.h */; };
 		E1A2165820C8764A0016DFC6 /* Debug.h in Sources */ = {isa = PBXBuildFile; fileRef = E186056E20C813E900206D40 /* Debug.h */; };
-		E1FF8E0E20CC1EE200F54459 /* Convolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1FF8E0C20CC1EE200F54459 /* Convolve.cpp */; };
-		E1FF8E0F20CC1EE200F54459 /* Convolve.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E1FF8E0D20CC1EE200F54459 /* Convolve.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E1052C4F20C81328004A65C0 /* libImgProcessor_Mac.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libImgProcessor_Mac.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E114D51720CF0F9D00020017 /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = pfmLib/libpfm.a; sourceTree = "<group>"; };
+		E114D51920CF106600020017 /* Rectify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectify.cpp; sourceTree = "<group>"; };
+		E114D51B20CF114300020017 /* Rectify.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Rectify.hpp; sourceTree = "<group>"; };
 		E186054B20C813E800206D40 /* flowIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = flowIO.cpp; sourceTree = "<group>"; };
 		E186054C20C813E800206D40 /* flowIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flowIO.h; sourceTree = "<group>"; };
 		E186054D20C813E800206D40 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -51,8 +55,6 @@
 		E186059D20C816E700206D40 /* libopencv_calib3d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.dylib; path = ../../../../../../../../usr/local/lib/libopencv_calib3d.dylib; sourceTree = "<group>"; };
 		E186059F20C816F300206D40 /* libopencv_features2d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.dylib; path = ../../../../../../../../usr/local/lib/libopencv_features2d.dylib; sourceTree = "<group>"; };
 		E18605A120C8175600206D40 /* imageLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = imageLib.h; path = imageLib/imageLib.h; sourceTree = "<group>"; };
-		E1FF8E0C20CC1EE200F54459 /* Convolve.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Convolve.cpp; sourceTree = "<group>"; };
-		E1FF8E0D20CC1EE200F54459 /* Convolve.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Convolve.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E114D51820CF0F9E00020017 /* libpfm.a in Frameworks */,
 				E186059220C8165800206D40 /* libImg.i386-g.a in Frameworks */,
 				E186059420C8167900206D40 /* libpng.dylib in Frameworks */,
 				E186059620C8169800206D40 /* libz.dylib in Frameworks */,
@@ -78,11 +81,11 @@
 			isa = PBXGroup;
 			children = (
 				E186054E20C813E800206D40 /* activeLighting_wrapper.cpp */,
-				E1FF8E0C20CC1EE200F54459 /* Convolve.cpp */,
-				E1FF8E0D20CC1EE200F54459 /* Convolve.hpp */,
 				E186056E20C813E900206D40 /* Debug.h */,
 				E186054F20C813E800206D40 /* Decode.cpp */,
 				E186056D20C813E900206D40 /* Disparities.cpp */,
+				E114D51B20CF114300020017 /* Rectify.hpp */,
+				E114D51920CF106600020017 /* Rectify.cpp */,
 				E186054B20C813E800206D40 /* flowIO.cpp */,
 				E186054C20C813E800206D40 /* flowIO.h */,
 				E186056A20C813E900206D40 /* ImgProcessor.h */,
@@ -106,6 +109,7 @@
 		E186058F20C8163C00206D40 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E114D51720CF0F9D00020017 /* libpfm.a */,
 				E186059F20C816F300206D40 /* libopencv_features2d.dylib */,
 				E186059D20C816E700206D40 /* libopencv_calib3d.dylib */,
 				E186059B20C816DD00206D40 /* libopencv_imgproc.dylib */,
@@ -129,8 +133,8 @@
 				E18605A220C8175600206D40 /* imageLib.h in Headers */,
 				E186057020C813E900206D40 /* flowIO.h in Headers */,
 				E186058C20C813E900206D40 /* Utils.h in Headers */,
-				E1FF8E0F20CC1EE200F54459 /* Convolve.hpp in Headers */,
 				E186058A20C813E900206D40 /* ImgProcessor.h in Headers */,
+				E114D51C20CF114300020017 /* Rectify.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,13 +194,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1FF8E0E20CC1EE200F54459 /* Convolve.cpp in Sources */,
 				E1A2165820C8764A0016DFC6 /* Debug.h in Sources */,
 				E186057220C813E900206D40 /* activeLighting_wrapper.cpp in Sources */,
 				E186056F20C813E900206D40 /* flowIO.cpp in Sources */,
 				E186058B20C813E900206D40 /* Utils.cpp in Sources */,
 				E186057320C813E900206D40 /* Decode.cpp in Sources */,
 				E186058D20C813E900206D40 /* Disparities.cpp in Sources */,
+				E114D51A20CF106600020017 /* Rectify.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,6 +329,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/imageLib",
 					/usr/local/lib,
+					"$(PROJECT_DIR)/pfmLib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -344,6 +349,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/imageLib",
 					/usr/local/lib,
+					"$(PROJECT_DIR)/pfmLib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

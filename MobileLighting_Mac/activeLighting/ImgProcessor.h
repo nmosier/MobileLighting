@@ -3,6 +3,7 @@
 
 #include "imageLib/imageLib.h"
 #include "flowIO.h"
+#include "Rectify.hpp"
 #include "Utils.h"
 
 CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle);

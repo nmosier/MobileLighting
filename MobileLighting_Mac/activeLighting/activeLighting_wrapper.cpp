@@ -66,3 +66,8 @@ extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *out
     WriteImageVerb(fx1, px1, verbose);
     WriteImageVerb(fy1, py1, verbose);
 }
+
+//void rectifyDecoded(int nimages, char* destdir, char** matrices, char** photos);
+extern "C" void rectifyPFMs(int nimages, int camera, char *destdir, char **matrices, char **images) {
+    rectifyDecoded(nimages, camera, destdir, matrices, images);
+}

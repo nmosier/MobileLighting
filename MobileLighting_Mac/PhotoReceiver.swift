@@ -1,6 +1,5 @@
 //
-//  PhotoReceiver.swift
-//  demo_mac
+//  DataReceiver.swift
 //
 //  Created by Nicholas Mosier on 5/30/17.
 //  Copyright © 2017 Nicholas Mosier. All rights reserved.
@@ -204,7 +203,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         var handler: (()->Void)? = nil
 
         if receivingCalibrationImage {
-            //filePath += "/"+calibrationSubpath+"/IMG_\(calibrationImageID ?? 0).JPG"
             filePath = calibrationSubpath + "/IMG\(calibrationImageID ?? 0).JPG"
             fileURL = URL(fileURLWithPath: filePath)
             
@@ -296,5 +294,99 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func receiveSceneMetadata(completionHandler: @escaping () -> Void) {
         receivingSceneMetadata = true
         sceneMetadataCompletionHandler = completionHandler
+    }
+}
+
+
+
+protocol DataReceiver {
+    associatedtype HandlerType
+    var completionHandler: HandlerType { get }
+    func handle(packet: PhotoDataPacket) -> Void
+}
+
+typealias BlankHandler = () -> Void
+typealias Handler<T> = (T) -> Void
+
+class DataWriter {
+    func write(data: Data, path: String) {
+        let fileURL = URL(fileURLWithPath: path)
+        do {
+            makeDir(path.split(separator: "/").dropLast().joined(separator: "/"))
+            try data.write(to: fileURL, options: .atomic)
+            print("Successfully saved photo data to file \(fileURL).")
+        } catch {
+            print("Could not write photo data to file \(fileURL)")
+        }
+    }
+}
+
+// now actual definitions
+class LensPositionReceiver: DataReceiver {
+    typealias HandlerType = Handler<Float>
+    let completionHandler: (Float) -> Void
+    func handle(packet: PhotoDataPacket) {
+        guard let lensPosition = packet.lensPosition else {
+            print("LensPositionReceiver: lens position missing from packet")
+            return
+        }
+        self.completionHandler(lensPosition)
+    }
+    init(_ completionHandler: @escaping Handler<Float>) {
+        self.completionHandler = completionHandler
+    }
+}
+
+class StatusUpdateReceiver: DataReceiver {
+    typealias HandlerType = Handler<CameraStatusUpdate>
+    let completionHandler: (CameraStatusUpdate) -> Void
+    func handle(packet: PhotoDataPacket) {
+        completionHandler(packet.statusUpdate)
+    }
+    init(_ completionHandler: @escaping Handler<CameraStatusUpdate>) {
+        self.completionHandler = completionHandler
+    }
+}
+
+class CalibrationImageReceiver: DataWriter, DataReceiver {
+    typealias HandlerType = BlankHandler
+    let completionHandler: BlankHandler
+    let path: String
+    func handle(packet: PhotoDataPacket) {
+        makeDir(path.split(separator: "/").dropLast().joined(separator: "/"))
+        write(data: packet.photoData, path: path)
+        completionHandler()
+    }
+    init(_ completionHandler: @escaping BlankHandler, dir: String, id: Int) {
+        self.completionHandler = completionHandler
+        self.path = "\(dir)/IMG\(id).JPG"
+    }
+}
+
+class DecodedImageReceiver: DataWriter, DataReceiver {
+    typealias HandlerType = Handler<String>
+    let completionHandler: (String) -> Void
+    let path: String
+    func handle(packet: PhotoDataPacket) {
+        write(data: packet.photoData, path: path)
+        completionHandler(path)
+    }
+    init(_ completionHandler: @escaping Handler<String>, dir: String, horizontal: Bool) {
+        self.completionHandler = completionHandler
+        self.path = "\(dir)/result\(horizontal ? 1 : 0).pfm"
+    }
+}
+
+class SceneMetadataReceiver: DataWriter, DataReceiver {
+    typealias HandlerType = BlankHandler
+    let completionHandler: BlankHandler
+    let path: String
+    func handle(packet: PhotoDataPacket) {
+        write(data: packet.photoData, path: path)
+        completionHandler()
+    }
+    init(_ completionHandler: @escaping BlankHandler, dir: String, horizontal: Bool) {
+        self.completionHandler  = completionHandler
+        self.path = "\(dir)/metadata\(horizontal ? 1 : 0).yml"
     }
 }
