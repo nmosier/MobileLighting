@@ -44,6 +44,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var sceneMetadataCompletionHandler: (() -> Void)?
     
     var readyToReceive: Bool = false
+    
+    var dataReceiver: DataReceiver?
 
     init(_ workingDirectory: String) {
         self.workingDirectory = workingDirectory
@@ -165,7 +167,14 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // handlePacket(PhotoDataPacket)
     // -handles provided packet (saves it to file, e.g.)
     func handlePacket(_ packet: PhotoDataPacket) {
+        guard let dataReceiver = self.dataReceiver else {
+            // not expecting a packet
+            return
+        }
+        dataReceiver.handle(packet: packet)
+        return
         
+        //////////////// OLD, SHITTY IMPLMEENTATION ////////////////////
         if receivingLensPosition {
             if let handler = lensPositionCompletionHandler {
                 print("PhotoReceiver: calling lens position completion handler.")
@@ -256,6 +265,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     // receivePhotoBracket: starts receiving bracketed photo sequence of given photo count with given name
     //     given completion handler called after fully received
+/*
     func receivePhotoBracket(name: String, photoCount: Int, completionHandler: @escaping () -> Void, subpath: String) {
         bracketName = name
         bracketedPhotosComing = photoCount
@@ -295,13 +305,12 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         receivingSceneMetadata = true
         sceneMetadataCompletionHandler = completionHandler
     }
+ */
 }
 
 
 
 protocol DataReceiver {
-    associatedtype HandlerType
-    var completionHandler: HandlerType { get }
     func handle(packet: PhotoDataPacket) -> Void
 }
 
@@ -323,13 +332,13 @@ class DataWriter {
 
 // now actual definitions
 class LensPositionReceiver: DataReceiver {
-    typealias HandlerType = Handler<Float>
-    let completionHandler: (Float) -> Void
+    let completionHandler: Handler<Float>
     func handle(packet: PhotoDataPacket) {
         guard let lensPosition = packet.lensPosition else {
             print("LensPositionReceiver: lens position missing from packet")
             return
         }
+        print("Received lens position.")
         self.completionHandler(lensPosition)
     }
     init(_ completionHandler: @escaping Handler<Float>) {
@@ -337,10 +346,21 @@ class LensPositionReceiver: DataReceiver {
     }
 }
 
+extension PhotoReceiver {
+    func receiveLensPositionSync() {
+        var done = false
+        photoReceiver.dataReceiver = LensPositionReceiver { (pos: Float) in
+            print("Lens position:\t\(pos)")
+            done = true
+        }
+        while !done {}
+    }
+}
+
 class StatusUpdateReceiver: DataReceiver {
-    typealias HandlerType = Handler<CameraStatusUpdate>
-    let completionHandler: (CameraStatusUpdate) -> Void
+    let completionHandler: Handler<CameraStatusUpdate>
     func handle(packet: PhotoDataPacket) {
+        print("Received status update.")
         completionHandler(packet.statusUpdate)
     }
     init(_ completionHandler: @escaping Handler<CameraStatusUpdate>) {
@@ -349,12 +369,12 @@ class StatusUpdateReceiver: DataReceiver {
 }
 
 class CalibrationImageReceiver: DataWriter, DataReceiver {
-    typealias HandlerType = BlankHandler
     let completionHandler: BlankHandler
     let path: String
     func handle(packet: PhotoDataPacket) {
         makeDir(path.split(separator: "/").dropLast().joined(separator: "/"))
         write(data: packet.photoData, path: path)
+        print("Received calibration image.")
         completionHandler()
     }
     init(_ completionHandler: @escaping BlankHandler, dir: String, id: Int) {
@@ -364,11 +384,11 @@ class CalibrationImageReceiver: DataWriter, DataReceiver {
 }
 
 class DecodedImageReceiver: DataWriter, DataReceiver {
-    typealias HandlerType = Handler<String>
-    let completionHandler: (String) -> Void
+    let completionHandler: Handler<String>
     let path: String
     func handle(packet: PhotoDataPacket) {
         write(data: packet.photoData, path: path)
+        print("Received decoded image.")
         completionHandler(path)
     }
     init(_ completionHandler: @escaping Handler<String>, dir: String, horizontal: Bool) {
@@ -378,15 +398,15 @@ class DecodedImageReceiver: DataWriter, DataReceiver {
 }
 
 class SceneMetadataReceiver: DataWriter, DataReceiver {
-    typealias HandlerType = BlankHandler
     let completionHandler: BlankHandler
     let path: String
     func handle(packet: PhotoDataPacket) {
         write(data: packet.photoData, path: path)
+        print("Received scene metadata.")
         completionHandler()
     }
-    init(_ completionHandler: @escaping BlankHandler, dir: String, horizontal: Bool) {
+    init(_ completionHandler: @escaping BlankHandler, path: String) {
         self.completionHandler  = completionHandler
-        self.path = "\(dir)/metadata\(horizontal ? 1 : 0).yml"
+        self.path = path
     }
 }

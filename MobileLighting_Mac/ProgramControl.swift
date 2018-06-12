@@ -184,14 +184,18 @@ func nextCommand() -> Bool {
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         let position = currentPos
-        let subpath = dirStruc.calibrationPos(position)//sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
+        //let subpath = dirStruc.calibrationPos(position)//sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
         // makeDir(scenesDirectory+subpath)
+        let subpath = dirStruc.intrinsicsPhotos
         if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
             for i in 0..<nPhotos {
                 var receivedCalibrationImage = false
                 
                 cameraServiceBrowser.sendPacket(packet)
-                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: subpath)
+//                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: subpath)
+                let completionHandler = { receivedCalibrationImage = true }
+                photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+                
                 while !receivedCalibrationImage {}
                 
                 guard let _ = readLine() else {
@@ -274,10 +278,14 @@ func nextCommand() -> Bool {
     case .readfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
+//        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
+//            print("Lens position:\t\(pos)")
+//            processingCommand = false
+//        })
+        photoReceiver.dataReceiver = LensPositionReceiver { (pos: Float) in
             print("Lens position:\t\(pos)")
             processingCommand = false
-        })
+        }
         
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
@@ -288,11 +296,14 @@ func nextCommand() -> Bool {
     case .lockfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
-            print("Lens position:\t\(pos)")
-            processingCommand = false
-        })
-      
+//        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
+//            print("Lens position:\t\(pos)")
+//            processingCommand = false
+//        })
+//        var done = false
+        photoReceiver.receiveLensPositionSync()
+//        while !done {}
+        
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
         guard nextToken < tokens.count else {
@@ -321,9 +332,10 @@ func nextCommand() -> Bool {
         let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
         let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
         cameraServiceBrowser.sendPacket(packet)
-        photoReceiver.receiveLensPosition(completionHandler: { (_: Float) in
-                processingCommand = false
-        })
+//        photoReceiver.receiveLensPosition(completionHandler: { (_: Float) in
+//                processingCommand = false
+//        })
+        photoReceiver.receiveLensPositionSync()
         break
         
     // currently useless, but leaving in here just in case it ever comes in handy
@@ -331,7 +343,10 @@ func nextCommand() -> Bool {
         let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
         cameraServiceBrowser.sendPacket(packet)
         var receivedUpdate = false
-        photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+//        photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
+        photoReceiver.dataReceiver = StatusUpdateReceiver { (update: CameraStatusUpdate) in
+            receivedUpdate = true
+        }
         while !receivedUpdate {}
         
     // tells iPhone to use auto exposure mode (automatically adjusts exposure)
@@ -592,17 +607,16 @@ func setLensPosition(_ lensPosition: Float) -> Float {
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
     
-    var received = false
     var lensPos: Float = -1.0
     
-    func handler(_ lensPosition: Float) {
-        lensPos = lensPosition
-        received = true
-    }
+//    func handler(_ lensPosition: Float) {
+//        lensPos = lensPosition
+//        received = true
+//    }
     
-    photoReceiver.receiveLensPosition(completionHandler: handler)
+    //photoReceiver.receiveLensPosition(completionHandler: handler)
+    photoReceiver.receiveLensPositionSync()
     
-    while !received {}
     return lensPos
 }
 
@@ -671,7 +685,9 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
-            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
+//            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
+//            StatusUpdateReceiver(<#T##completionHandler: (CameraStatusUpdate) -> Void##(CameraStatusUpdate) -> Void#>)
+            photoReceiver.dataReceiver = StatusUpdateReceiver( { (_ update: CameraStatusUpdate) in captureInvertedBinaryCode(statusUpdate: update)})
         }
     }
     
@@ -700,12 +716,17 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
                 let threshpath = dirStruc.subdir(dirStruc.thresh)
                 let handler2 = captureNextBinaryCode
                 let handler1 = {
-                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: handler2, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
+//                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: handler2, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
+                    photoReceiver.dataReceiver = CalibrationImageReceiver(handler2, dir: "tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
                 }
                 //MARK: NEED TO FIX THIS AFTER HANDLE PHOTO RECEIPT BETTER
-                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: handler1, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+//                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: handler1, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
+                photoReceiver.dataReceiver = CalibrationImageReceiver(handler1, dir: "tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
             } else {
-               photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+//               photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
+                photoReceiver.dataReceiver = StatusUpdateReceiver { (update: CameraStatusUpdate) in
+                    captureNextBinaryCode()
+                }
             }
       
             currentCodeBit += 1
@@ -724,8 +745,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     
     packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
     cameraServiceBrowser.sendPacket(packet)
-    photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
-    while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
+//    photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
+    var received = false
+    var completionHandler = { (path: String) in
+        received = true
+        decodedImageHandler(path, horizontal: false, projector: projector, position: position)
+    }
+    photoReceiver.dataReceiver = DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: false)
+    while !received || !cameraServiceBrowser.readyToSendPacket {}
     
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
     currentCodeBit = 0
@@ -740,8 +767,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     
     packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
     cameraServiceBrowser.sendPacket(packet)
-    photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector, position: position)}, absDir: decodedDir)
-    while photoReceiver.receivingDecodedImage || !cameraServiceBrowser.readyToSendPacket {}
+//    photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector, position: position)}, absDir: decodedDir)
+    received = false
+    completionHandler = { (path: String) in
+        received = true
+        decodedImageHandler(path, horizontal: true, projector: projector, position: position)
+    }
+    photoReceiver.dataReceiver = DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: true)
+    while !received || !cameraServiceBrowser.readyToSendPacket {}
 }
 
 
@@ -752,7 +785,10 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
 //   -stores images in 'left' and 'right' folders of 'calibration' subdir (under 'orig')
 func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, resolution: String = "high") {
     let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
-    var receivedCalibrationImage: Bool
+    var receivedCalibrationImage: Bool = false
+    let completionHandler = {
+        receivedCalibrationImage = true
+    }
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
     let leftSubdir = dirStruc.calibrationPos(pos0)
@@ -782,7 +818,8 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     if */
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-    photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
+//    photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
+    photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: 0)
     while !receivedCalibrationImage {}
     
     for i in 0..<nPhotos-1 {
@@ -800,15 +837,16 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         _ = readLine() // operator must press enter when in position; also signal to take photo
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+//        photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+        photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
         while !receivedCalibrationImage {}
         
         print(msgBoard)
         _ = readLine()
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
-        
+//        photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
+        photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i+1)
         while !receivedCalibrationImage {}
     }
     if (move) {
@@ -824,7 +862,8 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     _ = readLine()
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-    photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
+//    photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
+    photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: (nPhotos%2 == 0) ? rightSubdir:leftSubdir, id: nPhotos-1)
     while !receivedCalibrationImage {}
 }
 
