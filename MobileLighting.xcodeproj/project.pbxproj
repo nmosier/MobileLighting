@@ -35,6 +35,7 @@
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
+		E133097D20D0467300F3AC10 /* Yaml.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A0416720C2DEEC0079B55C /* Yaml.framework */; };
 		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E136681F1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E14248001F2105D300DDCCB8 /* calibrationLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14247FF1F2105D300DDCCB8 /* calibrationLib.a */; };
@@ -280,6 +281,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E133097D20D0467300F3AC10 /* Yaml.framework in Frameworks */,
 				E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

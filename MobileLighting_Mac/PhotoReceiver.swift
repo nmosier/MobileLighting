@@ -16,6 +16,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     var workingDirectory: String
     
     // for receiving bracketed photo sequences
+    /*
     var bracketName: String?
     var bracketedPhotosComing: Int?
     
@@ -42,6 +43,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     var receivingSceneMetadata = false
     var sceneMetadataCompletionHandler: (() -> Void)?
+    */
     
     var readyToReceive: Bool = false
     
@@ -130,6 +132,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             handlePacket(photoDataPacket)
             
+            /*
            if receivingBracket {
                 guard var bracketedPhotosComing = bracketedPhotosComing else {
                     break
@@ -154,7 +157,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                 }
                 self.bracketedPhotosComing = bracketedPhotosComing
-            }
+            } */
             
             readPacket()
             
@@ -175,6 +178,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         return
         
         //////////////// OLD, SHITTY IMPLMEENTATION ////////////////////
+        /*
         if receivingLensPosition {
             if let handler = lensPositionCompletionHandler {
                 print("PhotoReceiver: calling lens position completion handler.")
@@ -261,6 +265,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         if let handler = handler {
             handler()
         }
+        */
     }
     
     // receivePhotoBracket: starts receiving bracketed photo sequence of given photo count with given name
