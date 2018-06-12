@@ -108,7 +108,7 @@ func disparityMatch() {
 }
 
 func rectify(left: Int, right: Int) {
-    let k = swift2Cstr(dirStruc.intrinsics)
+    let k = swift2Cstr(dirStruc.intrinsicsYML)
     let d = swift2Cstr(dirStruc.extrinsics + "/D.yml")
     let r = swift2Cstr(dirStruc.extrinsics + "/R.yml")
     let t = swift2Cstr(dirStruc.extrinsics + "/T.yml")

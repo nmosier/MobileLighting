@@ -56,6 +56,11 @@ class DirectoryStructure {
                 return self.scene + "/" + "calibration"
             }
         }
+            var intrinsicsPhotos: String {
+                get {
+                    return self.calibration + "/" + "intrinsics"
+                }
+            }
             func calibrationPos(_ pos: Int) -> String {
                 return subdir(self.calibration, pos: pos)
             }
@@ -117,7 +122,7 @@ class DirectoryStructure {
                     }
                 }
     
-                    var intrinsics: String {
+                    var intrinsicsYML: String {
                         get {
                             return self.calibSettings + "/" + "intrinsics.yml"
                         }

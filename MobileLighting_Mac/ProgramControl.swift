@@ -182,7 +182,7 @@ func nextCommand() -> Bool {
             print("usage: calibrate [# of photos]")
             break
         }
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: "max")
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         let position = currentPos
         let subpath = dirStruc.calibrationPos(position)//sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
         // makeDir(scenesDirectory+subpath)
@@ -766,9 +766,20 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     
     let move: Bool = true
     
+    _ = readLine()
+    /*
     if (move) { Restore() }
     print(msgMove)
-    _ = readLine()
+    func wait() {
+        while true {
+            let input: String? = readLine()
+            if let input = input, let pos = Int(input) {
+                if (pos%2 == 0)
+            }
+        }
+    }
+    var input: String = readLine()
+    if */
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
     photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
