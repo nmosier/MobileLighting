@@ -402,16 +402,16 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     print("CameraService: error - could not find dimensions of resolution \(resolution)")
                     fatalError()
                 }
-                cameraController.decoder = Decoder(width: width, height: height, binaryCodeSystem: binaryCodeSystem)
+                decoder = Decoder(width: width, height: height, binaryCodeSystem: binaryCodeSystem)
                 binaryCodeDirection = dir
                 print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
             
             case .EndStructuredLightingCaptureFull:
                 // need to send off decoded image
-                let data = cameraController.decoder!.getPFMData()
+                let data = decoder!.getPFMData()
                 var packet = PhotoDataPacket(photoData: data)
                 photoSender.sendPacket(packet)
-                cameraController.decoder = nil
+                decoder = nil
                 binaryCodeDirection = nil
                 
                 //MARK: SEND METADATA

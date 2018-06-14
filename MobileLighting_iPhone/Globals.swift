@@ -12,3 +12,4 @@ var cameraService: CameraService!
 var cameraController = CameraController()
 var photoSender: PhotoSender = PhotoSender()
 var sceneMetadata = SceneMetadata()
+var decoder: Decoder?

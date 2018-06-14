@@ -28,7 +28,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     var capturingNormalInvertedPair = false
     var capturingInverted: Bool = false
     var currentBinaryCodeBit: Int?
-    var decoder: Decoder?
+//    var decoder: Decoder?
     
     var minExposureDuration: CMTime {
         get {
@@ -110,7 +110,11 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         checkPhotoLibraryAuthorization(checkedCameraAuthorization(_:))
         
         // configure first capture session
-        configureNewSession(sessionPreset: AVCaptureSessionPresetPhoto) //AVCaptureSessionPresetHigh)  // use 'high' preset (not 'photo') so that preview layer fills entire screen
+        guard let preset = cameraService.resolutionToSessionPreset[defaultResolution] else {
+            print("Configuring live camera view with default resolution failed: resolution \(defaultResolution) not recognized.")
+            fatalError()
+        }
+        configureNewSession(sessionPreset: preset)
         
         // capture session should be configured, now start it running
         self.captureSession.startRunning()
@@ -292,12 +296,15 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         if capturingNormalInvertedPair {
             if capturingInverted {
                 // process images
+                processCodeImages(normal: pixelBuffers_normal, inverted: pixelBuffers_inverted, for: currentBinaryCodeBit!)
+                /*
                 guard pixelBuffers_normal.count == pixelBuffers_inverted.count else {
                     print("CameraController: ERROR - mismatch in normal-inverted bracket pair sample buffer count.")
                     let packet = PhotoDataPacket.error()
                     photoSender.sendPacket(packet)
                     return
                 }
+                
                 
                 var intensityBuffers = [CVPixelBuffer]()
                 for i in 0..<pixelBuffers_normal.count {
@@ -310,9 +317,13 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 pixelBuffers_normal.removeAll()
                 pixelBuffers_inverted.removeAll()
                 
-                let combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
+                var combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
                 intensityBuffers.removeAll()
                 
+                // Now try to rectify images
+                if shouldRectifyOnPhone {
+                    combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
+                }
                 // get prominent stripe direction
                 // if this is for the first structured lighting image
                 if (currentBinaryCodeBit! == 0) {
@@ -343,6 +354,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                     let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
                     photoSender.sendPacket(packet)
                 }
+                */
+                pixelBuffers_normal.removeAll()
+                pixelBuffers_inverted.removeAll()
                 
                 capturingNormalInvertedPair = false
             } else {

@@ -35,7 +35,6 @@
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E1269FA61F0D3B3700079CC3 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1269FBE1F0D3F1600079CC3 /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E11F1FA91EE1B4E7008F9F0F /* CocoaAsyncSocket.framework */; };
-		E133097D20D0467300F3AC10 /* Yaml.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A0416720C2DEEC0079B55C /* Yaml.framework */; };
 		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E136681F1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E14248001F2105D300DDCCB8 /* calibrationLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14247FF1F2105D300DDCCB8 /* calibrationLib.a */; };
@@ -52,6 +51,12 @@
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E1860DC820C81A2300206D40 /* libImgProcessor_Mac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1860DC520C8199200206D40 /* libImgProcessor_Mac.a */; };
 		E1860DCA20C83F2100206D40 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1860DC920C83F2100206D40 /* Globals.swift */; };
+		E196122320D1AC9200D85EDB /* extrinsics.yml in Resources */ = {isa = PBXBuildFile; fileRef = E196122120D1AC9100D85EDB /* extrinsics.yml */; };
+		E196122420D1AC9200D85EDB /* intrinsics.yml in Resources */ = {isa = PBXBuildFile; fileRef = E196122220D1AC9200D85EDB /* intrinsics.yml */; };
+		E196122520D1AE8E00D85EDB /* Yaml.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A0416720C2DEEC0079B55C /* Yaml.framework */; };
+		E196122620D1AEB100D85EDB /* Yaml.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E1A0416720C2DEEC0079B55C /* Yaml.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E1971F4620D18D57005B5DAF /* Rectify.mm in Sources */ = {isa = PBXBuildFile; fileRef = E1971F4520D18D57005B5DAF /* Rectify.mm */; };
+		E1971F4820D18D77005B5DAF /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1971F4720D18D76005B5DAF /* opencv2.framework */; };
 		E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */; };
 		E1A2165720C841000016DFC6 /* DirectoryStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A2165620C841000016DFC6 /* DirectoryStructure.swift */; };
 		E1A2172B20C9B6670016DFC6 /* libRobotControl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A2172A20C9B6590016DFC6 /* libRobotControl.a */; };
@@ -181,6 +186,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				E196122620D1AEB100D85EDB /* Yaml.framework in CopyFiles */,
 				E11F1FD41EE1B57C008F9F0F /* CocoaAsyncSocket.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -263,6 +269,12 @@
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E1860DC020C8199200206D40 /* ImgProcessor_Mac.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ImgProcessor_Mac.xcodeproj; path = activeLighting/ImgProcessor_Mac.xcodeproj; sourceTree = "<group>"; };
 		E1860DC920C83F2100206D40 /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		E196121920D18EFA00D85EDB /* Rectify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rectify.h; sourceTree = "<group>"; };
+		E196121F20D19BA000D85EDB /* MobileLighting_iPhone_Bridging_Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MobileLighting_iPhone_Bridging_Header.h; sourceTree = "<group>"; };
+		E196122120D1AC9100D85EDB /* extrinsics.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = extrinsics.yml; sourceTree = "<group>"; };
+		E196122220D1AC9200D85EDB /* intrinsics.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = intrinsics.yml; sourceTree = "<group>"; };
+		E1971F4520D18D57005B5DAF /* Rectify.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Rectify.mm; sourceTree = "<group>"; };
+		E1971F4720D18D76005B5DAF /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E1A0415220C2DEEC0079B55C /* Yaml.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Yaml.xcodeproj; path = ../YamlSwift/Yaml.xcodeproj; sourceTree = "<group>"; };
 		E1A2165620C841000016DFC6 /* DirectoryStructure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryStructure.swift; sourceTree = "<group>"; };
@@ -281,7 +293,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E133097D20D0467300F3AC10 /* Yaml.framework in Frameworks */,
+				E196122520D1AE8E00D85EDB /* Yaml.framework in Frameworks */,
+				E1971F4820D18D77005B5DAF /* opencv2.framework in Frameworks */,
 				E11F1FD11EE1B54D008F9F0F /* CocoaAsyncSocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,6 +325,8 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
+				E196122120D1AC9100D85EDB /* extrinsics.yml */,
+				E196122220D1AC9200D85EDB /* intrinsics.yml */,
 				E136681D1F1E505800BC561A /* Utils.swift */,
 				E1BBBACF20BC76A100E57123 /* Debug.swift */,
 				E1765EB51EF9B997003A2BB3 /* minSW.dat */,
@@ -361,6 +376,7 @@
 		E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */ = {
 			isa = PBXGroup;
 			children = (
+				E1971F4420D18D2A005B5DAF /* ImgProcessor_iPhone */,
 				E11F1FD31EE1B57C008F9F0F /* CocoaAsyncSocket.framework */,
 				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
 				E10205B020C085C000A003BE /* Globals.swift */,
@@ -372,10 +388,12 @@
 				E11F1FB41EE1B521008F9F0F /* ViewController.swift */,
 				E1E8BB2C1EEB365C00F84F74 /* ImageProcessor.swift */,
 				E1BCA6891EF3080900D67FEB /* CustomImageFilters.swift */,
+				E196121F20D19BA000D85EDB /* MobileLighting_iPhone_Bridging_Header.h */,
 				E11F1FB61EE1B521008F9F0F /* Main.storyboard */,
 				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
 				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
+				E1971F4720D18D76005B5DAF /* opencv2.framework */,
 			);
 			path = MobileLighting_iPhone;
 			sourceTree = "<group>";
@@ -422,6 +440,15 @@
 				E1860DC520C8199200206D40 /* libImgProcessor_Mac.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E1971F4420D18D2A005B5DAF /* ImgProcessor_iPhone */ = {
+			isa = PBXGroup;
+			children = (
+				E1971F4520D18D57005B5DAF /* Rectify.mm */,
+				E196121920D18EFA00D85EDB /* Rectify.h */,
+			);
+			path = ImgProcessor_iPhone;
 			sourceTree = "<group>";
 		};
 		E1A0415320C2DEEC0079B55C /* Products */ = {
@@ -651,6 +678,8 @@
 				E11F1FBA1EE1B521008F9F0F /* Assets.xcassets in Resources */,
 				E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */,
 				E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */,
+				E196122420D1AC9200D85EDB /* intrinsics.yml in Resources */,
+				E196122320D1AC9200D85EDB /* extrinsics.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -677,6 +706,7 @@
 				E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */,
 				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,
 				E1BCA68A1EF3080900D67FEB /* CustomImageFilters.swift in Sources */,
+				E1971F4620D18D57005B5DAF /* Rectify.mm in Sources */,
 				E11F1FFA1EE1BBD7008F9F0F /* CameraService.swift in Sources */,
 				E11F1FE41EE1B730008F9F0F /* CameraController.swift in Sources */,
 				E15D3BC120BF47880058AD1A /* SceneMetadata.swift in Sources */,
@@ -871,7 +901,9 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/MobileLighting_iPhone",
 				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -880,8 +912,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/MobileLighting_iPhone/MobileLighting_iPhone_Bridging_Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
+				USE_HEADERMAP = YES;
 			};
 			name = Debug;
 		};
@@ -895,7 +929,9 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/MobileLighting_iPhone",
 				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -903,8 +939,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/MobileLighting_iPhone/MobileLighting_iPhone_Bridging_Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
+				USE_HEADERMAP = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

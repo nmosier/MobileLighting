@@ -18,6 +18,64 @@ var brightnessChangeDirection: Double?
 
 let context = CIContext(options: [kCIContextWorkingColorSpace : NSNull()])
 
+func processCodeImages(normal pixelBuffers_normal: [CVPixelBuffer], inverted pixelBuffers_inverted: [CVPixelBuffer], for bit: Int) {
+    guard pixelBuffers_normal.count == pixelBuffers_inverted.count else {
+        print("CameraController: ERROR - mismatch in normal-inverted bracket pair sample buffer count.")
+        let packet = PhotoDataPacket.error()
+        photoSender.sendPacket(packet)
+        return
+    }
+    
+    var intensityBuffers = [CVPixelBuffer]()
+    for i in 0..<pixelBuffers_normal.count {
+        let normalBuffer = pixelBuffers_normal[i]
+        let invertedBuffer = pixelBuffers_inverted[i]
+        
+        let intensityBuffer = intensityDifference(normal: normalBuffer, inverted: invertedBuffer)
+        intensityBuffers.append(intensityBuffer)
+    }
+//    pixelBuffers_normal.removeAll()
+//    pixelBuffers_inverted.removeAll()
+    
+    var combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
+    intensityBuffers.removeAll()
+    
+    // Now try to rectify images
+    if shouldRectifyOnPhone {
+        combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
+    }
+    // get prominent stripe direction
+    // if this is for the first structured lighting image
+    if (bit == 0) {
+        brightnessChangeDirection = brightnessChange(combinedIntensityBuffer)
+        sceneMetadata.angle = brightnessChangeDirection! - Double.pi/2
+    }
+    
+    let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: threshold_val, angle: brightnessChangeDirection ?? 0.0 )
+    // decode threshold image for current bit using decoder
+    decoder!.decode(threshBuffer, forBit: bit)
+    
+    
+    //MARK: send prethreshold images?
+    if (shouldSendThreshImgs) {
+        let prethreshData: Data
+        let threshData: Data
+        
+        let prethreshPgm = PGMFile(buffer: combinedIntensityBuffer)
+        prethreshData = prethreshPgm.getPGMData()
+        let threshPgm = PGMFile(buffer: threshBuffer)
+        threshData = threshPgm.getPGMData()
+        
+        let prethresh_packet = PhotoDataPacket(photoData: prethreshData, bracketedPhotoID: 0)
+        photoSender.sendPacket(prethresh_packet)
+        let thresh_packet = PhotoDataPacket(photoData: threshData, bracketedPhotoID: 0)
+        photoSender.sendPacket(thresh_packet)
+    } else {
+        let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
+        photoSender.sendPacket(packet)
+    }
+}
+
 func intensityDifference(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
     // test intensity difference filter
     let imageN = CIImage(cvPixelBuffer: normal)
@@ -32,107 +90,8 @@ func intensityDifference(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPi
     grayscaleFilter.setValue([1.0/3, 1.0/3, 1.0/3] as [Float], forKey: GrayscaleFilter.kCIRGBWeightsKey)
     let imageGray = grayscaleFilter.outputImage!
     context.render(imageGray, to: normal)
-    
-    return normal
-    
-}
-
-/*
-func processPixelBufferPair_builtInFilters(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
-    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
-    CVPixelBufferLockBaseAddress(normal, lockFlags)
-    CVPixelBufferLockBaseAddress(inverted, lockFlags)
-    
-    var imNormal: CIImage = CIImage(cvPixelBuffer: normal)
-    var imInverted: CIImage = CIImage(cvPixelBuffer: inverted)
-    
-    // apply gray monochrome filter to colors
-    let colorMonochromeFilter = CIFilter(name: "CIColorMonochrome")!
-    colorMonochromeFilter.setValue(CIColor.gray(), forKey: kCIInputColorKey)
-    
-    colorMonochromeFilter.setValue(imNormal, forKey: kCIInputImageKey)
-    imNormal = colorMonochromeFilter.outputImage!
-    colorMonochromeFilter.setValue(imInverted, forKey: kCIInputImageKey)
-    imInverted = colorMonochromeFilter.outputImage!
-    
-    // invert colors for image of inverted pattern
-    let colorInvertFilter = CIFilter(name: "CIColorInvert")!
-    colorInvertFilter.setValue(imInverted, forKey: kCIInputImageKey)
-    imInverted = colorInvertFilter.outputImage!
-    
-    // scale exposures by 0.5
-    let exposureAdjustFilter = CIFilter(name: "CIExposureAdjust")!
-    exposureAdjustFilter.setValue(-1.0, forKey: kCIInputEVKey)
-    exposureAdjustFilter.setValue(imNormal, forKey: kCIInputImageKey)
-    imNormal = exposureAdjustFilter.outputImage!
-    
-    exposureAdjustFilter.setValue(imInverted, forKey: kCIInputImageKey)
-    imInverted = exposureAdjustFilter.outputImage!
-    
-    // add imNormal and imInverted together
-    let additionCompositingFilter = CIFilter(name: "CIAdditionCompositing")!
-    additionCompositingFilter.setValue(imNormal, forKey: kCIInputImageKey)
-    additionCompositingFilter.setValue(imInverted, forKey: kCIInputBackgroundImageKey)
-    
-    let resultingImage = additionCompositingFilter.outputImage!
-    context.render(resultingImage, to: normal)
     return normal
 }
-
-func processPixelBufferPair_withPixelLoop(normal: CVPixelBuffer, inverted: CVPixelBuffer) -> CVPixelBuffer {
-    print("Image Processor: width of buffer \(CVPixelBufferGetWidth(normal)), height of buffer \(CVPixelBufferGetHeight(normal))")
-    
-    print("ImageProcessor: processing pixel buffer pair")
-    
-    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
-    CVPixelBufferLockBaseAddress(normal, lockFlags)
-    CVPixelBufferLockBaseAddress(inverted, lockFlags)
-    
-    guard normal.width == inverted.width, normal.height == inverted.height, normal.bytesPerRow == inverted.bytesPerRow, normal.pixelFormatType == inverted.pixelFormatType else {
-        print("ImageProcessor: error – pixel buffers not of same type.")
-        return normal
-    }
-    
-    let rowCount = normal.height
-    let colCount = normal.width
-    let bytesPerRow = normal.bytesPerRow
-    
-    print("ImageProcessor: bytes per row \(bytesPerRow), cols \(colCount)")
-    
-    for row in 0..<rowCount {
-        let offset = bytesPerRow * row
-        let rowPtr_normal = normal.baseAddress!.advanced(by: offset)
-        let rowPtr_inverted = inverted.baseAddress!.advanced(by: offset)
-        
-        let rowData_normal = Data(bytes: rowPtr_normal, count: bytesPerRow)
-        let rowData_inverted = Data(bytes: rowPtr_inverted, count: bytesPerRow)
-        var rowData_intensity = Data(repeating: 255, count: bytesPerRow)
-        
-        for col in 0..<colCount {
-            var intensityDiff: Int
-            intensityDiff = ((Int(rowData_normal[col*4]) + Int(rowData_normal[col*4+1]) + Int(rowData_normal[col*4+2])) -
-                Int(rowData_inverted[col*4]) - Int(rowData_inverted[col*4+1]) - Int(rowData_inverted[col*4+2])) / 3
-            var value: UInt8
-            intensityDiff += 128
-            intensityDiff = (intensityDiff > 255) ? 255 : intensityDiff
-            intensityDiff = (intensityDiff < 0) ? 0 : intensityDiff
-            value = UInt8(intensityDiff)
-            
-            rowData_intensity[col*4] = value
-            rowData_intensity[col*4+1] = value
-            rowData_intensity[col*4+2] = value
-            rowData_intensity[col*4+3] = 255    // A
-        }
-        let temp_nsData = rowData_intensity as NSData
-        rowPtr_normal.copyBytes(from: temp_nsData.bytes, count: bytesPerRow)
-        
-    }
-    
-    CVPixelBufferUnlockBaseAddress(normal, lockFlags)
-    CVPixelBufferUnlockBaseAddress(inverted, lockFlags)
-    
-    return normal
-} */
 
 func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CVPixelBuffer {
     guard buffers.count > 0 else {
@@ -154,6 +113,35 @@ func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CV
     // use buffers[0] as "accumulator" for extremes
     context.render(resultImage, to: buffers[0])
     return buffers[0]
+}
+
+func rectifyPixelBuffer(_ buffer: CVPixelBuffer, camera: Int) -> CVPixelBuffer {
+    var intrinsics = (Bundle.main.bundlePath + "/intrinsics.yml").cString(using: .ascii)!
+    var extrinsics = (Bundle.main.bundlePath + "/extrinsics.yml").cString(using: .ascii)!
+    computemaps(Int32(buffer.width), Int32(buffer.height), &intrinsics, &extrinsics)
+    
+    let camera = Int32(camera)
+    let ciimage = CIImage(cvPixelBuffer: buffer)
+    let tmpContext = CIContext(options: nil)
+    let rect = CGRect(x: 0, y: 0, width: buffer.width, height: buffer.height)
+    let cgim = tmpContext.createCGImage(ciimage, from: rect)
+    let uiim = UIImage(cgImage: cgim!)
+    
+    let uiim2 = rectify(camera, uiim)!
+    
+    UIImageWriteToSavedPhotosAlbum(uiim2, nil, nil, nil)
+    print("uiwidth=\(uiim2.size.width),uiheight=\(uiim2.size.height)")
+    var outbuffer: CVPixelBuffer? = nil
+    CVPixelBufferCreate(kCFAllocatorDefault, Int(uiim2.size.width), Int(uiim2.size.height), kCVPixelFormatType_32BGRA, nil, &outbuffer)
+    print("width=\(CVPixelBufferGetWidth(outbuffer!)),height=\(CVPixelBufferGetHeight(outbuffer!))")
+    CVPixelBufferLockBaseAddress(outbuffer!, CVPixelBufferLockFlags(rawValue:0))
+    let colorspace = CGColorSpaceCreateDeviceRGB()
+    
+    let bitmapContext = CGContext(data: CVPixelBufferGetBaseAddress(outbuffer!), width: Int(uiim2.size.width), height: Int(uiim2.size.height), bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(outbuffer!), space: colorspace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+    bitmapContext.draw(uiim2.cgImage!, in: CGRect(x: 0, y: 0, width: uiim2.size.width, height: uiim2.size.height))
+    print("width=\(CVPixelBufferGetWidth(outbuffer!)),height=\(CVPixelBufferGetHeight(outbuffer!))")
+    CVPixelBufferUnlockBaseAddress(outbuffer!, CVPixelBufferLockFlags(rawValue:0))
+    return outbuffer!
 }
 
 // implements zero-crossing thresholding algorithm
@@ -396,7 +384,22 @@ class Decoder {
         
         CVPixelBufferLockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
         var threshPtr = CVPixelBufferGetBaseAddress(thresholdBuffer)!.bindMemory(to: UInt8.self, capacity: width*height*4)
-        
+        let stride = CVPixelBufferGetBytesPerRow(thresholdBuffer)
+        for y in 0..<height {
+            for x in 0..<width {
+                let offset = y*stride + 4*x
+                let index = y*width + x
+                let threshval = threshPtr[offset]
+                if threshval == 128 {
+                    unknownArray[index] |= UInt32(1 << bit)
+                } else if threshval == 255 {
+                    valueArray[index] |= UInt32(1 << bit)
+                } else if threshval != 0 {
+                    print ("ImageProcessor — WARNING, VALUE \(threshval) UNEXPECTED")
+                }
+            }
+        }
+        /*
         for i in 0..<width*height {
             let threshval = threshPtr.pointee
             if threshval == 128 {
@@ -409,6 +412,7 @@ class Decoder {
             
             threshPtr = threshPtr.advanced(by: 4)
         }
+        */
         CVPixelBufferUnlockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
     }
     

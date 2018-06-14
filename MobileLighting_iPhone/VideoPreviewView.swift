@@ -22,6 +22,7 @@ class VideoPreviewView: UIView {
         }
         set {
             videoPreviewLayer.session = newValue
+            
         }
     }
     

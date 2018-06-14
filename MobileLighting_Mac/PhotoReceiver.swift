@@ -352,13 +352,16 @@ class LensPositionReceiver: DataReceiver {
 }
 
 extension PhotoReceiver {
-    func receiveLensPositionSync() {
+    func receiveLensPositionSync() -> Float {
         var done = false
+        var lensPos: Float = -1.0
         photoReceiver.dataReceiver = LensPositionReceiver { (pos: Float) in
             print("Lens position:\t\(pos)")
             done = true
+            lensPos = pos
         }
         while !done {}
+        return lensPos
     }
 }
 

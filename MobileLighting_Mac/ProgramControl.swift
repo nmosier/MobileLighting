@@ -606,17 +606,7 @@ func nextCommand() -> Bool {
 func setLensPosition(_ lensPosition: Float) -> Float {
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
-    
-    var lensPos: Float = -1.0
-    
-//    func handler(_ lensPosition: Float) {
-//        lensPos = lensPosition
-//        received = true
-//    }
-    
-    //photoReceiver.receiveLensPosition(completionHandler: handler)
-    photoReceiver.receiveLensPositionSync()
-    
+    var lensPos = photoReceiver.receiveLensPositionSync()
     return lensPos
 }
 
