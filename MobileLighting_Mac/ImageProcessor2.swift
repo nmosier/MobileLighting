@@ -11,9 +11,15 @@ import Darwin
 import Yaml
 
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
-    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
     let direction: Int = horizontal ? 1 : 0
-    let completionHandler: () -> Void = {
+    
+    var received = false
+    let completionHandler = { received = true }
+    photoReceiver.dataReceiver = SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
+    while !received {}
+    
+    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
+//    let completionHandler: () -> Void = {
         let filepath = dirStruc.metadataFile(direction)
         do {
             let metadataStr = try String(contentsOfFile: filepath)
@@ -26,9 +32,7 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
         } catch {
             print("refine error: could not load metadata file.")
         }
-    }
-//    photoReceiver.receiveSceneMetadata(completionHandler: completionHandler)
-    photoReceiver.dataReceiver = SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
+//    }
 }
 
 //MARK: disparity matching functions
@@ -108,19 +112,22 @@ func disparityMatch() {
     }
 }
 
-func rectify(left: Int, right: Int) {
-    let k = swift2Cstr(dirStruc.intrinsicsYML)
-    let d = swift2Cstr(dirStruc.extrinsics + "/D.yml")
-    let r = swift2Cstr(dirStruc.extrinsics + "/R.yml")
-    let t = swift2Cstr(dirStruc.extrinsics + "/T.yml")
-    var matrices: [UnsafeMutablePointer<Int8>?] = [k, d, r, t];
-    var mat_ptr: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?
-    withUnsafeMutablePointer(to: &matrices[0]){
-        mat_ptr = $0
-    }
-    /*
-    dirStruc.extrinsics
-    // matrices: k, d, r, t
-    rectifyPFMs(<#T##nimages: Int32##Int32#>, <#T##camera: Int32##Int32#>, <#T##destdir: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##matrices: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!##UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!#>, <#T##images: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!##UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>!#>)
- */
+func rectify(left: Int, right: Int, proj: Int) {
+    let intr = swift2Cstr(dirStruc.intrinsicsYML)
+    let extr = swift2Cstr(dirStruc.extrinsicsYML(left: left, right: right))
+    let rectdirleft = dirStruc.subdir(dirStruc.rectified, proj: proj, pos: left)
+    let rectdirright = dirStruc.subdir(dirStruc.rectified, proj: proj, pos: right)
+    let result0l = swift2Cstr(dirStruc.decodedFile(0, proj: proj, pos: left))
+    let result0r = swift2Cstr(dirStruc.decodedFile(0, proj: proj, pos: right))
+    let result1l = swift2Cstr(dirStruc.decodedFile(1, proj: proj, pos: left))
+    let result1r = swift2Cstr(dirStruc.decodedFile(1, proj: proj, pos: right))
+    print(dirStruc.intrinsicsYML)
+    print(dirStruc.extrinsicsYML(left: left, right: right))
+    print(dirStruc.decodedFile(0, proj: proj, pos: left))
+    computeMaps(result0l, intr, extr)
+    print("HERE")
+    rectifyDecoded(0, result0l, swift2Cstr(rectdirleft + "/result0-rectified.pfm"))
+    rectifyDecoded(0, result1l, swift2Cstr(rectdirleft + "/result1-rectified.pfm"))
+    rectifyDecoded(1, result0r, swift2Cstr(rectdirright + "/result0-rectified.pfm"))
+    rectifyDecoded(1, result1r, swift2Cstr(rectdirright + "/result1-rectified.pfm"))
 }

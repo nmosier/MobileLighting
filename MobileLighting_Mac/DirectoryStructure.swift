@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, settings, calibSettings, intrinsicsPhotos, extrinsics, metadata]
+            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, calibComputed, intrinsicsPhotos, extrinsics, metadata, extrinsics]
         }
     }
     
@@ -61,9 +61,22 @@ class DirectoryStructure {
                     return self.calibration + "/" + "intrinsics"
                 }
             }
-            func calibrationPos(_ pos: Int) -> String {
-                return subdir(self.calibration, pos: pos)
+            var stereoPhotos: String {
+                get {
+                    return self.calibration + "/" + "stereo"
+                }
             }
+                func stereoPhotosPair(left: Int, right: Int) -> String {
+                    let subdir = self.stereoPhotos + "/" + "pos\(left)\(right)"
+                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                    return subdir
+                }
+                    func stereoPhotosPairLeft(left: Int, right: Int) -> String {
+                        return subdir(stereoPhotosPair(left: left, right: right), pos: left)
+                    }
+                    func stereoPhotosPairRight(left: Int, right: Int) -> String {
+                        return subdir(stereoPhotosPair(left: left, right: right), pos: right)
+                    }
     
         var computed: String {
             get {
@@ -101,6 +114,13 @@ class DirectoryStructure {
                 }
             }
     
+            var rectified: String {
+                get {
+                    return self.computed + "/" + "rectified"
+                }
+            }
+    
+    
             var disparity: String {
                 get {
                     return self.computed + "/" + "disparity"
@@ -110,34 +130,34 @@ class DirectoryStructure {
                     return subdir(disparity, proj: proj, pos: leftpos) + "/" + "disp\(leftpos)\(rightpos)-\(direction).pfm"
                 }
     
-            var settings: String {
+            var calibComputed: String {
                 get {
-                    return self.scene + "/" + "settings"
+                    return self.computed + "/" + "calibration"
                 }
             }
     
-                var calibSettings: String {
-                    get {
-                        return self.settings + "/" + "calibration"
-                    }
+            var intrinsicsYML: String {
+                get {
+                    return self.calibComputed + "/" + "intrinsics.yml"
                 }
+            }
     
-                    var intrinsicsYML: String {
-                        get {
-                            return self.calibSettings + "/" + "intrinsics.yml"
-                        }
-                    }
+            var extrinsics: String {
+                get {
+                    return self.calibComputed + "/" + "extrinsics"
+                }
+            }
+            func extrinsicsSubdir(left: Int, right: Int) -> String {
+                let subdir = self.extrinsics + "/pos\(left)\(right)"
+                try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                return subdir
+            }
+            func extrinsicsYML(left: Int, right: Int) -> String {
+                return self.extrinsicsSubdir(left: left, right: right) + "/" + "extrinsics.yml"
+            }
     
-                    var extrinsics: String {
-                        get {
-                            return self.calibSettings + "/" + "extrinsics"
-                        }
-                    }
-                        func extrinsicsSubdir(left: Int, right: Int) -> String {
-                            let subdir = self.extrinsics + "/\(left)\(right)"
-                            try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                            return subdir
-                        }
+    
+    
     
             var metadata: String {
                 get {
@@ -145,10 +165,10 @@ class DirectoryStructure {
                 }
             }
                 func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
-                    return subdir(metadata, proj: proj, pos: pos) + "/metadata-\(direction).yml"
+                    return subdir(metadata, proj: proj, pos: pos) + "/metadata\(direction).yml"
                 }
                 func metadataFile(_ direction: Int) -> String {
-                    return subdir(metadata) + "/metadata-\(direction).yml"
+                    return subdir(metadata) + "/metadata\(direction).yml"
                 }
     
     

@@ -774,7 +774,6 @@ void WriteFlowFileVerb(CFloatImage img, const char* filename, int verbose)
     WriteFlowFile(img, filename);
 }
 
-
 /* no longer used
 
 // Grey code functions

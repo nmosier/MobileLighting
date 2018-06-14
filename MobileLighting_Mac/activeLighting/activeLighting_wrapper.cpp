@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include "ImgProcessor.h"
+#include "Rectify.hpp"
+#include "Utils.h"
 
 extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle) {
     refine(outdir, direction, decodedIm, angle);	// returns final CFloatImage, ignore
@@ -72,3 +74,11 @@ extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *out
 extern "C" void rectifyPFMs {
     rectifyDecoded(nimages, camera, destdir, matrices, images);
 }*/
+extern "C" void computeMaps(char *impath, char *intr, char *extr) {
+    printf("%s\n%s\n%s\n", impath, intr, extr);
+    CFloatImage im;
+    ReadImage(im, impath);
+    CShape sh = im.Shape();
+    printf("decoded image dimensions: [%d x %d]\n", sh.width, sh.height);
+    computemaps(sh.width, sh.height, intr, extr);
+}

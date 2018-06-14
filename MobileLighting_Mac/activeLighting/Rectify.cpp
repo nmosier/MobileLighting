@@ -134,6 +134,9 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     const float maxdiff = 0.5;
     const int imtype = CV_32FC1;
     
+    mapx = (camera == 0) ? mapx0 : mapx1;
+    mapy = (camera == 0) ? mapy0 : mapy1;
+    
     ReadFilePFM(image, string(impath));
     cv::Size ims = image.size();
     

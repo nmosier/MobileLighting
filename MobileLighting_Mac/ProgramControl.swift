@@ -550,7 +550,13 @@ func nextCommand() -> Bool {
         }
     
     case .rectify:
-        print("rectify still needs to be implemented")
+        //print("rectify still needs to be implemented")
+        let usage = "usage: rectify [proj #] [leftpos] [rightpos]"
+        guard tokens.count == 4, let proj = Int(tokens[1]), let left = Int(tokens[2]), let right = Int(tokens[3]) else {
+            print(usage)
+            break
+        }
+        rectify(left: left, right: right, proj: proj)
         break
         
         
@@ -675,8 +681,6 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
-//            photoReceiver.receiveStatusUpdate(completionHandler: captureInvertedBinaryCode)
-//            StatusUpdateReceiver(<#T##completionHandler: (CameraStatusUpdate) -> Void##(CameraStatusUpdate) -> Void#>)
             photoReceiver.dataReceiver = StatusUpdateReceiver( { (_ update: CameraStatusUpdate) in captureInvertedBinaryCode(statusUpdate: update)})
         }
     }
@@ -706,14 +710,11 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
                 let threshpath = dirStruc.subdir(dirStruc.thresh)
                 let handler2 = captureNextBinaryCode
                 let handler1 = {
-//                    photoReceiver.receiveCalibrationImage(ID: currentCodeBit-1, completionHandler: handler2, subpath: "tmp/thresh/\(horizontal ? "h" : "v")")
                     photoReceiver.dataReceiver = CalibrationImageReceiver(handler2, dir: "tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
                 }
                 //MARK: NEED TO FIX THIS AFTER HANDLE PHOTO RECEIPT BETTER
-//                photoReceiver.receiveCalibrationImage(ID: currentCodeBit, completionHandler: handler1, subpath: "tmp/prethresh/\(horizontal ? "h" : "v")")
                 photoReceiver.dataReceiver = CalibrationImageReceiver(handler1, dir: "tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
             } else {
-//               photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate)->Void in captureNextBinaryCode() })
                 photoReceiver.dataReceiver = StatusUpdateReceiver { (update: CameraStatusUpdate) in
                     captureNextBinaryCode()
                 }
@@ -781,8 +782,8 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     }
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
-    let leftSubdir = dirStruc.calibrationPos(pos0)
-    let rightSubdir = dirStruc.calibrationPos(pos1)
+    let leftSubdir = dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1) //dirStruc.calibrationPos(pos0)
+    let rightSubdir = dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)//dirStruc.calibrationPos(pos1)
     
     
     // in the future, should set autoexposure & autofocus
