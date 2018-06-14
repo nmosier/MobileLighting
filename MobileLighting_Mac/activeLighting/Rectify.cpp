@@ -19,7 +19,7 @@
 #include "assert.h"
 
 using namespace cv;
-
+/*
 void rectify(int nimages, int camera, int w, int h, char* destdir, char** matrices, char** photos)
 {
     Mat image, image2, mapx, mapy;
@@ -43,12 +43,12 @@ void rectify(int nimages, int camera, int w, int h, char* destdir, char** matric
 		FileStorage(matrices[4], FileStorage::READ)["R"] >> r;
 		FileStorage(matrices[5], FileStorage::READ)["T"] >> t;
 	
-		/*
+ 
 		std::cout << "intrinsics:" << std::endl << k0 << std::endl << k1 << std::endl;
 		std::cout << "distort:" << std::endl << d0 << std::endl << d1 << std::endl;
 		std::cout << "rotate:" << std::endl << r << std::endl;
 		std::cout << "projection:" << std::endl << t << std::endl;
-		*/
+ 
 
 		Size ims;
 
@@ -96,66 +96,66 @@ void rectify(int nimages, int camera, int w, int h, char* destdir, char** matric
     }
     printf("\n");
 }
+*/
 
-void rectifyDecoded(int nimages, int camera, char* destdir, char** matrices, char** photos)
+// computemaps -- computes maps for stereo rectification based on intrinsics & extrinsics matrices
+// only needs to be computed once per stereo pair
+
+Mat mapx0, mapy0;
+Mat mapx1, mapy1;
+
+void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
-	Mat image, image2, mapx, mapy;
-	const int nmatrices = 4;
-    int justcopy = 0; // do actual rectification
+    cv::Size ims(width, height);
+    std::clog << "computing maps " << ims << std::endl;
+    FileStorage fintr(intrinsics, FileStorage::READ);
+    FileStorage fextr(extrinsics, FileStorage::READ);
+    Mat k,d,rect0,rect1,proj0,proj1;
+    std::clog << "reading camera matrices..." << std::endl;
+    fintr["Camera_Matrix"] >> k;
+    fintr["Distortion_Coefficients"] >> d;
+    fextr["Rectification_Parameters"]["Rectification_Transformation_1"] >> rect0;
+    fextr["Rectification_Parameters"]["Projection_Matrix_1"] >> proj0;
+    fextr["Rectification_Parameters"]["Rectification_Transformation_2"] >> rect1;
+    fextr["Rectification_Parameters"]["Projection_Matrix_2"] >> proj1;
+    std::clog << "read camera matrices" << std::endl;
+    std::clog << "undistorting first maps..." << std::endl;
+    initUndistortRectifyMap(k, d, rect0, proj0, ims, CV_32FC1, mapx0, mapy0);
+    std::clog << "undistorting second maps..." << std::endl;
+    initUndistortRectifyMap(k, d, rect1, proj1, ims, CV_32FC1, mapx1, mapy1);
+    std::clog << "done computing maps" << mapx0.size() << std::endl;
+}
 
-    // assume valid matrix files unless first one starts with '-'
-    if (matrices[0][0] == '-') {
-
-		printf("NO RECTIFICATION -- just copying files\n");
-		justcopy = 1;
-
-    } else {
-
-		Mat k,d,r,t;
-	
-		FileStorage(matrices[0], FileStorage::READ)["K"] >> k; // intrisnic matrix
-		FileStorage(matrices[1], FileStorage::READ)["D"] >> d; // distortion matrix
-		FileStorage(matrices[2], FileStorage::READ)["R"] >> r;
-		FileStorage(matrices[3], FileStorage::READ)["T"] >> t;
-		
-        ReadFilePFM(image, string(photos[0]));
-        Size ims = image.size();
-
-        //rectification map images
-		mapx = Mat(ims, CV_32F, 1);
-		mapy = Mat(ims, CV_32F, 1);
-			
-		Mat rect0, rect1, proj0, proj1, q;
-		stereoRectify(k, d, k, d, ims, r, t, rect0, rect1, proj0, proj1, q);
-        Mat intr = k;
-        Mat dist = d;
-		Mat rect = camera ? rect1 : rect0;
-		Mat proj = camera ? proj1 : proj0;
-		initUndistortRectifyMap(intr, dist, rect, proj, ims, CV_32FC1, mapx, mapy);
-    }
+extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
+{
+    printf("rectifying decoded image...");
+    Mat image, im_linear, im_nearest, image2;
+    Mat mapx, mapy;
+    const float maxdiff = 0.5;
+    const int imtype = CV_32FC1;
     
-    //Load image, remap, save to file
-    for(int i = 0; i < nimages; i++) {
-
-		//image = imread(photos[i]);
-		ReadFilePFM(image, string(photos[i]));
-	
-		if (justcopy) {
-		    image2 = image; // skip the actual rectification and just copy the image
-		} else {
-			const int imtype = CV_32FC1;	// if decoded, use 1-channel 32-bit floating point; otherwise, 1-channel 8-bit grayscale
-			image2 = Mat(mapx.size(), imtype, 1);// cvCreateImage(cvGetSize(mapx), IPL_DEPTH_8U, 3);
-		    remap(image, image2, mapx, mapy, INTER_LINEAR);
-		}
-
-		char buffer[1024];
-		sprintf(buffer,"%s/result%d-rectified.pfm",destdir, i);
-		WriteFilePFM(image2, buffer, 1);
-		if(i%2 == 0){
-		    printf(".");
-		    fflush(stdout);
-		}
+    ReadFilePFM(image, string(impath));
+    cv::Size ims = image.size();
+    
+    image2 = Mat(ims, imtype, 1);
+    im_linear = Mat(ims, imtype, 1);
+    im_nearest = Mat(ims, imtype, 1);
+    remap(image, im_linear, mapx, mapy, INTER_LINEAR);
+    remap(image, im_nearest, mapx, mapy, INTER_NEAREST);
+    
+    for (int j = 0; j < ims.height; ++j) {
+        for (int i = 0; i < ims.width; ++i) {
+            float val_linear = im_linear.at<float>(j,i);
+            float val_nearest = im_nearest.at<float>(j,i);
+            float val;
+            if (val_linear != INFINITY && fabs(val_linear - val_nearest) <= maxdiff) {
+                val = val_linear;
+            } else {
+                val = val_nearest;
+            }
+            image2.at<float>(j,i) = val;
+        }
     }
-    printf("\n");
 
+    WriteFilePFM(image2, outpath, 1);
 }

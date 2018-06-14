@@ -12,12 +12,13 @@
 
 #endif
 
+#include "activeLighting/Rectify.hpp"
 
 //MARK: Image Processor
 void refineDecodedIm(char *outdir, int direction, char *decodedIm, double angle);
 //void disparitiesOfRefinedImgs(char *in0, char *in1, char *out0, char *out1, int dXmin, int dXmax, int dYmin, int dYmax);
 void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int dXmin, int dXmax, int dYmin, int dYmax);
-void rectifyPFMs(int nimages, int camera, char *destdir, char **matrices, char **images);
+
 
 // calibration functions
 int calibrateWithSettings(char *settingspath);

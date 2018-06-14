@@ -118,7 +118,7 @@ func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CV
 func rectifyPixelBuffer(_ buffer: CVPixelBuffer, camera: Int) -> CVPixelBuffer {
     var intrinsics = (Bundle.main.bundlePath + "/intrinsics.yml").cString(using: .ascii)!
     var extrinsics = (Bundle.main.bundlePath + "/extrinsics.yml").cString(using: .ascii)!
-    computemaps(Int32(buffer.width), Int32(buffer.height), &intrinsics, &extrinsics)
+    computemaps(Int32(buffer.height), Int32(buffer.width), &intrinsics, &extrinsics)    // transpose width & height because the pixelbuffer is rotated (i.e. 1920 x 1080), but camera matrices expecting 1080x1920 image
     
     let camera = Int32(camera)
     let ciimage = CIImage(cvPixelBuffer: buffer)
@@ -127,7 +127,7 @@ func rectifyPixelBuffer(_ buffer: CVPixelBuffer, camera: Int) -> CVPixelBuffer {
     let cgim = tmpContext.createCGImage(ciimage, from: rect)
     let uiim = UIImage(cgImage: cgim!)
     
-    let uiim2 = rectify(camera, uiim)!
+    let uiim2 = rectifyCodes(camera, uiim)!
     
     UIImageWriteToSavedPhotosAlbum(uiim2, nil, nil, nil)
     print("uiwidth=\(uiim2.size.width),uiheight=\(uiim2.size.height)")

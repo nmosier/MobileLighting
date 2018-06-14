@@ -68,6 +68,7 @@ extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *out
 }
 
 //void rectifyDecoded(int nimages, char* destdir, char** matrices, char** photos);
-extern "C" void rectifyPFMs(int nimages, int camera, char *destdir, char **matrices, char **images) {
+/*
+extern "C" void rectifyPFMs {
     rectifyDecoded(nimages, camera, destdir, matrices, images);
-}
+}*/

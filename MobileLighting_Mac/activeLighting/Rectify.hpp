@@ -9,8 +9,8 @@
 
 #ifndef Header_h
 #define Header_h
-void rectify(int nimages, int camera, int w, int h, char* destdir, char** matrices, char** photos);
-void rectifyDecoded(int nimages, int camera, char* destdir, char** matrices, char** photos);
+void computemaps(int, int, char *, char *);
+void rectifyDecoded(int, char *, char *);
 
 
 #endif /* Header_h */

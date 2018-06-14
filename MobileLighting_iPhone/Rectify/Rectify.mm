@@ -1,9 +1,6 @@
 /*
  * Rectify.cpp
  *
- *  Created on: Jun 28, 2011
- *      Author: wwestlin
- *
  * DS 2/3/2014  -- added "justcopy" option if passing in '-' for matrix filenames
  * DS 3/21/2014 -- added w, h parameters to control the size of the output images
  * NM 6/2018 -- modified to run
@@ -30,11 +27,12 @@ const bool smartInterpolation = false;
     
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
-    
+
+// computemaps -- computes maps for stereo rectification based on intrinsics & extrinsics matrices
+// only needs to be computed once per stereo pair
 extern "C" void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
-    
-    cv::Size ims(height, width); // transpose for now, since image is originally rotated on iphone
+    cv::Size ims(width, height);
     std::clog << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
     FileStorage fextr(extrinsics, FileStorage::READ);
@@ -54,7 +52,8 @@ extern "C" void computemaps(int width, int height, char *intrinsics, char *extri
     std::clog << "done computing maps" << mapx0.size() << std::endl;
 }
 
-extern "C" UIImage *rectify(int camera, UIImage *inIm) {
+// rectifyCodes -- rectifies intensity images on iPhone
+extern "C" UIImage *rectifyCodes(int camera, UIImage *inIm) {
     std::clog << "rectifying images..." << std::endl;
     std::clog << "w=" << inIm.size.width << " h=" << inIm.size.height << std::endl;
     std::clog << "getting Mat from UIImage..." << std::endl;
@@ -90,9 +89,6 @@ extern "C" UIImage *rectify(int camera, UIImage *inIm) {
     }
     return outim;
 }
-
-
-
 
 Mat cvMatFromUIImage(UIImage *image)
 {

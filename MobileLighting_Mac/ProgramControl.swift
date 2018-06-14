@@ -790,69 +790,71 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     //cameraServiceBrowser.sendPacket(packet2)
     //packet2 = CameraInstructionPacket(cameraInstruction: )
     
-    let move: Bool = true
+    Restore()
     
-    _ = readLine()
-    /*
-    if (move) { Restore() }
-    print(msgMove)
-    func wait() {
+    func wait() -> Bool {
         while true {
-            let input: String? = readLine()
-            if let input = input, let pos = Int(input) {
-                if (pos%2 == 0)
+            let inputo: String? = readLine()
+            guard let input = inputo else {
+                return true  // wait until blank line, should continue
+            }
+            if let pos = Int(input) {
+                if pos%2 == 0 {
+                    Restore()
+                } else {
+                    Next()
+                }
+            } else if ["quit", "stop", "end", "exit"].contains(input) {
+                return false
+            } else {
+                return true
             }
         }
     }
-    var input: String = readLine()
-    if */
+    guard wait() else { return }
+    print(msgMove)
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-//    photoReceiver.receiveCalibrationImage(ID: 0, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: rightSubdir)
     photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: 0)
     while !receivedCalibrationImage {}
     
     for i in 0..<nPhotos-1 {
-        if (move) {
         if i%2 == 0 {
             Next()
         } else {
             Restore()
         }
-        }
-        //let dist = (i%2 == 0) ? pos0:pos1
         let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
-        // if (move) { vxmController.moveTo(dist: dist) }
         print(msgMove)
-        _ = readLine() // operator must press enter when in position; also signal to take photo
+        guard wait() else { return }
+//        _ = readLine() // operator must press enter when in position; also signal to take photo
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-//        photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
         photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
         while !receivedCalibrationImage {}
         
         print(msgBoard)
-        _ = readLine()
+//        _ = readLine()
+        guard wait() else { return }
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-//        photoReceiver.receiveCalibrationImage(ID: i+1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: subpath)
         photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i+1)
         while !receivedCalibrationImage {}
     }
-    if (move) {
+    
+    
     if (nPhotos%2 == 0) {
         Restore()
     } else {
         Next()
     }
-    }
+    guard wait() else { return }
+
     
-    //if (move) { vxmController.moveTo(dist: (nPhotos%2 == 0) ? pos1:pos0) }
     print(msgMove)
-    _ = readLine()
+//    _ = readLine()
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-//    photoReceiver.receiveCalibrationImage(ID: nPhotos-1, completionHandler: {()->Void in receivedCalibrationImage=true}, subpath: (nPhotos%2 == 0) ? rightSubdir:leftSubdir)
     photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: (nPhotos%2 == 0) ? rightSubdir:leftSubdir, id: nPhotos-1)
     while !receivedCalibrationImage {}
 }
@@ -896,27 +898,3 @@ func configureDisplays() -> Bool {
     }
     return true
 }
-
-
-// OLD CODE
-/*
-// creates a (partial) directory structure for the current scene
-// structure is specified as a recursive dictionary of strings (subdirectories) to
-//   either nil or another recursive dictionary
-// path: root path at which to generate the directory tree
-func createStaticDirectoryStructure(atPath path: String, structure: [String : Any?]) {
-    let fileman = FileManager.default
-    for subdir in structure.keys {
-        if structure[subdir] == nil || structure[subdir]! == nil {
-            do {
-                try fileman.createDirectory(atPath: path+"/"+subdir, withIntermediateDirectories: true, attributes: nil)
-            } catch {
-                print("ProgramControl: could not create static directory structure.")
-            }
-        } else {
-            let substruct = structure[subdir]! as! [String : Any?]
-            createStaticDirectoryStructure(atPath: path+"/"+subdir, structure: substruct)
-        }
-    }
-}
- */
