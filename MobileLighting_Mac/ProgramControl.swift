@@ -27,8 +27,11 @@ enum Command: String {      // rawValues are automatically the name of the case,
     // communications & serial control
     case connect
     case disconnect, disconnectall
-    case movearm
     case proj
+    
+    // robot control
+    case movearm
+    case addpos
     
     // image processing
     case refine
@@ -46,9 +49,9 @@ enum Command: String {      // rawValues are automatically the name of the case,
     
 }
 
-let commandUsage: [Command : String?] = [
-    .help: nil,
-    .quit: nil,
+let commandUsage: [Command : String] = [
+    .help: "help",
+    .quit: "quit",
     .reloadsettings: "reloadsettings [attribute_name]",
     .connect: "connect [iphone|switcher|vxm] [port string]?",
     .disconnect: "disconnect [vxm|switcher]",
@@ -60,11 +63,12 @@ let commandUsage: [Command : String?] = [
     .cb: "cb [squareSize]?",
     .diagonal: "diagonal [stripe width]",
     .verticalbars: "verticalbars [width]",
-    .movearm: "movearm [int/MAX/MIN]",
+    .movearm: "movearm [pose_string | pose_number]",
     .proj: "proj [projector_#|all] [on|off]|[1|0]",
     .refine: "refine [imageFilename] [direction (0/1)]",
     .disparity: "disparity [[projector #] [[left pos #] [right pos #]]?]?",
-    .rectify: "rectify [proj#] [pos1] [pos2]"
+    .rectify: "rectify [proj#] [pos1] [pos2]",
+    .addpos: "addpos [pos_string] [pos_id]?",
 ]
 
 
@@ -416,29 +420,67 @@ func nextCommand() -> Bool {
     //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
-        guard tokens.count == 2 else {
-            print("usage: movearm [pos: int]")
-            break
-        }
-        guard let pos: Int = Int(tokens[1]) else {
-            print("movearm: \(tokens[1]) is not a valid position.")
-            break
-        }
-        
-        // temporary implementation, for when only 2 positions supported
-        let newPos = pos % 2
-        switch newPos {
-        case 0:
-            Restore()
-            break
-        case 1:
-            Next()
-            break
+        switch tokens.count {
+        case 2:
+            let posStr: String
+            if let posID = Int(tokens[1]) {
+                posStr = positions[posID]
+            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
+                posStr = tokens[1]
+            } else {
+                print("movearm: \(tokens[1]) is not a valid position string or index.")
+                break
+            }
+            print("Moving arm to position \(posStr)")
+            var cStr = posStr.cString(using: .ascii)!
+            DispatchQueue.main.async {
+                MovePose(&cStr, 0, 0)  // use default acceleration & velocities
+                print("Moved arm to position \(posStr)")
+            }
+        case 3:
+            guard let ds = Float(tokens[2]) else {
+                print("movearm: \(tokens[2]) is not a valid distance.")
+                break
+            }
+            switch tokens[1] {
+            case "x":
+                DispatchQueue.main.async {
+                    MoveLinearX(ds, 0, 0)
+                }
+            case "y":
+                DispatchQueue.main.async {
+                    MoveLinearY(ds, 0, 0)
+                }
+            case "z":
+                DispatchQueue.main.async {
+                    MoveLinearZ(ds, 0, 0)
+                }
+            default:
+                print("moevarm: \(tokens[1]) is not a recognized direction.")
+            }
+            
         default:
-            fatalError("an integer mod 2 MUST be 0 or 1")
+            print("usage: \(commandUsage[.movearm]!)")
+            break
         }
         
         break
+    
+    case .addpos:
+        switch tokens.count {
+        case 2:
+            positions.append(tokens[1]) // append pos string
+        case 3:
+            guard let posID = Int(tokens[2]), posID <= positions.count && posID >= 0 else {
+                print("addpos: invalid position ID.")
+                break
+            }
+            if (posID == positions.count) { positions.append( tokens[1] ) }
+            else { positions[posID] = tokens[1] }
+        default:
+            print("usage: \(commandUsage[.addpos]!)")
+        }
+        
     
     // used to turn projectors on or off
     //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
@@ -550,7 +592,6 @@ func nextCommand() -> Bool {
         }
     
     case .rectify:
-        //print("rectify still needs to be implemented")
         let usage = "usage: rectify [proj #] [leftpos] [rightpos]"
         guard tokens.count == 4, let proj = Int(tokens[1]), let left = Int(tokens[2]), let right = Int(tokens[3]) else {
             print(usage)
