@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, calibComputed, intrinsicsPhotos, extrinsics, metadata, extrinsics]
+            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings]
         }
     }
     
@@ -41,19 +41,19 @@ class DirectoryStructure {
     
         var ambient: String {
             get {
-                return self.scene + "/" + "ambient"
+                return self.orig + "/" + "ambient"
             }
         }
     
         var ambientBall: String {
             get {
-                return self.scene + "/" + "ambientBall"
+                return self.orig + "/" + "ambientBall"
             }
         }
     
         var calibration: String {
             get {
-                return self.scene + "/" + "calibration"
+                return self.orig + "/" + "calibration"
             }
         }
             var intrinsicsPhotos: String {
@@ -77,6 +77,16 @@ class DirectoryStructure {
                     func stereoPhotosPairRight(left: Int, right: Int) -> String {
                         return subdir(stereoPhotosPair(left: left, right: right), pos: right)
                     }
+            var calibrationSettings: String {
+                get {
+                    return self.calibration + "/" + "settings"
+                }
+            }
+                var calibrationSettingsFile: String {
+                    get {
+                        return self.calibrationSettings + "/" + "calibration.yml"
+                    }
+                }
     
         var computed: String {
             get {
