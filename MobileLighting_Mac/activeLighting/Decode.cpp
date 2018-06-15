@@ -28,6 +28,7 @@ int pixelToCode[MAXCODES];
 int codeToPixel[MAXCODES];
 
 // load code file
+/*
 void loadCodes(char* file){
     int ncodes;
     ifstream in(file, ios::binary | ios::in);
@@ -45,9 +46,10 @@ void loadCodes(char* file){
 	in.read((char*)&codeToPixel[i], 4);
     }
 }
-
+*/
 // store image 'im' as k-th bit in 'val'  (k==0 means least-significant bit)
 // if a pixel in 'im' has label 128 (unknown), mark corresponding pixel in 'unk'
+/*
 void store_bit(CByteImage im, CIntImage val, CIntImage unk, int k)
 {
     CShape sh = im.Shape();
@@ -67,7 +69,8 @@ void store_bit(CByteImage im, CIntImage val, CIntImage unk, int k)
 	}
     }
 }
-
+*/
+/*
 // decode binary codes.  val contains the code, unk contains the set of unknown bits.
 // TODO: could be smarter here by trying to disambiguate pixels where only one bit is 
 // uncertain
@@ -91,6 +94,7 @@ void decodeCode(CIntImage val, CIntImage unk, CFloatImage &result)
     }
 }
 
+*/
 
 // fill holes in a line of code map
 void fillCodeHolesLine(float *val, int stride, int n, int maxwidth, int maxborderdiff)
