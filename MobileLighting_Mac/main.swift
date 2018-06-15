@@ -64,8 +64,7 @@ var minSWfilepath: String
 var projectors: Int?
 var exposureDurations: [Double]
 var exposureISOs: [Double]
-var positions: [Int]
-
+var positions: [String]
 
 // load init settings
 do {
@@ -85,7 +84,7 @@ minSWfilepath = initSettings.minSWfilepath
 projectors = initSettings.nProjectors
 exposureDurations = initSettings.exposureDurations ?? [Double]()
 exposureISOs = initSettings.exposureISOs ?? [Double]()
-positions = initSettings.positionCoords ?? [Int]()
+positions = initSettings.positionCoords ?? [String]()
 
 // setup directory structure
 dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
@@ -96,40 +95,6 @@ do {
     exit(0)
 }
 
-print("Exposure durations: \(exposureDurations)")
-print("Exposure ISOs: \(exposureISOs)")
-print("Positions: \(positions)")
-print("Projectors: \(projectors ?? 0)")
-
-/*
-// create scene's directory structure
-let staticDirectoryStructure: [String : Any?]
-staticDirectoryStructure = [
-    origSubdir      : [
-        ambSubdir       : nil,
-        ambBallSubdir   : nil,
-        calibSubdir     : [
-            "chessboard" : nil,
-            "left"  : nil,
-            "right" : nil
-        ] as [String : Any?],
-        graycodeSubdir  : nil
-    ],
-    computedSubdir  : [
-        calibSubdir : nil,
-        decodedSubdir   : nil,
-        refinedSubdir   : nil,
-        disparitySubdir : nil
-    ] as [String : Any?],
-    settingsSubdir  : [
-        calibSettingsSubdir : [
-            "imageLists"    : nil,
-            "settings"      : nil
-            ] as [String : Any?]
-    ] as [String : Any?]
-]
-createStaticDirectoryStructure(atPath: scenesDirectory+"/"+sceneName, structure: staticDirectoryStructure)
-*/
 
 // publish PhotoReceiver service & set up Camera Service Browser
 
