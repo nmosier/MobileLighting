@@ -60,7 +60,7 @@ extern "C" UIImage *rectifyCodes(int camera, UIImage *inIm) {
     Mat image = cvMatFromUIImage(inIm);
     std::clog << "Mat from UI dims = " << image.size << std::endl;
     
-    Mat imageT;
+    Mat imageT, image2T;
     transpose(image, imageT);
     std::clog << "sizeT=" << imageT.size() << std::endl;
     std::clog << "got Mat from UIImage." << std::endl;
@@ -74,19 +74,41 @@ extern "C" UIImage *rectifyCodes(int camera, UIImage *inIm) {
     
     UIImage *outim;
     if (smartInterpolation) {
-        
+        Mat im_linear, im_nearest;
+        Mat g_linear, g_nearest;
+        Mat g_result(ims, CV_8UC1);
+        remap(imageT, im_linear, mapx, mapy, INTER_LINEAR);
+        remap(imageT, im_nearest, mapx, mapy, INTER_NEAREST);
+        cvtColor(im_linear, g_linear, CV_BGRA2GRAY);
+        cvtColor(im_nearest, g_nearest, CV_BGRA2GRAY);
+        assert (g_linear.channels() == 1 && g_nearest.channels() == 1);
+        for (int j = 0; j < g_linear.size().height; ++j) {
+            for (int i = 0; i < g_linear.size().width; ++i) {
+                int val_linear, val_nearest, val;
+                val_linear = g_linear.at<uint8_t>(j, i);
+                val_nearest = g_nearest.at<uint8_t>(j, i);
+                // default to linear unless val_linear & val_nearest on same sides of 128
+                if (val_linear == 128) {
+                    val = val_nearest;
+                } else if (val_nearest == 128) {
+                    val = val_linear;
+                } else if (val_linear < 128 && val_nearest < 128) {
+                    val = min(val_linear, val_nearest);
+                } else if (val_linear > 128 && val_nearest > 128) {
+                    val = max(val_linear, val_nearest);
+                } else {
+                    val = val_linear;
+                }
+                g_result.at<uint8_t>(j,i) = val;
+            }
+        }
+        cvtColor(g_result, image2, CV_GRAY2BGRA);
+        assert (image2.channels() == 4);
     } else {
-        std::clog << "remapping image..." << std::endl;
         remap(imageT, image2, mapx, mapy, INTER_LINEAR);
-        std::clog << "remapped image" << std::endl;
-        std::clog << "size=" << image2.size() << std::endl;
-        std::clog << "converting Mat to UIImage..." << std::endl;
-        Mat image2T;
-        transpose(image2, image2T);
-        outim = UIImageFromCVMat(image2T);
-        std::clog << "converted mat to UIImage" << std::endl;
-        std::clog << "w=" << outim.size.width << " h=" << outim.size.height << std::endl;
     }
+    transpose(image2, image2T);
+    outim = UIImageFromCVMat(image2T);
     return outim;
 }
 
