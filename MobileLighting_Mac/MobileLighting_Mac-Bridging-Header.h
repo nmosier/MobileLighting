@@ -22,9 +22,9 @@ int calibrateWithSettings(char *settingspath);
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
 
 //MARK: Robot Control
-int Client();
-int Server();
-int Next();
-int Restore();
+#include "RobotControl/RobotControl/RobotControl.h"
+
+//MARK: Calibration
+int CalibrateWithSettings(const char *inputSettingsFile);
 
 #endif
