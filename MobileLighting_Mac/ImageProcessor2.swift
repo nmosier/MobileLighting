@@ -13,13 +13,8 @@ import Yaml
 func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
     let direction: Int = horizontal ? 1 : 0
     
-    var received = false
-    let completionHandler = { received = true }
-    photoReceiver.dataReceiver = SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
-    while !received {}
-    
     let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
-//    let completionHandler: () -> Void = {
+    let completionHandler: () -> Void = {
         let filepath = dirStruc.metadataFile(direction)
         do {
             let metadataStr = try String(contentsOfFile: filepath)
@@ -32,7 +27,11 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
         } catch {
             print("refine error: could not load metadata file.")
         }
-//    }
+    }
+    photoReceiver.dataReceivers.insertFirst(
+        SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
+    )
+
 }
 
 //MARK: disparity matching functions
