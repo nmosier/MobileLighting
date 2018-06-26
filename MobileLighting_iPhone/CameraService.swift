@@ -418,6 +418,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 let metadata = sceneMetadata.getMetadataYAMLData()
                 packet = PhotoDataPacket(photoData: metadata as Data)
                 photoSender.sendPacket(packet)
+                print("sent metadata packet")
                 
             case CameraInstruction.EndCaptureSession:
                 cameraController.captureSession.stopRunning()
