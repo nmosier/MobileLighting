@@ -15,3 +15,4 @@ let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Su
 var initSettings: InitSettings!
 
 var dirStruc: DirectoryStructure!
+
