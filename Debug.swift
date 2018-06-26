@@ -24,3 +24,6 @@ let stereoPosition = 1 // change laters
 // photo capture
 let defaultResolution = "high"
 
+// robot control
+let robotAcceleration: Float = 0.3
+let robotVelocity: Float = 0.3
