@@ -23,7 +23,8 @@ extern "C" int PowerdownRobot() {
     return powerdown();
 }
 extern "C" int MovePose(char *pose, float a, float v) {
-    return move_pose(std::string(pose), a, v);
+    if (a == 0 || v == 0) return move_pose(std::string(pose));
+    else return move_pose(std::string(pose), a, v);
 }
 extern "C" int MoveJoints(char *pose, float a, float v) {
     return move_joints(std::string(pose), a, v);
