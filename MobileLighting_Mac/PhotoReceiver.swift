@@ -15,39 +15,11 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     
     var workingDirectory: String
     
-    // for receiving bracketed photo sequences
-    /*
-    var bracketName: String?
-    var bracketedPhotosComing: Int?
-    
-    // handlers for diff. requests of packet types
-    var receivingBracket: Bool = false
-    var bracketCompletionHandler: (()->Void)?
-    var bracketSubpath: String!
-    
-    var receivingLensPosition: Bool = false
-    var lensPositionCompletionHandler: ((Float)->Void)?
-    
-    var receivingStatusUpdate: Bool = false
-    var statusUpdateCompletionHandler: ((CameraStatusUpdate)->Void)?
-    
-    var receivingCalibrationImage = false
-    var calibrationImageID: Int?
-    var calibrationImageCompletionHandler: (()->Void)?
-    var calibrationSubpath: String!
-    
-    var receivingDecodedImage = false
-    var decodedImageHorizontal = false
-    var decodedImageCompletionHandler: ((String)->Void)?
-    var decodedImageAbsDir: String!
-    
-    var receivingSceneMetadata = false
-    var sceneMetadataCompletionHandler: (() -> Void)?
-    */
-    
     var readyToReceive: Bool = false
     
-    var dataReceiver: DataReceiver?
+    // object-oriented method of communication
+    // now uses queue for receivers
+    var dataReceivers = List<DataReceiver>()
 
     init(_ workingDirectory: String) {
         self.workingDirectory = workingDirectory
@@ -170,147 +142,14 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // handlePacket(PhotoDataPacket)
     // -handles provided packet (saves it to file, e.g.)
     func handlePacket(_ packet: PhotoDataPacket) {
-        guard let dataReceiver = self.dataReceiver else {
+        guard let dataReceiver = self.dataReceivers.popLast() else {
             // not expecting a packet
+            print("could not handle packet -- no data receivers in queue.")
             return
         }
         dataReceiver.handle(packet: packet)
         return
-        
-        //////////////// OLD, SHITTY IMPLMEENTATION ////////////////////
-        /*
-        if receivingLensPosition {
-            if let handler = lensPositionCompletionHandler {
-                print("PhotoReceiver: calling lens position completion handler.")
-                handler(packet.lensPosition!)
-            }
-            receivingLensPosition = false
-            return
-        } else if receivingStatusUpdate {
-            if let handler = statusUpdateCompletionHandler {
-                print("PhotoReceiver: calling status update completion handler.")
-                handler(packet.statusUpdate)
-            }
-            
-            receivingStatusUpdate = false
-            return
-        }
-        
-        
-        print("3: handling packet - \(timestampToString(date: Date()))")
-        
-        guard let photoData = packet.photoData else {
-            print("PhotoReceiver: failed to unarchive photo data.")
-            return
-        }
-        
-        guard !packet.encounteredError else {
-            print("PhotoReceiver: encountered error in photo capture/delivery.")
-            return
-        }
-        
-        print("PhotoReceiver: focus for photo: \(packet.lensPosition ?? -1.0)")
-        
-        var filePath: String = workingDirectory
-        let fileURL: URL
-        var handler: (()->Void)? = nil
-
-        if receivingCalibrationImage {
-            filePath = calibrationSubpath + "/IMG\(calibrationImageID ?? 0).JPG"
-            fileURL = URL(fileURLWithPath: filePath)
-            
-            //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_calibration/\(subpath)img\(calibrationImageID ?? 0).jpg")
-            receivingCalibrationImage = false
-            handler = calibrationImageCompletionHandler
-        } else if receivingDecodedImage {
-            // save as PFM file
-            filePath = decodedImageAbsDir+"/result\(decodedImageHorizontal ? 1:0).pfm"
-            fileURL = URL(fileURLWithPath: filePath)
-            receivingDecodedImage = false
-            if decodedImageCompletionHandler != nil {
-                // so decoded image file will already have been saved; otherwise calls handler before im written
-                handler = {
-                    self.decodedImageCompletionHandler!(filePath)
-                }
-            }
-        } else if receivingSceneMetadata {
-            print("Receiving scene metadata...")
-            let direction: Int = decodedImageHorizontal ? 1 : 0
-            filePath = dirStruc.metadataFile(direction)//[filePath, sceneName, metadataSubdir, "metadata-\(decodedImageHorizontal ? "h":"v").yml"].joined(separator: "/")
-            fileURL = URL(fileURLWithPath: filePath)
-            handler = sceneMetadataCompletionHandler
-        } else if let bracketedPhotoID = packet.bracketedPhotoID {
-            print("Is bracketed photo with ID \(bracketedPhotoID).")
-            
-            if bracketName != nil {
-                filePath += "/"+bracketSubpath+"/IMG_\(bracketedPhotoID).JPG"
-                //fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/imgs_structured/\(bracketName)-\(bracketedPhotoID).jpg")
-                fileURL = URL(fileURLWithPath: filePath)
-            } else {
-                fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO_DATA-\(bracketedPhotoID).jpg")
-            }
-        } else {
-            fileURL = URL(fileURLWithPath: "\(workingDirectory)/\(sceneName)/PHOTO-DATA.jpg")
-        }
-        
-        do {
-            makeDir(filePath.split(separator: "/").dropLast().joined(separator: "/"))
-            try photoData.write(to: fileURL, options: .atomic)
-            print("Successfully saved photo data to file \(fileURL).")
-        } catch {
-            print("Could not write photo data to file \(fileURL)")
-        }
-        
-        // call handler if there is one
-        if let handler = handler {
-            handler()
-        }
-        */
     }
-    
-    // receivePhotoBracket: starts receiving bracketed photo sequence of given photo count with given name
-    //     given completion handler called after fully received
-/*
-    func receivePhotoBracket(name: String, photoCount: Int, completionHandler: @escaping () -> Void, subpath: String) {
-        bracketName = name
-        bracketedPhotosComing = photoCount
-        bracketCompletionHandler = completionHandler
-        bracketSubpath = subpath
-        receivingBracket = true
-        
-        print("RECEIVING PHOTO BRACKET WITH PHOTOCOUNT \(photoCount)")
-        //readPacket()
-    }
-    
-    func receiveLensPosition(completionHandler: @escaping (Float) -> Void) {
-        receivingLensPosition = true
-        lensPositionCompletionHandler = completionHandler
-    }
-    
-    func receiveStatusUpdate(completionHandler: @escaping (CameraStatusUpdate)->Void) {
-        receivingStatusUpdate = true
-        statusUpdateCompletionHandler = completionHandler
-    }
-    
-    func receiveCalibrationImage(ID: Int, completionHandler: @escaping ()->Void, subpath: String) {
-        receivingCalibrationImage = true
-        calibrationImageID = ID
-        calibrationImageCompletionHandler = completionHandler
-        calibrationSubpath = subpath
-    }
-    
-    func receiveDecodedImage(horizontal: Bool, completionHandler: @escaping (String)->Void, absDir: String) {
-        receivingDecodedImage = true
-        decodedImageHorizontal = horizontal
-        decodedImageCompletionHandler = completionHandler
-        decodedImageAbsDir = absDir
-    }
-    
-    func receiveSceneMetadata(completionHandler: @escaping () -> Void) {
-        receivingSceneMetadata = true
-        sceneMetadataCompletionHandler = completionHandler
-    }
- */
 }
 
 
@@ -355,11 +194,13 @@ extension PhotoReceiver {
     func receiveLensPositionSync() -> Float {
         var done = false
         var lensPos: Float = -1.0
-        photoReceiver.dataReceiver = LensPositionReceiver { (pos: Float) in
-            print("Lens position:\t\(pos)")
-            done = true
-            lensPos = pos
-        }
+        photoReceiver.dataReceivers.insertFirst(
+                LensPositionReceiver { (pos: Float) in
+                    print("Lens position:\t\(pos)")
+                    done = true
+                    lensPos = pos
+            }
+        )
         while !done {}
         return lensPos
     }
