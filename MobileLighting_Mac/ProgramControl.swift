@@ -42,6 +42,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case calibrate  // 'x'
     case calibrate2pos
     case getintrinsics
+    case getextrinsics
     
     // for debugging
     case dispres
@@ -69,6 +70,8 @@ let commandUsage: [Command : String] = [
     .disparity: "disparity [[projector #] [[left pos #] [right pos #]]?]?",
     .rectify: "rectify [proj#] [pos1] [pos2]",
     .addpos: "addpos [pos_string] [pos_id]?",
+    .getintrinsics: "getintrinsics [board_type = ARUCO_SINGLE]",
+    .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE"
 ]
 
 
@@ -198,7 +201,9 @@ func nextCommand() -> Bool {
                 cameraServiceBrowser.sendPacket(packet)
 //                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: subpath)
                 let completionHandler = { receivedCalibrationImage = true }
-                photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+                photoReceiver.dataReceivers.insertFirst(
+                    CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+                )
                 
                 while !receivedCalibrationImage {}
                 
@@ -286,10 +291,12 @@ func nextCommand() -> Bool {
 //            print("Lens position:\t\(pos)")
 //            processingCommand = false
 //        })
-        photoReceiver.dataReceiver = LensPositionReceiver { (pos: Float) in
-            print("Lens position:\t\(pos)")
-            processingCommand = false
-        }
+        photoReceiver.dataReceivers.insertFirst(
+            LensPositionReceiver { (pos: Float) in
+                print("Lens position:\t\(pos)")
+                processingCommand = false
+            }
+        )
         
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
@@ -348,9 +355,11 @@ func nextCommand() -> Bool {
         cameraServiceBrowser.sendPacket(packet)
         var receivedUpdate = false
 //        photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
-        photoReceiver.dataReceiver = StatusUpdateReceiver { (update: CameraStatusUpdate) in
-            receivedUpdate = true
-        }
+        photoReceiver.dataReceivers.insertFirst(
+            StatusUpdateReceiver { (update: CameraStatusUpdate) in
+                receivedUpdate = true
+            }
+        )
         while !receivedUpdate {}
         
     // tells iPhone to use auto exposure mode (automatically adjusts exposure)
@@ -605,26 +614,67 @@ func nextCommand() -> Bool {
     // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
         // ABSOLUTE PATHS NOT REQUIRED
     case .getintrinsics:
-        let imgsdir = scenesDirectory+"/"+sceneName+"/"+origSubdir+"/"+calibSubdir+"/"+"chessboard"
-        let imglistdir = scenesDirectory+"/"+sceneName+"/"+settingsSubdir+"/"+calibSettingsSubdir+"/"+"imageLists"
-        /*
-        do {
-            try createImageList(fromDir: imgsdir, toPath: imglistdir+"/singleChessboard.xml")
-        } catch {
-            print("getintrinsics: error - could not create image list.")
+        guard tokens.count <= 2 else {
+            print("usage: \(commandUsage[command])")
+            break
         }
- 
-        let templatepath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/MobileLighting/MobileLighting_Mac/cameraCalib/settings/settingsIntrinsicChessboard.xml"
+        let patternEnum: CalibrationSettings.CalibrationPattern
+        if tokens.count == 1 {
+            patternEnum = CalibrationSettings.CalibrationPattern.ARUCO_SINGLE
+        } else {
+            let pattern = tokens[1].uppercased()
+            guard let patternEnumTemp = CalibrationSettings.CalibrationPattern(rawValue: pattern) else {
+                print("getintrinsics: \(pattern) not recognized pattern.")
+                break
+            }
+            patternEnum = patternEnumTemp
+        }
+        generateIntrinsicsImageList()
+        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
+        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
+        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
+        calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
+        calib.save()
+        var path = dirStruc.calibrationSettingsFile.cString(using: .ascii)!
         
-        let imglistpath: String = imglistdir+"/"+"singleChessboard.xml"
-        let settingsdir: String = scenesDirectory+"/"+sceneName+"/"+settingsSubdir+"/"+calibSettingsSubdir+"/settings"
-        let settingspath = settingsdir+"/settingsIntrinsicChessboard.yml"
-        
-        createSettingsIntrinsitcsChessboard(swift2Cstr(settingspath), swift2Cstr(imglistpath), swift2Cstr(templatepath))
         DispatchQueue.main.async {
-            calibrateWithSettings(swift2Cstr(settingspath))
+            CalibrateWithSettings(&path)
         }
-        */
+        break
+    
+    // do stereo calibration
+    case .getextrinsics:
+        guard tokens.count == 3 || tokens.count == 4 else {
+            print("usage: \(commandUsage[command] ?? "")")
+            break
+        }
+        guard let leftpos = Int(tokens[1]), let rightpos = Int(tokens[2]) else {
+            print("getextrinsics: invalid positions \(tokens[1]), \(tokens[2])")
+            break
+        }
+        let patternEnum: CalibrationSettings.CalibrationPattern
+        if tokens.count == 3 {
+            patternEnum = .ARUCO_SINGLE
+        } else {
+            guard let patternEnumTmp = CalibrationSettings.CalibrationPattern(rawValue: tokens[3]) else {
+                print("getextrinsics: invalid board pattern \(tokens[3])")
+                break
+            }
+            patternEnum = patternEnumTmp
+        }
+        generateStereoImageList(left: dirStruc.stereoPhotosPairLeft(left: leftpos, right: rightpos), right: dirStruc.stereoPhotosPairRight(left: leftpos, right: rightpos))
+        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
+        calib.set(key: .Mode, value: Yaml.string("STEREO"))
+        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
+        calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
+        calib.save()
+        
+        DispatchQueue.main.async {
+            var path = dirStruc.calibrationSettingsFile.cString(using: .ascii)!
+            CalibrateWithSettings(&path)
+        }
     
     // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues
@@ -722,7 +772,9 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
-            photoReceiver.dataReceiver = StatusUpdateReceiver( { (_ update: CameraStatusUpdate) in captureInvertedBinaryCode(statusUpdate: update)})
+            photoReceiver.dataReceivers.insertFirst(
+                StatusUpdateReceiver( { (_ update: CameraStatusUpdate) in captureInvertedBinaryCode(statusUpdate: update)})
+            )
         }
     }
     
@@ -751,14 +803,20 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
                 let threshpath = dirStruc.subdir(dirStruc.thresh)
                 let handler2 = captureNextBinaryCode
                 let handler1 = {
-                    photoReceiver.dataReceiver = CalibrationImageReceiver(handler2, dir: "tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                    photoReceiver.dataReceivers.insertFirst(
+                        CalibrationImageReceiver(handler2, dir: "tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                    )
                 }
                 //MARK: NEED TO FIX THIS AFTER HANDLE PHOTO RECEIPT BETTER
-                photoReceiver.dataReceiver = CalibrationImageReceiver(handler1, dir: "tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                photoReceiver.dataReceivers.insertFirst(
+                    CalibrationImageReceiver(handler1, dir: "tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                )
             } else {
-                photoReceiver.dataReceiver = StatusUpdateReceiver { (update: CameraStatusUpdate) in
-                    captureNextBinaryCode()
-                }
+                photoReceiver.dataReceivers.insertFirst(
+                    StatusUpdateReceiver { (update: CameraStatusUpdate) in
+                        captureNextBinaryCode()
+                    }
+                )
             }
       
             currentCodeBit += 1
@@ -777,13 +835,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     
     packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
     cameraServiceBrowser.sendPacket(packet)
-//    photoReceiver.receiveDecodedImage(horizontal: false, completionHandler: {path in decodedImageHandler(path, horizontal: false, projector: projector, position: position)}, absDir: decodedDir)
     var received = false
     var completionHandler = { (path: String) in
-        received = true
         decodedImageHandler(path, horizontal: false, projector: projector, position: position)
+        received = true
     }
-    photoReceiver.dataReceiver = DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: false)
+    photoReceiver.dataReceivers.insertFirst(
+        DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: false)
+    )
     while !received || !cameraServiceBrowser.readyToSendPacket {}
     
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
@@ -799,13 +858,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     
     packet = CameraInstructionPacket(cameraInstruction: .EndStructuredLightingCaptureFull)
     cameraServiceBrowser.sendPacket(packet)
-//    photoReceiver.receiveDecodedImage(horizontal: true, completionHandler: {path in decodedImageHandler(path, horizontal: true, projector: projector, position: position)}, absDir: decodedDir)
     received = false
     completionHandler = { (path: String) in
-        received = true
         decodedImageHandler(path, horizontal: true, projector: projector, position: position)
+        received = true
     }
-    photoReceiver.dataReceiver = DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: true)
+    photoReceiver.dataReceivers.insertFirst(
+        DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: true)
+    )
     while !received || !cameraServiceBrowser.readyToSendPacket {}
 }
 
@@ -857,7 +917,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     print(msgMove)
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-    photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: 0)
+    photoReceiver.dataReceivers.insertFirst(
+        CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: 0)
+    )
     while !receivedCalibrationImage {}
     
     for i in 0..<nPhotos-1 {
@@ -872,7 +934,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
 //        _ = readLine() // operator must press enter when in position; also signal to take photo
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+        photoReceiver.dataReceivers.insertFirst(
+            CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+        )
         while !receivedCalibrationImage {}
         
         print(msgBoard)
@@ -880,7 +944,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         guard wait() else { return }
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
-        photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: subpath, id: i+1)
+        photoReceiver.dataReceivers.insertFirst(
+            CalibrationImageReceiver(completionHandler, dir: subpath, id: i+1)
+        )
         while !receivedCalibrationImage {}
     }
     
@@ -897,7 +963,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
 //    _ = readLine()
     cameraServiceBrowser.sendPacket(packet)
     receivedCalibrationImage = false
-    photoReceiver.dataReceiver = CalibrationImageReceiver(completionHandler, dir: (nPhotos%2 == 0) ? rightSubdir:leftSubdir, id: nPhotos-1)
+    photoReceiver.dataReceivers.insertFirst(
+        CalibrationImageReceiver(completionHandler, dir: (nPhotos%2 == 0) ? rightSubdir:leftSubdir, id: nPhotos-1)
+    )
     while !receivedCalibrationImage {}
 }
 
