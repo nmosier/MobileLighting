@@ -87,6 +87,16 @@ class DirectoryStructure {
                         return self.calibrationSettings + "/" + "calibration.yml"
                     }
                 }
+                var intrinsicsImageList: String {
+                    get {
+                        return self.calibrationSettings + "/" + "intrinsicsImageList.yml"
+                    }
+                }
+                var stereoImageList: String {
+                    get {
+                        return self.calibrationSettings + "/" + "stereoImageList.yml"
+                    }
+                }
     
         var computed: String {
             get {
