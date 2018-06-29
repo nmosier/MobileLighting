@@ -9,10 +9,12 @@
 import Foundation
 import CoreVideo
 
+/*
 func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
     let nsstr = str as NSString
     return UnsafeMutablePointer<Int8>(mutating: nsstr.utf8String!)
 }
+*/
 
 func makeDir(_ str: String) -> Void {
     do {
