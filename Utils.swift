@@ -24,6 +24,24 @@ func makeDir(_ str: String) -> Void {
     }
 }
 
+func getptr<T>(_ obj: inout [T]) -> UnsafeMutablePointer<T>? {
+    return UnsafeMutablePointer<T>(&obj)
+}
+
+func getIDs(_ strs: [String], prefix: String, suffix: String) -> [Int] {
+    return strs.map {
+        return String($0.split(separator: "/").last!)
+    }.map {
+        guard $0.hasPrefix(prefix), $0.hasSuffix(suffix) else {
+            return nil
+        }
+        let base = $0.dropFirst(prefix.count).dropLast(suffix.count)
+        return Int(base)
+    }.filter{
+        return $0 != nil
+        }.map{ return $0!}
+}
+
 let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
 
 
@@ -89,4 +107,31 @@ class List<T> {
         }
         return value
     }
+}
+
+// properly add C strings together (removes null byte from first)
+func +(left: [CChar], right: [CChar]) -> [CChar] {
+    var result = [CChar](left.dropLast())
+    result.append(contentsOf: right)
+    return result
+}
+
+prefix operator *
+extension String {
+    static prefix func * (swiftString: String) -> [CChar] {
+        return swiftString.cString(using: .ascii)!
+    }
+}
+
+prefix func * (swiftStringArray: [String]) -> [[CChar]] {
+    return swiftStringArray.map {
+        return *$0
+    }
+}
+
+prefix operator **
+prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
+    var ptrs = [UnsafeMutablePointer<CChar>?]()
+    for i in 0..<cStringArray.count { ptrs.append(getptr(&cStringArray[i])) }
+    return ptrs
 }
