@@ -41,7 +41,7 @@ func processCodeImages(normal pixelBuffers_normal: [CVPixelBuffer], inverted pix
     intensityBuffers.removeAll()
     
     // Now try to rectify images
-    if shouldRectifyOnPhone {
+    if rectificationMode == .ON_PHONE {
         combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
     }
     // get prominent stripe direction
