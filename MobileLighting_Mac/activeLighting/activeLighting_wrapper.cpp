@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "ImgProcessor.h"
+#include "activeLighting.h"
 #include "Rectify.hpp"
 #include "Utils.h"
 #include "Disparities.h"
@@ -89,12 +89,22 @@ extern "C" void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, in
     char buffer[100];
     sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, in_suffix);
     ReadImageVerb(x0, buffer, 1);
-    sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, in_suffix);
-    ReadImageVerb(y0, buffer, 1);
     sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, in_suffix);
     ReadImageVerb(x1, buffer, 1);
-    sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, in_suffix);
-    ReadImageVerb(y1, buffer, 1);
+    
+    if (xonly) {
+        // create blank images for ydisps
+        CShape sh = x0.Shape();
+        y0.ReAllocate(sh);
+        y1.ReAllocate(sh);
+        y0.FillPixels(UNK);
+        y1.FillPixels(UNK);
+    } else {
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, in_suffix);
+        ReadImageVerb(y0, buffer, 1);
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, in_suffix);
+        ReadImageVerb(y1, buffer, 1);
+    }
     
     CFloatImage d0 = mergeToFloImage(x0, y0);
     CFloatImage d1 = mergeToFloImage(x1, y1);
@@ -111,12 +121,15 @@ extern "C" void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, in
     
     sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, out_suffix);
     WriteImageVerb(ccx0, buffer, 1);
-    sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
-    WriteImageVerb(ccy0, buffer, 1);
     sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, out_suffix);
     WriteImageVerb(ccx1, buffer, 1);
-    sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
-    WriteImageVerb(ccy1, buffer, 1);
+    
+    if (!xonly) {
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy0, buffer, 1);
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy1, buffer, 1);
+    }
 }
 
 // CFloatImage runFilter(CFloatImage img, float ythresh, int kx, int ky, int mincompsize, int maxholesize);

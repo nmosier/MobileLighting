@@ -60,6 +60,8 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
         } else {
             print("Failed to connect to service.")
         }
+        
+        writeNextPacket()   // write next packet if any packets pending
     }
     
     // netServiceDidNotResolveAddress: NetServiceDelegate function

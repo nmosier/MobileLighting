@@ -294,7 +294,6 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     
     for pos in [leftpos, rightpos] {
         var premerged = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm")
-//        var premerged1 = *(dirStruc.merged(pos: rightpos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm")
         
         var dispProjectors = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(true)), prefix: "proj", suffix: "")
         // viewDisps: [[CChar]], contains all cross-checked, filtered PFM files that exist
@@ -323,8 +322,32 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
         var outnfile = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-nsamples.pgm")
         
          mergeDisparityMaps2(MERGE2_MAXDIFF, nV, nR, &outdfile, &outsdfile, &outnfile, &inmdfile, &viewDispsPtrs, &reprojDispsPtrs)
-        _ = viewDisps
+        
+        // filter merged results
+        var indispx = outdfile
+        var outx = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-1filtered.pfm")
+        filterDisparities(&indispx, nil, &outx, nil, Int32(leftpos), Int32(rightpos), -1, 0, 0, 20, 20)
+
     }
+    
+    // crosscheck filtered results
+    var leftdir = *(dirStruc.merged2(leftpos))
+    var rightdir = *(dirStruc.merged2(rightpos))
+    var in_suffix = *"1filtered"
+    var out_suffix = *"2crosscheck1"
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1.0, 1, 1, &in_suffix, &out_suffix)
+    
+    // filter again, this can fill small holes of cross-checked regions
+    for pos in [leftpos, rightpos] {
+        var indispx = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-2crosscheck1.pfm")
+        var outx = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-3filtered.pfm")
+        filterDisparities(&indispx, nil, &outx, nil, Int32(leftpos), Int32(leftpos), -1, 0, 0, 20, 20)
+    }
+    
+    // crosscheck one last time
+    in_suffix = *"3filtered"
+    out_suffix = *"4crosscheck2"
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1, 1, 1, &in_suffix, &out_suffix)
 }
 
 func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right rightpos: Int) -> [String] {

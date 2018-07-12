@@ -199,6 +199,11 @@ func nextCommand() -> Bool {
             break
         }
         
+        if calibrationExposure != (0, 0) {
+            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
+            cameraServiceBrowser.sendPacket(packet)
+        }
+        
         let nPhotos: Int
         let startIndex: Int
         if tokens.count == 3 {
@@ -284,6 +289,12 @@ func nextCommand() -> Bool {
             print("calibrate2pos: invalid argument(s).")
             break
         }
+        
+        if calibrationExposure != (0, 0) {
+            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
+            cameraServiceBrowser.sendPacket(packet)
+        }
+        
         let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
         captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
@@ -298,6 +309,12 @@ func nextCommand() -> Bool {
             print(usage)
             break
         }
+        
+        if calibrationExposure != (0, 0) {
+            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
+            cameraServiceBrowser.sendPacket(packet)
+        }
+        
         let posIDs = [Int](0..<positions.count)
         if tokens.count == 2 {
             captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos)
@@ -314,7 +331,7 @@ func nextCommand() -> Bool {
         let usage = "usage: takefull [projector #] [position #]"
         // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
-        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
+//        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         
         guard tokens.count >= parameters.count else {
             print(usage)
@@ -1444,4 +1461,30 @@ func configureDisplays() -> Bool {
         }
     }
     return true
+}
+
+
+
+// CALIBRATION UTIL FUNCTIONS
+func calibration_wait() -> Bool {
+    var input: String
+    repeat {
+        guard let inputtmp = readLine() else {
+            return false
+        }
+        input = inputtmp
+        let tokens = input.split(separator: " ")
+        if tokens.count == 0 {
+            return true
+        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
+            return false
+        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
+            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+            cameraServiceBrowser.sendPacket(packet)
+            photoReceiver.receiveLensPositionSync()
+        } else {
+            return true
+        }
+    } while true
 }

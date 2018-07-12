@@ -4,9 +4,9 @@ float maxgrad0 = 1.0; // expected maximum gradient of code values per pixel in c
 float maxgrad1 = 0.1; // expected maximum gradient of code values per pixel in perpendicular direction
 
 enum refine_mode_t {
-	refine_old,
-	refine_angle,
-	refine_planar
+    refine_old,
+    refine_angle,
+    refine_planar
 };
 
 refine_mode_t refine_mode = refine_old;

@@ -35,10 +35,9 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         } catch {
             print("Error while listening to port for connections.")
         }
-        if let service = service {
-            service.delegate = self
-            service.publish()
-        }
+        
+        self.service?.delegate = self
+        self.service?.publish()
     }
     
     // netServiceDidPublish: NetServiceDelegate function
@@ -59,7 +58,21 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         self.socket.delegate = self
         self.readyToReceive = true
         
+        
+        
         readPacket()
+    }
+    
+    
+    
+    func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
+        // what the heck? this function is called when the socket is CONNECTED, too?
+        guard !self.socket.isConnected else {
+            return
+        }
+        self.socket.disconnect()
+        print("disconnecting socket...")
+        self.socket = nil
     }
     
     // readPacket: starts to read packet
@@ -103,33 +116,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             let photoDataPacket = NSKeyedUnarchiver.unarchiveObject(with: data) as! PhotoDataPacket
             
             handlePacket(photoDataPacket)
-            
-            /*
-           if receivingBracket {
-                guard var bracketedPhotosComing = bracketedPhotosComing else {
-                    break
-                }
-            
-                //print("PhotoReceiver: handled packet, # bracketed photos coming: \(bracketedPhotosComing)")
-            
-                bracketedPhotosComing -= 1
-                if bracketedPhotosComing == 0 {
-                    // finished receiving bracket, clean up properties & call handler
-                    self.bracketedPhotosComing = nil
-                    self.bracketName = nil
-                    self.receivingBracket = false
-                    let handler = self.bracketCompletionHandler
-                    self.bracketCompletionHandler = nil
-                    
-                    if let handler = handler {
-                        
-                        print("4: calling handler - \(timestampToString(date: Date()))")
-
-                        handler()
-                    }
-                }
-                self.bracketedPhotosComing = bracketedPhotosComing
-            } */
             
             readPacket()
             

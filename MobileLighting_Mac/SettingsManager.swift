@@ -21,7 +21,6 @@ enum YamlError: Error {
 // read from YML file
 // -consists of required and optional settings
 class InitSettings {
-    // required
     var scenesDirectory: String
     var sceneName: String
     var minSWfilepath: String
@@ -36,8 +35,8 @@ class InitSettings {
     
     // calibration
     var focus: Double?
-    var calibrationExposureDurations: [Double]?
-    var calibrationExposureISOs: [Double]?
+    var calibrationExposureDuration: Double?
+    var calibrationExposureISO: Double?
     
     init(_ filepath: String) throws {
         let settingsStr = try String(contentsOfFile: filepath)
@@ -72,11 +71,14 @@ class InitSettings {
             return val.string!
             })!
         self.focus = mainDict[Yaml.string("focus")]?.double
-        self.calibrationExposureDurations = mainDict[Yaml.string("calibrationExposureDurations")]?.array?.map {
-            return $0.double!
-        }
-        self.calibrationExposureISOs = mainDict[Yaml.string("calibrationExposureISOs")]?.array?.map {
-            return $0.double!
+        
+        if let calibrationDict = mainDict[Yaml.string("calibration")]?.dictionary {
+            if let iso = calibrationDict[Yaml.string("exposureISO")]?.double {
+                self.calibrationExposureISO = iso
+            }
+            if let duration = calibrationDict[Yaml.string("exposureDuration")]?.double {
+                self.calibrationExposureDuration = duration
+            }
         }
         
         guard self.exposureDurations.count == self.exposureISOs.count else {

@@ -64,6 +64,9 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
         } else {
             print("Failed to connect to service.")
         }
+        
+        // if any packets ready to send, begin sending
+        writeNextPacket()
     }
     
     // netServiceDidNotResolveAddress: NetServiceDelegate function
@@ -107,7 +110,7 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
             return
         }
         self.readyToSendPacket = socket.isConnected // ready to send next packet if socket still connected
-        
+                
         // remove sent packet from queue
         self.packetsToSend.removeFirst()
         writeNextPacket()

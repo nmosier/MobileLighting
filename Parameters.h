@@ -12,6 +12,13 @@
 
 #define MERGE2_MAXDIFF (float) 1.0
 
+//enum refine_mode_t {
+//    refine_old,
+//    refine_angle,
+//    refine_planar
+//};
+
+//refine_mode_t refine_mode = refine_old;
 
 
 

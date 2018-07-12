@@ -80,6 +80,17 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         readPacket()
     }
     
+    func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
+        // what the heck? this function is called when the socket is CONNECTED, too?
+        guard !self.socket.isConnected else {
+            return
+        }
+        self.socket.disconnect()
+        print("disconnecting socket...")
+    }
+    
+    
+    
     // readPacket: starts to read packet
     //    (is asynchronous, i.e. only initiates the packet-receiving process)
     func readPacket() {

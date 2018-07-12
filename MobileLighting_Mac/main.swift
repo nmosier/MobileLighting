@@ -66,6 +66,7 @@ var exposureDurations: [Double]
 var exposureISOs: [Double]
 var positions: [String]
 let focus: Double?
+let calibrationExposure: (Double, Double)
 
 // load init settings
 do {
@@ -86,6 +87,7 @@ projectors = initSettings.nProjectors
 exposureDurations = initSettings.exposureDurations
 exposureISOs = initSettings.exposureISOs
 positions = initSettings.positionCoords
+calibrationExposure = (initSettings.calibrationExposureDuration ?? 0, initSettings.calibrationExposureISO ?? 0)
 
 // calibration settings
 focus = initSettings.focus
