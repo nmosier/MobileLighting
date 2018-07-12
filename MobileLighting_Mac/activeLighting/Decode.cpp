@@ -472,11 +472,13 @@ void foregroundErase(CFloatImage fval, CByteImage mask)
 
 
 // *** MobileLighting (Mac) currently calls this to do post-decoding refinement ***
-CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
+// edited 07/2018 by NHM to use position identifiers in filenames
+CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, char *posID) {
 	CFloatImage fval, fval1, fval2;
 	CShape sh;
 	int verbose = 1;
 	char filename[1000];
+    char uv = direction == 0 ? 'u' : 'v';
 	
 	// read in PFM
 	ReadImageVerb(fval, decodedIm, verbose);
@@ -492,7 +494,7 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
     }	
 	
     if (1) { // save filtered image
-	sprintf(filename, "%s/result%d-1filtered.pfm", outdir, direction);
+	sprintf(filename, "%s/result%s%c-1filtered.pfm", outdir, posID, uv);
 	WriteImageVerb(fval, filename, verbose);
     }
 	
@@ -510,7 +512,7 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
     }
 
     if (1) { // save hole-filled image
-	sprintf(filename, "%s/result%d-2holefilled.pfm", outdir, direction);
+	sprintf(filename, "%s/result%s%c-2holefilled.pfm", outdir, posID, uv);
 	WriteImageVerb(fval, filename, verbose);
     }
 	
@@ -523,9 +525,9 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle) {
 
 
     if (1) { // save refined image
-	sprintf(filename, "%s/result%d-3refined1.pfm", outdir, direction);
+	sprintf(filename, "%s/result%s%c-3refined1.pfm", outdir, posID, uv);
 	WriteImageVerb(fval1, filename, verbose);
-	sprintf(filename, "%s/result%d-4refined2.pfm", outdir, direction);
+	sprintf(filename, "%s/result%s%c-4refined2.pfm", outdir, posID, uv);
 	WriteImageVerb(fval2, filename, verbose);
     }
 	
