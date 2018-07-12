@@ -240,9 +240,9 @@ class DecodedImageReceiver: DataWriter, DataReceiver {
         print("Received decoded image.")
         completionHandler(path)
     }
-    init(_ completionHandler: @escaping Handler<String>, dir: String, horizontal: Bool) {
+    init(_ completionHandler: @escaping Handler<String>, path: String, horizontal: Bool) {
         self.completionHandler = completionHandler
-        self.path = "\(dir)/result\(horizontal ? 1 : 0).pfm"
+        self.path = path
     }
 }
 
@@ -257,5 +257,20 @@ class SceneMetadataReceiver: DataWriter, DataReceiver {
     init(_ completionHandler: @escaping BlankHandler, path: String) {
         self.completionHandler  = completionHandler
         self.path = path
+    }
+}
+
+class ExposureReceiver: DataReceiver {
+    let completionHandler: Handler<(Double, Float)>
+    func handle(packet: PhotoDataPacket) {
+        print("Received exposure.")
+        guard let exposure = packet.exposure else {
+            print("Could not receive exposure.")
+            return
+        }
+        completionHandler(exposure)
+    }
+    init(_ completionHandler: @escaping Handler<(Double, Float)>) {
+        self.completionHandler = completionHandler
     }
 }
