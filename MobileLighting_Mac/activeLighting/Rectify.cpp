@@ -143,8 +143,8 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     image2 = Mat(ims, imtype, 1);
     im_linear = Mat(ims, imtype, 1);
     im_nearest = Mat(ims, imtype, 1);
-    remap(image, im_linear, mapx, mapy, INTER_LINEAR);
-    remap(image, im_nearest, mapx, mapy, INTER_NEAREST);
+    remap(image, im_linear, mapx, mapy, INTER_LINEAR, BORDER_CONSTANT, INFINITY);
+    remap(image, im_nearest, mapx, mapy, INTER_NEAREST, BORDER_CONSTANT, INFINITY);
     
     for (int j = 0; j < ims.height; ++j) {
         for (int i = 0; i < ims.width; ++i) {
@@ -159,6 +159,7 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
             image2.at<float>(j,i) = val;
         }
     }
-
-    WriteFilePFM(image2, outpath, 1);
+    Mat image2_rotated;
+    rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
+    WriteFilePFM(image2_rotated, outpath, 1);
 }
