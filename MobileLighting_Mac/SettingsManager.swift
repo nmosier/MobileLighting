@@ -22,15 +22,67 @@ enum YamlError: Error {
 // -consists of required and optional settings
 class InitSettings {
     // required
-    var scenesDirectory: String!
-    var sceneName: String!
-    var minSWfilepath: String!
+    var scenesDirectory: String
+    var sceneName: String
+    var minSWfilepath: String
     
-    // optional
-    var nProjectors: Int?
-    var exposureDurations: [Double]?
-    var exposureISOs: [Double]?
-    var positionCoords: [String]?
+    // structured lighting
+    var nProjectors: Int
+    var exposureDurations: [Double]
+    var exposureISOs: [Double]
+    
+    // robot arm movement
+    var positionCoords: [String]
+    
+    // calibration
+    var focus: Double?
+    var calibrationExposureDurations: [Double]?
+    var calibrationExposureISOs: [Double]?
+    
+    init(_ filepath: String) throws {
+        let settingsStr = try String(contentsOfFile: filepath)
+        let settings: Yaml = try Yaml.load(settingsStr)
+        
+        // init settings file should be dictionary at top level
+        guard let mainDict = settings.dictionary else {
+            throw YamlError.InvalidFormat
+        }
+        
+        // process required properties:
+        guard let scenesDirectory = mainDict[Yaml.string("scenesDir")]?.string,
+            let sceneName = mainDict[Yaml.string("sceneName")]?.string,
+            let minSWfilepath = mainDict[Yaml.string("minSWdataDir")]?.string else {
+                throw YamlError.MissingRequiredKey
+        }
+        self.scenesDirectory = scenesDirectory
+        self.sceneName = sceneName
+        self.minSWfilepath = minSWfilepath
+        
+        self.nProjectors = (mainDict[Yaml.string("projectors")]?.int)!
+        self.exposureDurations = (mainDict[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
+            (val: Yaml) -> Double in
+            return val.double!
+            })!
+        self.exposureISOs = (mainDict[Yaml.string("exposureISOs")]?.array?.filter({return $0.double != nil}).map{
+            (val: Yaml) -> Double in
+            return val.double!
+            })!
+        self.positionCoords = (mainDict[Yaml.string("positions")]?.array?.filter({return $0.string != nil}).map{
+            (val: Yaml) -> String in
+            return val.string!
+            })!
+        self.focus = mainDict[Yaml.string("focus")]?.double
+        self.calibrationExposureDurations = mainDict[Yaml.string("calibrationExposureDurations")]?.array?.map {
+            return $0.double!
+        }
+        self.calibrationExposureISOs = mainDict[Yaml.string("calibrationExposureISOs")]?.array?.map {
+            return $0.double!
+        }
+        
+        guard self.exposureDurations.count == self.exposureISOs.count else {
+            fatalError("invalid initsettings file: mismatch in number of exposure durations & ISOs.")
+        }
+    }
 }
 
 // SceneParameters: will represent the parameters determined during and after scene capture,
@@ -58,69 +110,18 @@ class StructuredLightingParameters {
 }
 
 
-// MARK: SETTINGS FUNCTIONS
-
-// loadInitSettings: loads init settings from YML file at given filepath & returns InitSettings object
-// 
-// FORMAT of init settings file:
-//  -is a DICTIONARY at top level; where all parameter settings keys are specified
-//     -required keys:
-//          'scenesDir' (must be absolute path)
-//          'sceneName'
-//          'minSWdataDir' (must be absolute path)
-//     -optional keys:
-//          'positions' - value is list of positions as ints (NOTE: currently not utilized)
-//          'exposures' - value is list of exposure times as floats (IMPORTANT: this IS currently used)
-//          'projectors' (int)
-func loadInitSettings(filepath: String) throws -> InitSettings {
-    let settingsStr = try String(contentsOfFile: filepath)
-    let settings: Yaml = try Yaml.load(settingsStr)
-    
-    
-    // init settings file should be dictionary at top level
-    guard let mainDict = settings.dictionary else {
-        throw YamlError.InvalidFormat
-    }
-
-    let initSettings = InitSettings()
-    
-    // process required properties:
-    guard let scenesDirectory = mainDict[Yaml.string("scenesDir")]?.string,
-        let sceneName = mainDict[Yaml.string("sceneName")]?.string,
-        let minSWfilepath = mainDict[Yaml.string("minSWdataDir")]?.string else {
-            throw YamlError.MissingRequiredKey
-    }
-    initSettings.scenesDirectory = scenesDirectory
-    initSettings.sceneName = sceneName
-    initSettings.minSWfilepath = minSWfilepath
-    
-    // read in optional properties
-    initSettings.nProjectors = mainDict[Yaml.string("projectors")]?.int
-    initSettings.exposureDurations = mainDict[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
-        (val: Yaml) -> Double in
-        return val.double!
-    }
-    initSettings.exposureISOs = mainDict[Yaml.string("exposureISOs")]?.array?.filter({return $0.double != nil}).map{
-        (val: Yaml) -> Double in
-        return val.double!
-    }
-    initSettings.positionCoords = mainDict[Yaml.string("positions")]?.array?.filter({return $0.string != nil}).map{
-        (val: Yaml) -> String in
-        return val.string!
-    }
-    
-    return initSettings
-}
-
-
 func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {
     guard var imgs = try? FileManager.default.contentsOfDirectory(atPath: imgsdir) else {
         print("could not read contents of directory \(imgsdir)")
         return
     }
+    
     imgs = imgs.filter { (_ filepath: String) in
-        let file = filepath.split(separator: "/").last!
-        return (file.hasPrefix("IMG") || file.hasPrefix("img")) && (file.hasSuffix(".JPG") || file.hasSuffix(".jpg"))
+        guard let file = filepath.split(separator: "/").last else { return false }
+        guard file.hasPrefix("IMG"), file.hasSuffix(".JPG"), Int(file.dropFirst("IMG".count).dropLast(".JPG".count)) != nil else {
+            return false
+        }
+        return true
     }
     //var yml: Yaml = Yaml(dictionaryLiteral: "images")
     var imgList: [Yaml] = [Yaml]()
@@ -163,7 +164,6 @@ func generateStereoImageList(left ldir: String, right rdir: String, outpath: Str
     try! Yaml.save(ymlDict, toFile: outpath)
 //    try! ymlDict.save().write(to: URL(fileURLWithPath: outpath), atomically: true, encoding: .utf8)
 }
-
 
 class CalibrationSettings {
     let filepath: String
