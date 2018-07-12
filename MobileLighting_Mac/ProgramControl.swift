@@ -16,8 +16,10 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case reloadsettings
     
     case takefull
+    
+    // camera settings
     case readfocus, autofocus, setfocus, lockfocus
-    case autoexposure, lockexposure
+    case readexposure, autoexposure, lockexposure, setexposure
     case lockwhitebalance
     case focuspoint
     case cb     // displays checkerboard
@@ -35,18 +37,25 @@ enum Command: String {      // rawValues are automatically the name of the case,
     
     // image processing
     case refine
-    case disparity
     case rectify
+    case disparity
+    case merge
+    case reproject
+    case merge2
     
     // camera calibration
     case calibrate  // 'x'
     case calibrate2pos
+    case stereocalib
     case getintrinsics
     case getextrinsics
     
     // for debugging
     case dispres
     case dispcode
+    
+    // for scripting
+    case sleep
     
 }
 
@@ -95,7 +104,7 @@ func nextCommand() -> Bool {
     processingCommand = true
     
     nextToken += 1
-    switch command {
+    cmdSwitch: switch command {
     case .help:
         // to be implemented
         print("help")
@@ -114,7 +123,7 @@ func nextCommand() -> Bool {
         
         let initSettings: InitSettings
         do {
-            initSettings = try loadInitSettings(filepath: initSettingsPath)
+            initSettings = try InitSettings(initSettingsPath)
             print("Successfully loaded initial settings.")
         } catch {
             print("Fatal error: could not load init settings")
@@ -123,7 +132,7 @@ func nextCommand() -> Bool {
         
         if tokens[1] == "exposures" {
             print("Reloading exposures...")
-            exposureDurations = initSettings.exposureDurations ?? exposureDurations
+            exposureDurations = initSettings.exposureDurations
             print("New exposures: \(exposureDurations)")
         }
     
@@ -185,33 +194,76 @@ func nextCommand() -> Bool {
     
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .calibrate:
-        guard tokens.count == 2 else {
-            print("usage: calibrate [# of photos]")
+        guard tokens.count == 2 || tokens.count == 3 else {
+            print("usage: calibrate [-d|-a]? [# of photos]\n       -d -- delete existing photos\n       -a -- append to existing photos")
             break
         }
+        
+        let nPhotos: Int
+        let startIndex: Int
+        if tokens.count == 3 {
+            let mode = tokens[1]
+            guard ["-d","-a"].contains(mode) else {
+                print("calibrate: unrecognized flag \(mode)")
+                break
+            }
+            guard let n = Int(tokens[2]) else {
+                print("calibrate: invalid number of photos \(tokens[2])")
+                break
+            }
+            nPhotos = n
+            var photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
+                return "\(dirStruc.intrinsicsPhotos)/\($0)"
+            }
+            switch mode {
+            case "-d":
+                for photo in photos {
+                    do { try FileManager.default.removeItem(atPath: photo) }
+                    catch { print("could not remove \(photo)") }
+                }
+                startIndex = 0
+            case "-a":
+                photos = photos.map{
+                    return String($0.split(separator: "/").last!)
+                }
+                let ids: [Int] = photos.map{
+                    guard $0.hasPrefix("IMG"), $0.hasSuffix(".JPG"), let id = Int($0.dropFirst(3).dropLast(4)) else {
+                        return -1
+                    }
+                    return id
+                }
+                startIndex = ids.max()! + 1
+            default:
+                startIndex = 0
+            }
+        } else {
+            guard let n = Int(tokens[1]) else {
+                print("calibrate: invalid number of photos \(tokens[2])")
+                break
+            }
+            nPhotos = n
+            startIndex = 0
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
-        let position = currentPos
-        //let subpath = dirStruc.calibrationPos(position)//sceneName+"/"+origSubdir+"/"+calibSubdir+"/chessboard"
-        // makeDir(scenesDirectory+subpath)
         let subpath = dirStruc.intrinsicsPhotos
-        if nextToken < tokens.count, let nPhotos = Int(tokens[nextToken]) {
-            for i in 0..<nPhotos {
-                var receivedCalibrationImage = false
+            for i in startIndex..<(nPhotos+startIndex) {
+                print("Hit enter to take photo.")
+                guard let input = readLine() else {
+                    fatalError("Unexpected error in reading stdin.")
+                }
+                if ["exit", "quit", "stop"].contains(input) {
+                    break
+                }
                 
+                // take calibration photo
+                var receivedCalibrationImage = false
                 cameraServiceBrowser.sendPacket(packet)
-//                photoReceiver.receiveCalibrationImage(ID: i, completionHandler: {()->Void in receivedCalibrationImage = true}, subpath: subpath)
                 let completionHandler = { receivedCalibrationImage = true }
                 photoReceiver.dataReceivers.insertFirst(
                     CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
                 )
-                
                 while !receivedCalibrationImage {}
-                
-                guard let _ = readLine() else {
-                    fatalError("Unexpected error in reading stdin.")
-                }
             }
-        }
         break
        
     // captures calibration images from two viewpoints
@@ -235,6 +287,23 @@ func nextCommand() -> Bool {
         let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
         captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
+        
+    case .stereocalib:
+        let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
+        guard tokens.count > 1 else {
+            print(usage)
+            break
+        }
+        guard let nPhotos = Int(tokens[1]) else {
+            print(usage)
+            break
+        }
+        let posIDs = [Int](0..<positions.count)
+        if tokens.count == 2 {
+            captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos)
+        } else {
+            captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: tokens[2])
+        }
     
     // captures scene using structured lighting from specified projector and position number
     // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
@@ -256,7 +325,11 @@ func nextCommand() -> Bool {
             break
         }
         guard let position = Int(tokens[2]) else {
-            print("takefull: invalid position number.")
+            print("takefull: invalid position number \(tokens[2]).")
+            break
+        }
+        guard position >= 0, position < positions.count else {
+            print("takefull: position \(position) out of range.")
             break
         }
         
@@ -279,6 +352,10 @@ func nextCommand() -> Bool {
         displayController.switcher?.turnOn(projector)
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
+        
+        var pose = positions[position].cString(using: .ascii)!
+        MovePose(&pose, robotVelocity, robotAcceleration)
+        usleep(UInt32(robotDelay * 1.0e6))
         
         captureWithStructuredLighting(system: system, projector: projector, position: position, resolution: resolution)
         break
@@ -361,6 +438,15 @@ func nextCommand() -> Bool {
             }
         )
         while !receivedUpdate {}
+    
+    // tells iphone to send current exposure duration & ISO
+    case .readexposure:
+        let packet = CameraInstructionPacket(cameraInstruction: .ReadExposure)
+        cameraServiceBrowser.sendPacket(packet)
+        let completionHandler = { (exposure: (Double, Float)) -> Void in
+            print("exposure duration = \(exposure.0), iso = \(exposure.1)")
+        }
+        photoReceiver.dataReceivers.insertFirst(ExposureReceiver(completionHandler))
         
     // tells iPhone to use auto exposure mode (automatically adjusts exposure)
     case .autoexposure:
@@ -371,6 +457,18 @@ func nextCommand() -> Bool {
     //   changes)
     case .lockexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
+        cameraServiceBrowser.sendPacket(packet)
+        
+    case .setexposure:
+        guard tokens.count == 3 else {
+            print("usage: setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)")
+            break
+        }
+        guard let exposureDuration = Double(tokens[1]), let exposureISO = Float(tokens[2]) else {
+            print("setexposure: invalid parameters \(tokens[1]), \(tokens[2])")
+            break
+        }
+        let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [exposureDuration], photoBracketExposureISOs: [Double(exposureISO)])
         cameraServiceBrowser.sendPacket(packet)
     
     // displays checkerboard pattern
@@ -443,7 +541,7 @@ func nextCommand() -> Bool {
             print("Moving arm to position \(posStr)")
             var cStr = posStr.cString(using: .ascii)!
             DispatchQueue.main.async {
-                MovePose(&cStr, 0, 0)  // use default acceleration & velocities
+                MovePose(&cStr, robotAcceleration, robotVelocity)  // use default acceleration & velocities
                 print("Moved arm to position \(posStr)")
             }
         case 3:
@@ -532,83 +630,233 @@ func nextCommand() -> Bool {
     // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine:
-        let params = ["refine", "proj", "pos", "direction"]
-        let usage = "usage: refine [proj #] [pos #] [direction [0,1]]"
-        guard tokens.count == params.count else {
+        let usage = "usage: refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]"
+        guard tokens.count > 1 else {
             print(usage)
-            break
+            break cmdSwitch
         }
-        guard let proj = Int(tokens[1]) else {
-            print("refine: error - improper projector number \(tokens[1])")
-            break
-        }
-        guard let pos = Int(tokens[2]) else {
-            print("refine: error - improper position number \(tokens[2])")
-            break
-        }
-        guard let direction = Int32(tokens[3]) else {
-            print("refine: error - improper direction \(tokens[3])")
-            break
-        }
-        let imgpath: String = dirStruc.decodedFile(Int(direction), proj: proj, pos: pos) //[scenesDirectory, sceneName, computedSubdir, decodedSubdir, "proj\(proj)", "pos\(pos)", "result\(direction).pfm"].joined(separator: "/")
-        let outdir: String = dirStruc.subdir(dirStruc.refined, proj: proj, pos: pos)//[scenesDirectory, sceneName, computedSubdir, refinedSubdir, "proj\(proj)", "pos\(pos)"].joined(separator: "/")
-        let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
-        do {
-            let metadataStr = try String(contentsOfFile: metadatapath)
-            let metadata: Yaml = try Yaml.load(metadataStr)
-            if let angle: Double = metadata.dictionary?["angle"]?.double {
-                refineDecodedIm(swift2Cstr(outdir), direction, swift2Cstr(imgpath), angle)
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        var curParam = 0
+        
+        var rectified = false, all = false
+        for flag in flags {
+            switch flag {
+            case "-r":
+                rectified = true
+            case "-a":
+                all = true
+            default:
+                print("refine: invalid flag \(flag)")
+                break cmdSwitch
             }
-        } catch {
-            print("refine error: could not load metadata file \(metadatapath).")
         }
-        break
+
+        var projs = [Int]()
+        if all {
+            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
+            projs = getIDs(projDirs, prefix: "proj", suffix: "")
+        } else {
+            guard let proj = Int(params[0]) else {
+                print("refine: invalid projector \(params[0])")
+                break
+            }
+            projs = [proj]
+            curParam += 1
+        }
+//            guard let proj = Int(params[0]) else {
+//                print("refine: invalid projector \(params[0])")
+//                break
+//            }
+
+        for proj in projs {
+            if !rectified {
+                
+                guard let pos = Int(params[curParam]) else {
+                    print("refine: invalid position \(params[curParam])")
+                    break
+                }
+                for direction: Int32 in [0, 1] {
+                    var imgpath = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm"
+                    var outdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: false)
+                    let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
+                    do {
+                        let metadataStr = try String(contentsOfFile: metadatapath)
+                        let metadata: Yaml = try Yaml.load(metadataStr)
+                        if let angle: Double = metadata.dictionary?["angle"]?.double {
+                            var posID = *"\(pos)"
+                            refineDecodedIm(&outdir, direction, &imgpath, angle, &posID)
+                        }
+                    } catch {
+                        print("refine error: could not load metadata file \(metadatapath).")
+                    }
+                }
+            } else {
+                
+                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
+                    print("refine: invalid stereo positions \(params[curParam]), \(params[curParam+1])")
+                    break
+                }
+                for direction: Int in [0, 1] {
+                    for pos in [leftpos, rightpos] {
+                        var cimg = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm"
+                        var coutdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: true)
+                        
+                        let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
+                        do {
+                            let metadataStr = try String(contentsOfFile: metadatapath)
+                            let metadata: Yaml = try Yaml.load(metadataStr)
+                            if let angle: Double = metadata.dictionary?["angle"]?.double {
+                                var posID = *"\(leftpos)\(rightpos)"
+                                refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
+                            }
+                        } catch {
+                            print("refine error: could not load metadata file \(metadatapath).")
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
     
     // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
     // usage options:
     //  -'disparity': computes disparities for all projectors & all consecutive positions
     //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
-    //
-    // NOTE: these disparity maps are not yet rectified
     case .disparity:
-        let usage = "usage: disparity [[projector #] [[left pos #] [right pos #]]?]?"
-        guard tokens.count >= 1 && tokens.count <= 4  else {
-            print(usage)
-            break
-        }
+        let usage = "usage: disparity [-r]? [-a | projector #] [left pos #] [right pos #]\n"
+//        let flags = ["-r"]
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        var curParam = 0
         
-        if tokens.count == 1 {
-            // compute all
-            disparityMatch()
-        } else {
-            // compute for specific projector
-            guard let projector = Int(tokens[1]) else {
-                print("disparity: invalid projector number \(tokens[1]).")
+        var rectified = false
+        var all = false
+        for flag in flags {
+            switch flag {
+            case "-r":
+                rectified = true
+            case "-a":
+                all = true
+            default:
+                print("disparity: invalid flag \(flag)")
+                break cmdSwitch
+            }
+        }
+        if all {
+            guard params.count == 2 else {
+                print(usage)
                 break
             }
-            if tokens.count == 2 {
-                // compute all for projector
-                disparityMatch(projector: projector)
-            } else {
-                // compute specified position pair
-                guard let leftpos = Int(tokens[2]), let rightpos = Int(tokens[3]) else {
-                    print("disparity: invalid position ID (\(tokens[2]) or \(tokens[3])).")
-                    break
-                }
-                disparityMatch(projector: projector, leftpos: leftpos, rightpos: rightpos)
+        } else {
+            guard params.count == 3 else {
+                print(usage)
+                break
             }
+        }
+        
+        var projs = [Int]()
+        if !all {
+            guard let proj = Int(params[curParam]) else {
+                print("disparity: invalid projector \(params[curParam])")
+                break
+            }
+            projs = [proj]
+            curParam += 1
+        }
+        guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
+            print("disparity: invalid positions \(params[curParam]), \(params[curParam+1])")
+            break
+        }
+        if all {
+            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
+            projs = getIDs(projDirs, prefix: "proj", suffix: "")
+        }
+
+        for proj in projs {
+            disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: rectified)
         }
     
     case .rectify:
-        let usage = "usage: rectify [proj #] [leftpos] [rightpos]"
-        guard tokens.count == 4, let proj = Int(tokens[1]), let left = Int(tokens[2]), let right = Int(tokens[3]) else {
+        let usage = "usage: rectify [flags...] [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]"
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        var all = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                all = true
+            default:
+                print("rectify: invalid flag \(flag)")
+                break cmdSwitch
+            }
+        }
+        
+        if all {
+            print(params.count)
+            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
+            let projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
+            
+            guard params.count == 2, let left = Int(params[0]), let right = Int(params[1]) else {
+                print(usage)
+                break
+            }
+            
+            for proj in projIDs {
+                rectify(left: left, right: right, proj: proj)
+            }
+        } else {
+            guard params.count == 3, let proj = Int(params[0]), let left = Int(params[1]), let right = Int(params[2]) else {
+                print(usage)
+                break
+            }
+            rectify(left: left, right: right, proj: proj)
+        }
+        
+    case .merge:
+        let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
+        guard tokens.count >= 3 else {
             print(usage)
             break
         }
-        rectify(left: left, right: right, proj: proj)
-        break
+        var curTok = 1
+        let rectified: Bool
+        if tokens[1] == "-r" {
+            rectified = true
+            curTok += 1
+        } else {
+            rectified = false
+        }
+        guard tokens.count == curTok + 2, let left = Int(tokens[curTok]), let right = Int(tokens[curTok+1]) else {
+            print("merge: invalid stereo position pair provided.\n\(usage)")
+            break
+        }
+        merge(left: left, right: right, rectified: rectified)
         
+    case .reproject:
+        let usage = "usage: reproject [leftpos] [rightpos]"
+        guard tokens.count == 3 else {
+            print(usage)
+            break
+        }
+        
+        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
+            print("reproject: invalid stereo position pair provided.")
+            break
+        }
+        reproject(left: left, right: right)
+        
+    case .merge2:
+        let usage = "usage: merge2 [leftpos] [rightpos]"
+        guard tokens.count == 3 else {
+            print(usage)
+            break
+        }
+        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
+            print("reproject: invalid stereo position pair provided.")
+            break
+        }
+        mergeReprojected(left: left, right: right)
         
     // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
     // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
@@ -663,7 +911,8 @@ func nextCommand() -> Bool {
             }
             patternEnum = patternEnumTmp
         }
-        generateStereoImageList(left: dirStruc.stereoPhotosPairLeft(left: leftpos, right: rightpos), right: dirStruc.stereoPhotosPairRight(left: leftpos, right: rightpos))
+        generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
+        
         let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
         calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
         calib.set(key: .Mode, value: Yaml.string("STEREO"))
@@ -686,6 +935,19 @@ func nextCommand() -> Bool {
     //  useful for verifying the minSW.dat file loaded properly
     case .dispcode:
         displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
+    
+    // scripting
+    case .sleep:
+        let usage = "usage: sleep [secs: Float]"
+        guard tokens.count == 2 else {
+            print(usage)
+            break
+        }
+        guard let secs = Double(tokens[1]) else {
+            print("sleep: \(tokens[1]) not a valid number of seconds.")
+            break
+        }
+        usleep(UInt32(secs * 1000000))
     }
     
     return true
@@ -721,9 +983,10 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
-    let decodedDir = dirStruc.subdir(dirStruc.decoded, proj: projector, pos: position)
+    let decodedDir = dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.decoded, proj: projector, pos: position)
     var packet: CameraInstructionPacket
     
+    var imgpath: String
     var done: Bool = false
     
     // create decoded directory if necessary
@@ -838,11 +1101,40 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var received = false
     var completionHandler = { (path: String) in
         decodedImageHandler(path, horizontal: false, projector: projector, position: position)
+        //received = true
+    }
+    imgpath = "\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(horizontal ? "v" : "u")-0initial.pfm"
+    photoReceiver.dataReceivers.insertFirst(
+        DecodedImageReceiver(completionHandler, path: imgpath, horizontal: false)
+    )
+    
+    var metadataCompletionHandler: ()->Void = {
+//        if rectificationMode == .NONE || rectificationMode == .ON_PHONE {
+            let direction: Int = horizontal ? 1 : 0
+            let filepath = dirStruc.metadataFile(horizontal ? 1 : 0)
+            do {
+                let metadataStr = try String(contentsOfFile: filepath)
+                let metadata: Yaml = try Yaml.load(metadataStr)
+                var decodedImPath = *"\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(direction == 0 ? "u" : "v")-0initial.pfm" // dirStruc.decodedFile(direction, proj: projector, pos: position).cString(using: .ascii)!
+                var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.refined, proj: projector, pos: position).cString(using: .ascii)!
+                if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+                    var posID = *"\(position)"
+                    refineDecodedIm(&outdir, Int32(direction), &decodedImPath, angle, &posID)
+                } else {
+                    print("refine error: could not load angle (double) from YML file.")
+                }
+            } catch {
+                print("refine error: could not load metadata file.")
+            }
+//        } else {
+//            print("skipping refine...")
+//        }
         received = true
     }
     photoReceiver.dataReceivers.insertFirst(
-        DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: false)
+        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0))
     )
+    
     while !received || !cameraServiceBrowser.readyToSendPacket {}
     
     displayController.configureDisplaySettings(horizontal: true, inverted: false)
@@ -861,11 +1153,35 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     received = false
     completionHandler = { (path: String) in
         decodedImageHandler(path, horizontal: true, projector: projector, position: position)
+//        received = true
+    }
+    imgpath = "\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(horizontal ? "v" : "u")-0initial.pfm"
+    photoReceiver.dataReceivers.insertFirst(
+        DecodedImageReceiver(completionHandler, path: imgpath, horizontal: true)
+    )
+    
+    metadataCompletionHandler  = {
+        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0)
+        do {
+            let metadataStr = try String(contentsOfFile: filepath)
+            let metadata: Yaml = try Yaml.load(metadataStr)
+            var decodedImPath = *"\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(horizontal ? "v" : "u")-0initial.pfm" //dirStruc.decodedFile(horizontal ? 1 : 0, proj: projector, pos: position).cString(using: .ascii)!
+            var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.refined, proj: projector, pos: position).cString(using: .ascii)!
+            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+                var posID = *"\(position)"
+                refineDecodedIm(&outdir, horizontal ? 1:0, &decodedImPath, angle, &posID)
+            } else {
+                print("refine error: could not load angle (double) from YML file.")
+            }
+        } catch {
+            print("refine error: could not load metadata file.")
+        }
         received = true
     }
     photoReceiver.dataReceivers.insertFirst(
-        DecodedImageReceiver(completionHandler, dir: decodedDir, horizontal: true)
+        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0))
     )
+    
     while !received || !cameraServiceBrowser.readyToSendPacket {}
 }
 
@@ -883,92 +1199,213 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     }
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
-    let leftSubdir = dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1) //dirStruc.calibrationPos(pos0)
-    let rightSubdir = dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)//dirStruc.calibrationPos(pos1)
+    let leftSubdir = dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1)
+    let rightSubdir = dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)
+    
+    // delete all existing photos
+//    func removeImages(dir: String) -> Void {
+//        guard let paths = try? FileManager.default.contentsOfDirectory(atPath: dir) else {
+//            return
+//        }
+//        for path in paths {
+//            do { try FileManager.default.removeItem(atPath: "\(dir)/\(path)") }
+//            catch let error { print(error.localizedDescription) }
+//        }
+//    }
+    removeFiles(dir: leftSubdir)
+    removeFiles(dir: rightSubdir)
+        
     
     
-    // in the future, should set autoexposure & autofocus
-    //var packet2 = CameraInstructionPacket(cameraInstruction: .AutoExposure)
-    //cameraServiceBrowser.sendPacket(packet2)
-    //packet2 = CameraInstructionPacket(cameraInstruction: )
+    let settingsPath = dirStruc.calibrationSettingsFile
+    var cSettingsPath = settingsPath.cString(using: .ascii)!
+    let settings = CalibrationSettings(settingsPath)
+    settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
+    settings.set(key: .Mode, value: Yaml.string("STEREO"))
+    settings.save()
     
-    Restore()
+//    func wait() -> Bool {
+//        var input: String
+//        repeat {
+//            guard let inputtmp = readLine() else {
+//                return false
+//            }
+//            input = inputtmp
+//            let tokens = input.split(separator: " ")
+//            if tokens.count == 0 {
+//                return true
+//            } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
+//                return false
+//            } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
+//                let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+//                let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+//                cameraServiceBrowser.sendPacket(packet)
+//                photoReceiver.receiveLensPositionSync()
+//            } else {
+//                return true
+//            }
+//        } while true
+//    }
     
-    func wait() -> Bool {
-        while true {
-            let inputo: String? = readLine()
-            guard let input = inputo else {
-                return true  // wait until blank line, should continue
-            }
-            if let pos = Int(input) {
-                if pos%2 == 0 {
-                    Restore()
-                } else {
-                    Next()
-                }
-            } else if ["quit", "stop", "end", "exit"].contains(input) {
-                return false
-            } else {
-                return true
-            }
+    var index: Int = 0
+    while index < nPhotos {
+        var posStr = positions[pos0].cString(using: .ascii)!
+        MovePose(&posStr, robotAcceleration, robotVelocity)
+        print(msgBoard)
+        guard calibration_wait() else {
+            return
         }
-    }
-    guard wait() else { return }
-    print(msgMove)
-    cameraServiceBrowser.sendPacket(packet)
-    receivedCalibrationImage = false
-    photoReceiver.dataReceivers.insertFirst(
-        CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: 0)
-    )
-    while !receivedCalibrationImage {}
-    
-    for i in 0..<nPhotos-1 {
-        if i%2 == 0 {
-            Next()
-        } else {
-            Restore()
-        }
-        let subpath = (i%2 == 0) ? leftSubdir:rightSubdir
-        print(msgMove)
-        guard wait() else { return }
-//        _ = readLine() // operator must press enter when in position; also signal to take photo
+        
+        // take photo at pos0
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
         photoReceiver.dataReceivers.insertFirst(
-            CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+            CalibrationImageReceiver(completionHandler, dir: leftSubdir, id: index)
         )
         while !receivedCalibrationImage {}
         
-        print(msgBoard)
-//        _ = readLine()
-        guard wait() else { return }
+        posStr = positions[pos1].cString(using: .ascii)!
+        MovePose(&posStr, robotAcceleration, robotVelocity)
+        print(msgMove)
+        guard calibration_wait() else {
+            return
+        }
+        
+        // take photo at pos1
         cameraServiceBrowser.sendPacket(packet)
         receivedCalibrationImage = false
+        
         photoReceiver.dataReceivers.insertFirst(
-            CalibrationImageReceiver(completionHandler, dir: subpath, id: i+1)
+            CalibrationImageReceiver(completionHandler, dir: rightSubdir, id: index)
         )
         while !receivedCalibrationImage {}
+        
+        var leftpath = *"\(leftSubdir)/IMG\(index).JPG"
+        var rightpath = *"\(rightSubdir)/IMG\(index).JPG"
+        let shouldSkip: Bool
+//        var cSettingsPath2 = cSettingsPath
+//        var leftpath2 = *leftpath
+//        var rightpath2 = *rightpath
+        _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
+        switch readLine() {
+        case "c","k":
+            shouldSkip = false
+        case "s","r","i":
+            shouldSkip = true
+        default:
+            shouldSkip = false
+        }
+        if shouldSkip {
+            print("skipping...")
+        } else {
+            index += 1
+        }
     }
-    
-    
-    if (nPhotos%2 == 0) {
-        Restore()
-    } else {
-        Next()
-    }
-    guard wait() else { return }
-
-    
-    print(msgMove)
-//    _ = readLine()
-    cameraServiceBrowser.sendPacket(packet)
-    receivedCalibrationImage = false
-    photoReceiver.dataReceivers.insertFirst(
-        CalibrationImageReceiver(completionHandler, dir: (nPhotos%2 == 0) ? rightSubdir:leftSubdir, id: nPhotos-1)
-    )
-    while !receivedCalibrationImage {}
 }
 
+
+// captureNPosCalibration: takes stereo calibration photos for all N positions
+// not yet optimized
+func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "high", appending: Bool = false) {
+    let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
+    var photoID: Int
+    func receiveCalibrationImageSync(dir: String, id: Int) {
+        var received = false
+        let completionHandler = {
+            received = true
+        }
+        cameraServiceBrowser.sendPacket(packet)
+        let dataReceiver = CalibrationImageReceiver(completionHandler, dir: dir, id: id)
+        photoReceiver.dataReceivers.insertFirst(dataReceiver)
+        while !received {}
+    }
+    
+    let msgMove = "Hit enter when camera in position."
+    let msgBoard = "Hit enter when board repositioned."
+    
+    let stereoDirs = posIDs.map {
+        return dirStruc.stereoPhotos($0)
+    }
+    let stereoDirDict = posIDs.reduce([Int : String]()) { (dict: [Int : String], id: Int) in
+        var dictNew = dict
+        dictNew[id] = dirStruc.stereoPhotos(id)
+        return dictNew
+    }
+    
+    if appending {
+       // not yet implemented
+        let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
+            let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
+            return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
+        }
+        let maxVal = idArray.map {
+            return $0.max() ?? -1 // find max photo ID, or -1 if no photos empty, so that counting will begin at 0
+        }.max() ?? -1
+        // maxVal = max(idArray)
+        photoID = maxVal + 1
+    } else {
+        // erase directories
+        for dir in stereoDirs {
+            removeFiles(dir: dir)
+        }
+        photoID = 0
+    }
+    
+    let settingsPath = dirStruc.calibrationSettingsFile
+    var cSettingsPath = settingsPath.cString(using: .ascii)!
+    let settings = CalibrationSettings(settingsPath)
+    settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
+    settings.set(key: .Mode, value: Yaml.string("STEREO"))
+    settings.save()
+    
+    // take the photos
+    while photoID < nPhotos {
+        print(msgBoard)
+        var i = 0
+        while i < posIDs.count {
+            let posID = posIDs[i]
+            var posStr = *positions[posID]
+            MovePose(&posStr, robotAcceleration, robotVelocity)
+            print(msgMove)
+            guard calibration_wait() else {
+                return
+            }
+            
+            // take photo at pos0
+            guard let photoDir = stereoDirDict[posID] else {
+                print("stereocalib: ERROR -- could not find directory for position \(posID)")
+                return
+            }
+            receiveCalibrationImageSync(dir: photoDir, id: photoID)
+            
+            if i > 0 {
+                // now perform detection check
+                var leftpath = *"\(stereoDirDict[posID]!)/IMG\(photoID).JPG"
+                var rightpath = *"\(stereoDirDict[posID-1]!)/IMG\(photoID).JPG"
+                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
+            }
+            i += 1
+        }
+        print("continue (c) or skip (s)?")
+        let shouldSkip: Bool
+        switch readLine() {
+        case "c","k":
+            shouldSkip = false
+        case "s","r","i":
+            shouldSkip = true
+        default:
+            shouldSkip = false
+        }
+        if shouldSkip {
+            print("skipping...")
+        } else {
+            photoID += 1
+        }
+            
+    }
+    
+    
+}
 
 
 // creates the camera service browser (for sending instructions to iPhone) and
