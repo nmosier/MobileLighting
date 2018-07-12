@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, refined, disparity, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings]
+            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2]
         }
     }
     
@@ -66,6 +66,8 @@ class DirectoryStructure {
                     return self.calibration + "/" + "stereo"
                 }
             }
+    
+                // deprecated, will be removed in future
                 func stereoPhotosPair(left: Int, right: Int) -> String {
                     let subdir = self.stereoPhotos + "/" + "pos\(left)\(right)"
                     try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
@@ -77,6 +79,11 @@ class DirectoryStructure {
                     func stereoPhotosPairRight(left: Int, right: Int) -> String {
                         return subdir(stereoPhotosPair(left: left, right: right), pos: right)
                     }
+    // this versino should be used in future -- does not organize by position pairs
+                    func stereoPhotos(_ pos: Int) -> String {
+                        return subdir(stereoPhotos, pos: pos)
+                    }
+    
             var calibrationSettings: String {
                 get {
                     return self.calibration + "/" + "settings"
@@ -121,35 +128,95 @@ class DirectoryStructure {
                     return self.computed + "/" + "decoded"
                 }
             }
-                func decodedFile(_ direction: Int) -> String {
-                    return decodedFile(direction, proj: currentProj, pos: currentPos)
+                func decoded(_ rectified: Bool) -> String {
+                    let subdir = "\(self.decoded)/\(rectified ? "rectified" : "unrectified")"
+                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                    return subdir
                 }
-                func decodedFile(_ direction: Int, proj: Int, pos: Int) -> String {
-                    return subdir(decoded, proj: proj, pos: pos) + "/result\(direction).pfm"
+            func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
+                    let subdir = "\(self.decoded(rectified))/proj\(proj)/pos\(pos)"
+                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                    return subdir
                 }
+//                func decodedFile(_ direction: Int) -> String {
+//                    return decodedFile(direction, proj: currentProj, pos: currentPos)
+//                }
+//                func decodedFile(_ direction: Int, proj: Int, pos: Int) -> String {
+//                    return subdir(decoded, proj: proj, pos: pos) + "/result\(direction).pfm"
+//                }
+//                func decodedDirLeft(_ direction: Int, proj: Int, pos: Int) -> String {
+//                    let dir = subdir(decoded, proj: proj, pos: pos) + "/left"
+//                    try! FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+//                    return dir
+//                }
+//                func decodedDirRight(_ direction: Int, proj: Int, pos: Int) -> String {
+//                    let dir = subdir(decoded, proj: proj, pos: pos) + "/right"
+//                    try! FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+//                    return dir
+//                }
+//                func rectifiedFileLeft(_ direction: Int, proj: Int, left: Int, right: Int) -> String {
+//                    return subdir(decoded, proj: proj, pos: left) + "/result\(direction)-rectified\(left)\(right).pfm"
+//                }
+//                func rectifiedFileRight(_ direction: Int, proj: Int, left: Int, right: Int) ->String {
+//                    return subdir(decoded, proj: proj, pos: right) + "/result\(direction)-rectified\(left)\(right).pfm"
+//                }
     
-            var refined: String {
-                get {
-                    return self.computed + "/" + "refined"
-                }
-            }
-    
-            var rectified: String {
-                get {
-                    return self.computed + "/" + "rectified"
-                }
-            }
-    
+//            var refined: String {
+//                get {
+//                    //return self.computed + "/" + "refined"
+//                    return self.decoded
+//                }
+//            }
     
             var disparity: String {
                 get {
                     return self.computed + "/" + "disparity"
                 }
             }
-                func disparityPfmFile(l leftpos: Int, r rightpos: Int, proj: Int, direction: Int) -> String {
-                    return subdir(disparity, proj: proj, pos: leftpos) + "/" + "disp\(leftpos)\(rightpos)-\(direction).pfm"
+                func disparity(_ rectified: Bool) -> String {
+                    let subdir = "\(self.disparity)/\(rectified ? "rectified" : "unrectified")"
+                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                    return subdir
                 }
     
+                func disparity(proj: Int, pos: Int, rectified: Bool) -> String {
+                    return subdir(self.disparity(rectified), proj: proj, pos: pos)
+                }
+    
+            var merged: String {
+                get {
+                    return self.computed + "/" + "merged"
+                }
+            }
+                func merged(_ rectified: Bool) -> String {
+                    let subdir = "\(self.merged)/\(rectified ? "rectified" : "unrectified")"
+                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                    return subdir
+                }
+                    func merged(pos: Int, rectified: Bool) -> String {
+                        let subdir = self.merged(rectified) + "/" + "pos\(pos)"
+                        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                        return subdir
+                    }
+    
+    var reprojected: String {
+        get {
+            return self.computed + "/" + "reprojected"
+        }
+    }
+
+    func reprojected(proj: Int, pos: Int) -> String {
+        return subdir(self.reprojected, proj: proj, pos: pos)
+    }
+    
+    var merged2: String {
+        return self.computed + "/" + "merged2"
+    }
+    func merged2(_ pos: Int) -> String {
+        return subdir(merged2, pos: pos)
+    }
+    
+
             var calibComputed: String {
                 get {
                     return self.computed + "/" + "calibration"
@@ -175,7 +242,6 @@ class DirectoryStructure {
             func extrinsicsYML(left: Int, right: Int) -> String {
                 return self.extrinsicsSubdir(left: left, right: right) + "/" + "extrinsics.yml"
             }
-    
     
     
     
