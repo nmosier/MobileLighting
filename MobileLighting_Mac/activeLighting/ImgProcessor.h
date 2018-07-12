@@ -6,5 +6,6 @@
 //#include "Rectify.hpp"
 //#include "Utils.h"
 
-CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle);
+CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, char *posID);
 void computeDisparities(CFloatImage &fim0, CFloatImage &fim1, CFloatImage &fout0, CFloatImage &fout1, int dXmin, int dXmax, int dYmin, int dYmax);
+CFloatImage reproject(CFloatImage dispflo, CFloatImage codeflo, char* errFile, char* matfile, char* logfile);
