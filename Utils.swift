@@ -135,3 +135,46 @@ prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?]
     for i in 0..<cStringArray.count { ptrs.append(getptr(&cStringArray[i])) }
     return ptrs
 }
+
+
+
+// CALIBRATION UTIL FUNCTIONS
+func calibration_wait() -> Bool {
+    var input: String
+    repeat {
+        guard let inputtmp = readLine() else {
+            return false
+        }
+        input = inputtmp
+        let tokens = input.split(separator: " ")
+        if tokens.count == 0 {
+            return true
+        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
+            return false
+        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
+            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+            cameraServiceBrowser.sendPacket(packet)
+            photoReceiver.receiveLensPositionSync()
+        } else {
+            return true
+        }
+    } while true
+}
+
+func removeFiles(dir: String) -> Void {
+    guard let paths = try? FileManager.default.contentsOfDirectory(atPath: dir) else {
+        print("Could not remove files at directory \(dir).")
+        return
+    }
+    for path in paths {
+        do { try FileManager.default.removeItem(atPath: "\(dir)/\(path)") }
+        catch let error { print(error.localizedDescription) }
+    }
+}
+
+func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
+    let params = tokens.filter { return !$0.starts(with: "-") }
+    let flags = tokens.filter { return $0.starts(with: "-") }
+    return (params, flags)
+}
