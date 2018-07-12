@@ -1,4 +1,4 @@
-SRC = calibration.cpp # calibrateWithSettings.cpp calibration.h
+SRC = calibration.cpp detection_check.cpp
 
 BIN = calibrateWithSettings # cal camera_calibration readwrite imginfo \
 	showimg showvideo smooth canny videoedges imdiff create_chessboard_obj image_creator create_board  create_new_chessboard create_3d_chessboard_obj calibration_aruco
