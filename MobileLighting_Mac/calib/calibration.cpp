@@ -1,16 +1,47 @@
 /*
-Kyle Meredith 2017
+Tommaso Monaco 2018
 Middlebury College undergraduate summer research with Daniel Scharstein
 
-This program is adapted from calibration.cpp, camera_calibration.cpp, and stereo_calib.cpp,
-which are example calibration programs provided by opencv. It supports unique
-functionality with Rafael Munoz-Salinas' ArUco library, including calibration
-with a 3D ArUco box rig.
+This program is adapted from the OpenCV3's extra modules (AruCo), and Kyle Meredith's 2017 work (Middlebury College).
+This program inherits some aspects from calibrate_camera.cpp, an example calibration programs provided by opencv. 
 
 The program has three modes: intrinsic calibration, stereo calibration, and live
-feed preview. It supports three patterns: chessboard, ArUco single, and ArUco box.
+feed preview. It supports three patterns: chessboard, and AruCo single. 
 
-Read the read me for more information and guidance.
+Read the README for more information and guidance.
+
+----------------
+From the AruCo Module (opencv_contrib), copyright notice: 
+
+By downloading, copying, installing or using the software you agree to this
+license. If you do not agree to this license, do not download, install,
+copy or use the software.
+                          License Agreement
+               For Open Source Computer Vision Library
+                       (3-clause BSD License)
+Copyright (C) 2013, OpenCV Foundation, all rights reserved.
+Third party copyrights are property of their respective owners.
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+  * Neither the names of the copyright holders nor the names of the contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+This software is provided by the copyright holders and contributors "as is" and
+any express or implied warranties, including, but not limited to, the implied
+warranties of merchantability and fitness for a particular purpose are
+disclaimed. In no event shall copyright holders or contributors be liable for
+any direct, indirect, incidental, special, exemplary, or consequential damages
+(including, but not limited to, procurement of substitute goods or services;
+loss of use, data, or profits; or business interruption) however caused
+and on any theory of liability, whether in contract, strict liability,
+or tort (including negligence or otherwise) arising in any way out of
+the use of this software, even if advised of the possibility of such damage.
+
 */
 
 #include <opencv2/core.hpp>
@@ -158,7 +189,7 @@ public:
 
         
         node["Num_MarkersX"] >> markersX;
-        node["Num_MarkersX"] >> markersY;
+        node["Num_MarkersY"] >> markersY;
         node["Marker_Length"] >> markerLength;
         node["Dictionary"] >> dictionary;
         node["First_Marker"] >> type;
@@ -393,10 +424,6 @@ public:
         strftime( buf, sizeof(buf)-1, "%c", t2 );
         fs << "Calibration_Time" << buf;
 
-        /*
-          if( !rvecs.empty() || !reprojErrs.empty() )
-          fs << "nframes" << (int)std::max(rvecs.size(), reprojErrs.size());
-        */
         fs << "Image_Width" << imageSize.width;
         fs << "Image_Height" << imageSize.height;
 
@@ -703,36 +730,60 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
     vector<Point3f> *oPoints, *oPoints2;
     vector<Point2f> *iPoints, *iPoints2;
     int shared;     //index of a shared object point
+    bool paddingPoints = false;
     
     //for each objectPoints vector in overall objectPoints vector of vectors
     for (int i=0; i< (int)inCal.objectPoints.size(); i++)
     {
       
         vector<Point3f> sharedObjectPoints;
-        vector<Point2f> sharedImagePoints, sharedImagePoints2;   //shared image points for each inCal
+        vector<Point2f> sharedImagePoints, sharedImagePoints2; //shared image points for each inCal
 
         oPoints = &inCal.objectPoints.at(i);
         oPoints2 = &inCal2.objectPoints.at(i);
         iPoints  = &inCal.imagePoints.at(i);
         iPoints2 = &inCal2.imagePoints.at(i);
 
- 	
-        for (int j=0; j<(int)oPoints->size(); j++)
-        {
-
-            for (shared=0; shared<(int)oPoints2->size(); shared++)
-                if (oPoints->at(j) == oPoints2->at(shared)) break;
-            if (shared != (int)oPoints2->size())       //object point is shared
-            {
+	
+        if ((int)oPoints->size() >= (int)oPoints2->size()){
+	  for (int j=0; j<(int)oPoints->size(); j++)
+	    {
+	      if (oPoints->at(0) == Point3f(-1,-1,0)) {
+		
+		paddingPoints = true;
+		break;
+	      }
+	      for (shared=0; shared<(int)oPoints2->size(); shared++)
+		if (oPoints->at(j) == oPoints2->at(shared)) break;
+	      if (shared != (int)oPoints2->size())       //object point is shared
+	      {
+		
+		sharedObjectPoints.push_back(oPoints->at(j));
+		sharedImagePoints.push_back(iPoints->at(j));
+		sharedImagePoints2.push_back(iPoints2->at(shared));
+	      }
+	      paddingPoints = false;
+	    }
+	}
+	else {
+	  for (int j=0; j<(int)oPoints2->size(); j++) {
+	      if (oPoints2->at(0) == Point3f(-1,-1,0)) {		
+		paddingPoints = true;
+		break;
+	      }
 	      
-	      sharedObjectPoints.push_back(oPoints->at(j));
-	      sharedImagePoints.push_back(iPoints->at(j));
-	      sharedImagePoints2.push_back(iPoints2->at(shared));
-            }
-        }
-        
-        
-
+	      for (shared=0; shared<(int)oPoints->size(); shared++)
+		if (oPoints2->at(j) == oPoints->at(shared)) break;
+	      if (shared != (int)oPoints->size())       //object point is shared
+		{    
+		  sharedObjectPoints.push_back(oPoints2->at(j));
+		  sharedImagePoints2.push_back(iPoints2->at(j));
+		  sharedImagePoints.push_back(iPoints->at(shared));
+		}
+	      paddingPoints = false;
+	  }
+	}
+	
 	if ((int) sharedObjectPoints.size() > 10){
 	*oPoints = sharedObjectPoints;
 	*oPoints2 = sharedObjectPoints;
@@ -740,18 +791,24 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
 	*iPoints2 = sharedImagePoints2;	
 	}
 	
-	else {
+	else if ((int) sharedObjectPoints.size() < 10 || paddingPoints) {
 	  
 	  inCal.objectPoints.erase(inCal.objectPoints.begin()+i);
 	  inCal2.objectPoints.erase(inCal2.objectPoints.begin()+i);
 	  inCal.imagePoints.erase(inCal.imagePoints.begin()+i);
 	  inCal2.imagePoints.erase(inCal2.imagePoints.begin()+i);
 
+	  // temp: if no objectPoints left, then break from loop already
+	  if (inCal.objectPoints.size() <= 0){
+	    inCal.objectPoints[0].clear();
+	    inCal2.objectPoints[0].clear();
+	    break;
+	  }
+
 	  // decrement i because we removed one element
 	  //  from the beginning of the vector, inCal.objectPoints.
 	  i--; 
 	}
-        cout << inCal.objectPoints.size() << " " << inCal2.objectPoints.size() << endl;
     }
 
 }
@@ -806,7 +863,6 @@ void getObjectAndImagePoints( vector< vector< Point2f > >  detectedCorners, vect
             if(currentId == currentBoard->ids_vector[j]) {
                 for(int p = 0; p < 4; p++) {
                     objPoints.push_back(currentBoard->obj_points_vector[j][p]);
-
                     imgPoints.push_back(detectedCorners[i][p]);
                     
                 }
@@ -816,7 +872,7 @@ void getObjectAndImagePoints( vector< vector< Point2f > >  detectedCorners, vect
 }
 
 
-void processPoints(vector< vector< Point2f > > corners, vector<int> ids,
+void processPoints(Settings s, vector< vector< Point2f > > corners, vector<int> ids,
                         vector<int> counter,                      
                         vector< vector < Point2f >> &processedImagePoints,
                         vector< vector<Point3f>> &processedObjectPoints,  Ptr<ChessBoard> &currentBoard) {
@@ -832,10 +888,12 @@ void processPoints(vector< vector< Point2f > > corners, vector<int> ids,
     
     thisFrameCorners.reserve((size_t) nMarkersInThisFrame);
     thisFrameIds.reserve((size_t) nMarkersInThisFrame);
+    
     for(int j = markerCounter; j < markerCounter + nMarkersInThisFrame; j++) {
       thisFrameCorners.push_back(corners[j]);
       thisFrameIds.push_back(ids[j]);
     }
+    
     markerCounter += nMarkersInThisFrame;
     vector< Point2f > currentImgPoints;
     vector< Point3f > currentObjPoints;
@@ -843,6 +901,16 @@ void processPoints(vector< vector< Point2f > > corners, vector<int> ids,
     getObjectAndImagePoints(thisFrameCorners, thisFrameIds, currentObjPoints,
                             currentImgPoints, currentBoard);
     if(currentImgPoints.size() > 0 && currentObjPoints.size() > 0) {
+      processedImagePoints.push_back(currentImgPoints);
+      processedObjectPoints.push_back(currentObjPoints);
+    }
+
+    else if (currentImgPoints.size() < 1 && currentObjPoints.size() < 1 && s.mode == Settings::STEREO) {
+      
+      for (int i=0; i < 4; i++){
+	currentImgPoints.push_back(Point2f(-1,-1));
+	currentObjPoints.push_back(Point3f(-1,-1,0));
+      }
       processedImagePoints.push_back(currentImgPoints);
       processedObjectPoints.push_back(currentObjPoints);
     }
@@ -868,9 +936,9 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
   vector< vector < Point2f >>  processedImagePoints1;
   vector< vector<Point3f>> processedObjectPoints1 ;
   
-  processPoints(allCornersConcatenated1,
-		     allIdsConcatenated1, markerCounterPerFrame1,
-		     processedImagePoints1, processedObjectPoints1, currentBoard);
+  processPoints(s, allCornersConcatenated1,
+		allIdsConcatenated1, markerCounterPerFrame1,
+		processedImagePoints1, processedObjectPoints1, currentBoard);
   
   inCal.objectPoints = processedObjectPoints1;
   inCal.imagePoints =processedImagePoints1;
@@ -896,7 +964,7 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
     vector< vector < Point2f >>  processedImagePoints2;
     vector< vector<Point3f>> processedObjectPoints2;
     
-    processPoints(allCornersConcatenated2,
+    processPoints(s, allCornersConcatenated2,
 		       allIdsConcatenated2, markerCounterPerFrame2,
 		       processedImagePoints2, processedObjectPoints2, currentBoard);
     
@@ -912,10 +980,14 @@ void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBo
 
   Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
 
-    detectorParams-> cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
+  // do corner refinement in markers
+  detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX;
+  //detectorParams-> doCornerRefinement = true; // do corner refinement in markers
   detectorParams-> cornerRefinementWinSize = 4;
-  detectorParams->  minMarkerPerimeterRate = 0.02; 
+  detectorParams->  minMarkerPerimeterRate = 0.01;
+  detectorParams->  maxMarkerPerimeterRate = 4 ;
   detectorParams-> cornerRefinementMinAccuracy = 0.05;
+
 
   
   Mat imgCopy;
@@ -926,10 +998,25 @@ void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBo
                        currentBoard->corners, currentBoard->ids,
                        detectorParams, currentBoard->rejected);
   
-  
-  InCal.allCorners.push_back(currentBoard->corners);
-  InCal.allIds.push_back(currentBoard->ids);
-  s.imageSize = img.size();
+  if (currentBoard->ids.size() > 0){ 
+    InCal.allCorners.push_back(currentBoard->corners); 
+    InCal.allIds.push_back(currentBoard->ids);
+    s.imageSize = img.size();
+  }
+  else if (currentBoard->ids.size() == 0 && s.mode == Settings::STEREO) {
+
+    vector < Point2f > temp;
+    
+    for (int i=0 ; i < 4; i++){
+      temp.push_back(Point2f(-1,-1));
+    }
+    currentBoard->corners.push_back(temp);
+    currentBoard->ids.push_back(-1);
+
+    InCal.allCorners.push_back(currentBoard->corners);
+    InCal.allIds.push_back(currentBoard->ids);
+    
+  }
 
 }
 
@@ -1077,12 +1164,17 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
         inCal.distCoeffs = s.intrinsicInput.distCoeffs;
         inCal2.distCoeffs = s.intrinsicInput.distCoeffs;
     }
+
+   
     
-    // Stereo calibration requires both images to have the same # of image and object points, but
-    // getSharedPoints limits the points lists to only those points shared between each image
     if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
+    
       getSharedPoints(inCal, inCal2);
     }
+    
+   
+
+   
     
     double err = stereoCalibrate(
                inCal.objectPoints, inCal.imagePoints, inCal2.imagePoints,
@@ -1112,32 +1204,41 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
     if (s.mode == Settings::STEREO) {         // stereo calibration
         if (!s.useIntrinsicInput)
         {
-        ok = runIntrinsicCalibration(s, inCal);
-        
-        printf("%s for left. Avg reprojection error = %.4f\n",
-                ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-                inCal.totalAvgErr);
+
+	  // Stereo calibration requires both images to have the same # of image and object points;
+	  // getSharedPoints limits the points lists to only those points shared between each image
+	  if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
+	    getSharedPoints(inCal, inCal2);
+	  }
+	  cout << inCal.objectPoints.size() << endl;
+	  
+	  ok = runIntrinsicCalibration(s, inCal);
+	  
+	  printf("%s for left. Avg reprojection error = %.4f\n",
+		 ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
+		 inCal.totalAvgErr);
         ok = runIntrinsicCalibration(s, inCal2);
-            
-        printf("%s for right. Avg reprojection error = %.4f\n",
-                ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-                inCal2.totalAvgErr);
-        } else
-            ok = true;
         
+        printf("%s for right. Avg reprojection error = %.4f\n",
+	       ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
+	       inCal2.totalAvgErr);
+        } else
+	  ok = true;
+
         stereoCalibration sterCal = runStereoCalibration(s, inCal, inCal2);
         s.saveExtrinsics(sterCal);
 
+	
     } else {                        // intrinsic calibration
-        ok = runIntrinsicCalibration(s, inCal);
-        printf("%s. Avg reprojection error = %.4f\n",
-                ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-                inCal.totalAvgErr);
-
-        if( ok ) {
-            undistortImages(s, inCal);
-            s.saveIntrinsics(inCal);
-        }
+      ok = runIntrinsicCalibration(s, inCal);
+      printf("%s. Avg reprojection error = %.4f\n",
+	     ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
+	     inCal.totalAvgErr);
+      
+      if( ok ) {
+	undistortImages(s, inCal);
+	s.saveIntrinsics(inCal);
+      }
     }
 }
 
