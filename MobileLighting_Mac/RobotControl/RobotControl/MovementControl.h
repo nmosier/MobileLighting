@@ -7,11 +7,12 @@
 //
 
 int client();
+int server();
 int restore();
 int next();
 int powerdown();
 int move_pose(std::string pose, float a = 0.3, float v = 0.3);
-int move_joints(std::string pose, float a, float v);
+int move_joints(std::string pose, float a = 0.3, float v = 0.3);
 int linear_x(float d, float a = 0.3, float v = 0.3);
 int linear_y(float d, float a = 0.3, float v = 0.3);
 int linear_z(float d, float a = 0.3, float v = 0.3);
