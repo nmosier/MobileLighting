@@ -23,14 +23,15 @@ enum RectificationMode {
 }
 
 let rectificationMode: RectificationMode = .NONE
-let stereoPosition = 1 // change laters
+let stereoPosition = 1 // change laters // what does that even mean?!?!
 
 // photo capture
 let defaultResolution = "high"
 
 // robot control
-let robotAcceleration: Float = 0.3
-let robotVelocity: Float = 0.3
+let robotAcceleration: Float = 0.15
+let robotVelocity: Float = 0.15
+let robotDelay: Float = 5.0
 
 // calibration detection
 let minDetectedObjs: Int = 5
