@@ -188,19 +188,23 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     fatalError("unable to lock for configuration")
                 }
                 print("TRIED TO SET LENS POSITION: \(lensPosition)")
+                
+                let finishedFocusing: (CMTime) -> Void = { _ in
+                    while cameraController.captureDevice.isAdjustingFocus {}
+                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
+                }
+                
                 if lensPosition < 0.0 || lensPosition > 1.0 {
                     cameraController.captureDevice.focusMode = .autoFocus
+                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 } else {
-                    cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: nil)
+                    cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: finishedFocusing)
                 }
                 
                 cameraController.captureDevice.unlockForConfiguration()
                 
-                let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
-                queueFinishFocus.async {
-                    while cameraController.captureDevice.isAdjustingFocus {}
-                    photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
-                }
+//                let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
+//                queueFinishFocus.async {
                 
                 break
             
@@ -268,6 +272,10 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .SetAutoWhiteBalance)
                 photoSender.sendPacket(packet)
                 
+            case .ReadExposure:
+                let exposure = (cameraController.captureDevice.exposureDuration.seconds, cameraController.captureDevice.iso)
+                let packet = PhotoDataPacket(photoData: Data(), exposure: exposure)
+                photoSender.sendPacket(packet)
                 
             case .LockExposure:
                 do { try cameraController.captureDevice.lockForConfiguration()
@@ -283,6 +291,29 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     return
                 }
                 cameraController.captureDevice.exposureMode = .autoExpose
+                cameraController.captureDevice.unlockForConfiguration()
+            
+            case .SetExposure:
+                do { try cameraController.captureDevice.lockForConfiguration() }
+                catch { print("CameraService: error - could not lock capture device for configuration."); return }
+                cameraController.captureDevice.exposureMode = .locked
+                guard var duration = packet.photoBracketExposureDurations?.first, var iso = packet.photoBracketExposureISOs?.first else {
+                    print("SetExposure -- exposure durations/isos empty.")
+                    return
+                }
+                if duration == 0 {
+                    duration = cameraController.captureDevice.exposureDuration.seconds
+                }
+                if (iso == 0) {
+                    iso = Double(cameraController.captureDevice.iso)
+                }
+                
+                // make sure exposure settings w/i boundaries
+                duration = max(cameraController.captureDevice.activeFormat.minExposureDuration.seconds, duration)
+                duration = min(cameraController.captureDevice.activeFormat.maxExposureDuration.seconds, duration)
+                iso = max(Double(cameraController.captureDevice.activeFormat.minISO), iso)
+                iso = min(Double(cameraController.captureDevice.activeFormat.maxISO), iso)
+                cameraController.captureDevice.setExposureModeCustomWithDuration(CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale), iso: Float(iso), completionHandler: { print("set exposure with duration \($0)") })
                 cameraController.captureDevice.unlockForConfiguration()
                 
             case CameraInstruction.CaptureStillImage:
