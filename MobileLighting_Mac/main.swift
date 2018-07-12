@@ -65,10 +65,11 @@ var projectors: Int?
 var exposureDurations: [Double]
 var exposureISOs: [Double]
 var positions: [String]
+let focus: Double?
 
 // load init settings
 do {
-    initSettings = try loadInitSettings(filepath: initSettingsPath)
+    initSettings = try InitSettings(initSettingsPath)
     print("Successfully loaded initial settings.")
 } catch {
     print("Fatal error: could not load init settings")
@@ -82,9 +83,12 @@ minSWfilepath = initSettings.minSWfilepath
 
 // setup optional settings
 projectors = initSettings.nProjectors
-exposureDurations = initSettings.exposureDurations ?? [Double]()
-exposureISOs = initSettings.exposureISOs ?? [Double]()
-positions = initSettings.positionCoords ?? [String]()
+exposureDurations = initSettings.exposureDurations
+exposureISOs = initSettings.exposureISOs
+positions = initSettings.positionCoords
+
+// calibration settings
+focus = initSettings.focus
 
 // setup directory structure
 dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
@@ -96,16 +100,23 @@ do {
 }
 
 
-// publish PhotoReceiver service & set up Camera Service Browser
-
-
 initializeIPhoneCommunications()
+
+// focus iPhone if focus provided
+if focus != nil {
+    let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.SetLensPosition, lensPosition: Float(focus!))
+    cameraServiceBrowser.sendPacket(packet)
+    let receiver = LensPositionReceiver { _ in return }
+    photoReceiver.dataReceivers.insertFirst(receiver)
+}
 
 if configureDisplays() {
     print("main: Successfully configured displays.")
 } else {
     print("main: ERROR — failed to configure displays.")
 }
+
+
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 //let mainQueue = DispatchQueue.main    // for some reason this causes the NSSharedApp (which manages the windwos for displaying binary codes, etc) to block! But the camera calibration functions must be run from the DisplatchQueue.main, so async them whenever they are called
