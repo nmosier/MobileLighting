@@ -14,6 +14,7 @@ enum CameraStatusUpdate: Int {
     case LockedWhiteBalance, SetAutoWhiteBalance
     case CapturedNormalBinaryCode
     case CurrentLensPosition
+    case CurrentExposure
 }
 
 @objc(PhotoDataType)
@@ -40,6 +41,7 @@ class PhotoDataPacket: NSObject, NSCoding {
     var photoData: Data!
     var bracketedPhotoID: Int?
     var lensPosition: Float?
+    var exposure: (Double, Float)?
     
     //MARK: Initialization
     required convenience init?(coder decoder: NSCoder) {
@@ -51,9 +53,16 @@ class PhotoDataPacket: NSObject, NSCoding {
         self.photoData = decoder.decodeObject(forKey: "photoData") as? Data
         self.bracketedPhotoID = decoder.decodeObject(forKey: "bracketedPhotoID") as! Int?
         self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
+        let exposure_duration = decoder.decodeObject(forKey: "exposure_duration") as? Double? ?? nil
+        let exposure_iso = decoder.decodeObject(forKey: "exposure_iso") as? Float? ?? nil
+        if let exposure_duration = exposure_duration, let exposure_iso = exposure_iso {
+            self.exposure = (exposure_duration, exposure_iso)
+        } else {
+            self.exposure = nil
+        }
     }
     
-    convenience init(photoData: Data, bracketedPhotoID: Int? = nil, lensPosition: Float? = nil, statusUpdate: CameraStatusUpdate = .None, photoType: PhotoDataType = .None) {
+    convenience init(photoData: Data, bracketedPhotoID: Int? = nil, lensPosition: Float? = nil, statusUpdate: CameraStatusUpdate = .None, photoType: PhotoDataType = .None, exposure: (Double, Float)? = nil) {
         self.init()
         self.statusUpdate = statusUpdate
         self.photoType = photoType
@@ -61,6 +70,7 @@ class PhotoDataPacket: NSObject, NSCoding {
         self.photoData = photoData
         self.bracketedPhotoID = bracketedPhotoID
         self.lensPosition = lensPosition
+        self.exposure = exposure
     }
     
     //MARK: predefined packets
@@ -78,5 +88,9 @@ class PhotoDataPacket: NSObject, NSCoding {
         coder.encode(photoData, forKey: "photoData")
         coder.encode(bracketedPhotoID, forKey: "bracketedPhotoID")
         coder.encode(lensPosition, forKey: "lensPosition")
+        let exposure_duration = exposure?.0
+        let exposure_iso = exposure?.1
+        coder.encode(exposure_duration, forKey: "exposure_duration")
+        coder.encode(exposure_iso, forKey: "exposure_iso")
     }
 }
