@@ -133,8 +133,14 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             return
         }
         
-        printDeviceCapabilities(of: self.captureDevice)
-        do { try configureCaptureDevice(focusMode: AVCaptureFocusMode.locked, exposureMode: AVCaptureExposureMode.locked, flashMode: AVCaptureFlashMode.off, torchMode: AVCaptureTorchMode.off) } catch { print("Error: could not properly configure capture device.") }
+        try! self.captureDevice.lockForConfiguration()
+        self.captureDevice.focusMode = .continuousAutoFocus
+        self.captureDevice.exposureMode = .continuousAutoExposure
+        self.captureDevice.flashMode = .off
+        self.captureDevice.torchMode = .off
+
+        self.captureDevice.whiteBalanceMode = .continuousAutoWhiteBalance
+        self.captureDevice.unlockForConfiguration()
         
         self.capturePhotoOutput = AVCapturePhotoOutput()
         self.capturePhotoOutput.isHighResolutionCaptureEnabled = true
@@ -177,14 +183,6 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
             return
         }
-        
-        /*
-        guard !capturingNormalInvertedPair else {
-            print("CameraController: cannot take photo: currently capturing normal-inverted image pair.")
-            let packet = PhotoDataPacket.error()
-            photoSender.sendPacket(packet)
-            return
-        } */
         
         print("Capturing photo: \(self.capturePhotoOutput)")
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
@@ -297,64 +295,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             if capturingInverted {
                 // process images
                 processCodeImages(normal: pixelBuffers_normal, inverted: pixelBuffers_inverted, for: currentBinaryCodeBit!)
-                /*
-                guard pixelBuffers_normal.count == pixelBuffers_inverted.count else {
-                    print("CameraController: ERROR - mismatch in normal-inverted bracket pair sample buffer count.")
-                    let packet = PhotoDataPacket.error()
-                    photoSender.sendPacket(packet)
-                    return
-                }
-                
-                
-                var intensityBuffers = [CVPixelBuffer]()
-                for i in 0..<pixelBuffers_normal.count {
-                    let normalBuffer = pixelBuffers_normal[i]
-                    let invertedBuffer = pixelBuffers_inverted[i]
-                    
-                    let intensityBuffer = intensityDifference(normal: normalBuffer, inverted: invertedBuffer)
-                    intensityBuffers.append(intensityBuffer)
-                }
-                pixelBuffers_normal.removeAll()
-                pixelBuffers_inverted.removeAll()
-                
-                var combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
-                intensityBuffers.removeAll()
-                
-                // Now try to rectify images
-                if shouldRectifyOnPhone {
-                    combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
-                }
-                // get prominent stripe direction
-                // if this is for the first structured lighting image
-                if (currentBinaryCodeBit! == 0) {
-                    brightnessChangeDirection = brightnessChange(combinedIntensityBuffer)
-                    sceneMetadata.angle = brightnessChangeDirection! - Double.pi/2
-                }
-                
-                let threshBuffer: CVPixelBuffer = threshold(img: combinedIntensityBuffer, thresh: threshold_val, angle: brightnessChangeDirection ?? 0.0 )
-                // decode threshold image for current bit using decoder
-                decoder!.decode(threshBuffer, forBit: currentBinaryCodeBit!)
-                
-                
-                //MARK: send prethreshold images?
-                if (shouldSendThreshImgs) {
-                    let prethreshData: Data
-                    let threshData: Data
-                    
-                    let prethreshPgm = PGMFile(buffer: combinedIntensityBuffer)
-                    prethreshData = prethreshPgm.getPGMData()
-                    let threshPgm = PGMFile(buffer: threshBuffer)
-                    threshData = threshPgm.getPGMData()
-         
-                    let prethresh_packet = PhotoDataPacket(photoData: prethreshData, bracketedPhotoID: 0)
-                    photoSender.sendPacket(prethresh_packet)
-                    let thresh_packet = PhotoDataPacket(photoData: threshData, bracketedPhotoID: 0)
-                    photoSender.sendPacket(thresh_packet)
-                } else {
-                    let packet = PhotoDataPacket(photoData: Data(), statusUpdate: .None)
-                    photoSender.sendPacket(packet)
-                }
-                */
+ 
                 pixelBuffers_normal.removeAll()
                 pixelBuffers_inverted.removeAll()
                 
@@ -366,9 +307,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             }
             capturingInverted = !capturingInverted
         } else {
-        
-            // send to Mac using PhotoSender
-            
+
             for index in 0..<photoSampleBuffers.count {
                 let photoSampleBuffer = photoSampleBuffers[index]
                 let jpegData: Data
@@ -440,7 +379,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     //MARK: Device configuration
     func configureCaptureDevice(focusMode: AVCaptureFocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureExposureMode? = nil, flashMode: AVCaptureFlashMode? = nil,
-                                torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil) throws {
+                                torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, whiteBalanceMode: AVCaptureWhiteBalanceMode? = nil) throws {
         try self.captureDevice.lockForConfiguration()
         
         if let focusPointOfInterest = focusPointOfInterest {
@@ -451,6 +390,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
         if let exposureMode = exposureMode {
             self.captureDevice.exposureMode = exposureMode
+        }
+        if let whiteBalanceMode = whiteBalanceMode {
+            self.captureDevice.whiteBalanceMode = whiteBalanceMode
         }
         if let flashMode = flashMode {
             self.captureDevice.flashMode = flashMode    // deprecated, but including anyway (should be changed using AVCapturePhotoSettings.flashMode)
