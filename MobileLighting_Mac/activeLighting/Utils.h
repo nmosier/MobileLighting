@@ -83,3 +83,6 @@ void fitPlane(vector<float> vx, vector<float> vy, vector<float> vz, float &a, fl
 
 void ReadFlowFileVerb(CFloatImage& img, const char* filename, int verbose);
 void WriteFlowFileVerb(CFloatImage img, const char* filename, int verbose);
+
+CFloatImage mergeToNBandImage(vector<CFloatImage*> imgs);
+vector<CFloatImage> splitNBandImage(CFloatImage &merged);
