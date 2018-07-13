@@ -86,7 +86,10 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             return
         }
         self.socket.disconnect()
-        print("disconnecting socket...")
+        print("CameraService disconnected...")
+        self.socket = nil
+        
+        startBroadcast()
     }
     
     
@@ -339,11 +342,12 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 break
                 
             case CameraInstruction.CapturePhotoBracket:
-                guard let exposureDurations = packet.photoBracketExposureDurations else {
+                guard let exposureDurations = packet.photoBracketExposureDurations, let exposureISOs = packet.photoBracketExposureISOs else {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
                 }
                 cameraController.photoBracketExposureDurations = exposureDurations
+                cameraController.photoBracketExposureISOs = exposureISOs
                 guard let preset = self.resolutionToSessionPreset[resolution] else {
                     print("Error: resolution \(resolution) is not compatable with this device.")
                     return

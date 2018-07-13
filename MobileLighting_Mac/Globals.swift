@@ -11,8 +11,8 @@ import Foundation
 var currentPos: Int = -1
 var currentProj: Int = -1
 
-let initSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
-var initSettings: InitSettings!
+let sceneSettingsPath: String = "/Users/nicholas/OneDrive - Middlebury College/Summer Research 2017/MobileLighting/initSettings.yml"
+var sceneSettings: SceneSettings!
 
 var dirStruc: DirectoryStructure!
 

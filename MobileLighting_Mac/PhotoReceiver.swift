@@ -30,7 +30,8 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func startBroadcast() {
         socket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
         do {
-            try socket.accept(onInterface: "", port: 0) // "" -> no restriction
+//            try socket.accept(onInterface: "", port: 0) // "" -> no restriction
+            try socket.accept(onPort: 0)
             self.service = NetService(domain: "local.", type: "_photoReceiver._tcp", name: "PhotoReceiver", port: Int32(socket.localPort))
         } catch {
             print("Error while listening to port for connections.")
@@ -58,8 +59,6 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         self.socket.delegate = self
         self.readyToReceive = true
         
-        
-        
         readPacket()
     }
     
@@ -71,8 +70,10 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             return
         }
         self.socket.disconnect()
-        print("disconnecting socket...")
+        print("PhotoReceiver disconnected...")
         self.socket = nil
+        
+        startBroadcast()
     }
     
     // readPacket: starts to read packet
@@ -258,5 +259,19 @@ class ExposureReceiver: DataReceiver {
     }
     init(_ completionHandler: @escaping Handler<(Double, Float)>) {
         self.completionHandler = completionHandler
+    }
+}
+
+class AmbientImageReceiver: DataWriter, DataReceiver {
+    let completionHandler: BlankHandler
+    let path: String
+    func handle(packet: PhotoDataPacket) {
+        print("Received ambient photo.")
+        write(data: packet.photoData, path: path)
+        completionHandler()
+    }
+    init(_ completionHandler: @escaping BlankHandler, path: String) {
+        self.completionHandler = completionHandler
+        self.path = path
     }
 }

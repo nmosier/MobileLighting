@@ -24,5 +24,9 @@ int MoveLinearX(float, float, float);
 int MoveLinearY(float, float, float);
 int MoveLinearZ(float, float, float);
 
+//int waitrobot();
+//int server();
+void sendscript(char *script);
+
 #pragma GCC visibility pop
 #endif

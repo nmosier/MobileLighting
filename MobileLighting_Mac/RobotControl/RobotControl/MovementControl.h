@@ -7,7 +7,7 @@
 //
 
 int client();
-int server();
+//int server();
 int restore();
 int next();
 int powerdown();

@@ -46,6 +46,80 @@ int client()
     return sock;
 }
 
+extern "C" int server()
+{
+    // SOCKET CONNECTION ON PORT 30000
+    int server_fd, new_socket;
+    struct sockaddr_in address;
+    int addrlen = sizeof(address);
+    
+    // Creating socket file descriptor
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("created file descriptor\n");
+    
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY; //inet_addr("140.233.20.115");
+    address.sin_port = htons(PORT0);
+    
+    printf("binding...\n");
+    bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+    printf("bound.\n");
+    
+    if (listen(server_fd, 3) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    printf("listened.\n");
+    int result = (new_socket = accept(server_fd, (struct sockaddr *)&address,
+                                      (socklen_t*)&addrlen));
+    printf("got result.\n");
+    return new_socket;
+}
+
+/*
+extern "C" int waitrobot() {
+    int client_sock = client();
+    printf("preparing to send script\n");
+    
+    
+    char *script = "def Wait():\nmovel(p[0.253382,-0.0770761,0.410262,-1.99486,-0.096691,-1.87748], a = 0.5, v = 0.5)\nwhile not socket_open(\"140.233.180.41\",30000):\n//try again\nend\npopup(\"socket open\")\nsocket_send_line(\"done\")\nsleep(5)\nend\n";
+    int result = 1; //send(client_sock, script, strlen(script)+1, 0);
+    
+    if (result < 0) {
+        printf("sending failed.\n");
+        return -1;
+    }
+    
+    printf("sent script.\n");
+    
+    int server_sock = server();
+    
+    printf("reading...\n");
+    
+    char tmp[1024];
+    result = read(server_sock, &tmp, 1024);
+    if (result < 1) {
+        printf("reading failed.\n");
+        return -1;
+    }
+    return 0;
+}
+*/
+
+extern "C" void sendscript(char *script) {
+    int client_sock = client();
+    int result = send(client_sock, script, strlen(script), 0);
+    if (result < 0) {
+        printf("\nSending failed.\n");
+    }
+}
+ 
 int restore()
 {
     int client_sock;

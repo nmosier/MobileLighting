@@ -16,6 +16,7 @@ extern "C" int Client() {
 extern "C" int Restore() {
     return restore();
 }
+
 extern "C" int Next() {
     return next();
 }

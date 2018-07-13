@@ -20,15 +20,19 @@ enum YamlError: Error {
 // InitSettings: represents all settings required for capturing a new scene
 // read from YML file
 // -consists of required and optional settings
-class InitSettings {
+class SceneSettings {
     var scenesDirectory: String
     var sceneName: String
     var minSWfilepath: String
+    var trajectoryPath: String
+    
+    // other settings
+    var trajectory: Trajectory
     
     // structured lighting
     var nProjectors: Int
-    var exposureDurations: [Double]
-    var exposureISOs: [Double]
+    var strucExposureDurations: [Double]
+    var strucExposureISOs: [Double]
     
     // robot arm movement
     var positionCoords: [String]
@@ -37,6 +41,10 @@ class InitSettings {
     var focus: Double?
     var calibrationExposureDuration: Double?
     var calibrationExposureISO: Double?
+    
+    // ambient
+    var ambientExposureDurations: [Double]?
+    var ambientExposureISOs: [Double]?
     
     init(_ filepath: String) throws {
         let settingsStr = try String(contentsOfFile: filepath)
@@ -50,7 +58,7 @@ class InitSettings {
         // process required properties:
         guard let scenesDirectory = mainDict[Yaml.string("scenesDir")]?.string,
             let sceneName = mainDict[Yaml.string("sceneName")]?.string,
-            let minSWfilepath = mainDict[Yaml.string("minSWdataDir")]?.string else {
+            let minSWfilepath = mainDict[Yaml.string("minSWdataPath")]?.string else {
                 throw YamlError.MissingRequiredKey
         }
         self.scenesDirectory = scenesDirectory
@@ -58,11 +66,11 @@ class InitSettings {
         self.minSWfilepath = minSWfilepath
         
         self.nProjectors = (mainDict[Yaml.string("projectors")]?.int)!
-        self.exposureDurations = (mainDict[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
+        self.strucExposureDurations = (mainDict[Yaml.string("struclight")]?.dictionary?[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
             (val: Yaml) -> Double in
             return val.double!
             })!
-        self.exposureISOs = (mainDict[Yaml.string("exposureISOs")]?.array?.filter({return $0.double != nil}).map{
+        self.strucExposureISOs = (mainDict[Yaml.string("struclight")]?.dictionary?[Yaml.string("exposureISOs")]?.array?.filter({return $0.double != nil}).map{
             (val: Yaml) -> Double in
             return val.double!
             })!
@@ -81,9 +89,27 @@ class InitSettings {
             }
         }
         
-        guard self.exposureDurations.count == self.exposureISOs.count else {
+        if let ambientDict = mainDict[Yaml.string("ambient")] {
+            print("AMBIENT DICT")
+            self.ambientExposureISOs = ambientDict[Yaml.string("exposureISOs")].array?.flatMap {
+                return $0.double
+            }
+            self.ambientExposureDurations = ambientDict[Yaml.string("exposureDurations")].array?.flatMap {
+                return $0.double
+            }
+        }
+        
+        guard let trajectoryPath = mainDict[Yaml.string("trajectoryPath")]?.string else {
+            print("path to trajectory.yml missing from scene settings file.")
+            fatalError()
+        }
+        self.trajectoryPath = trajectoryPath
+        
+        guard self.strucExposureDurations.count == self.strucExposureISOs.count else {
             fatalError("invalid initsettings file: mismatch in number of exposure durations & ISOs.")
         }
+        
+        self.trajectory = Trajectory(trajectoryPath)
     }
 }
 
@@ -94,22 +120,18 @@ class InitSettings {
 //
 // IMPORTANT: this has not yet been implemented -- eventually, it should be used when writing
 //   scene parameters to YML file as well as reading scene parameters for use during image processing, e.g.
-class SceneParameters {
-    var sceneName: String!
-    var nPositions: Int { get { return self.positions.count } }
-    var positions: [String]!
-    var structuredLighting: StructuredLightingParameters!
-}
-
-class StructuredLightingParameters {
-    var nProjectors: Int!
-    var resolution: String!
-    var nExposures: Int { get { return self.exposureDurations.count } }
-    var exposureDurations: [Double]!
-    var exposureISOs: [Double]!
-    var lensPosition: Float!
-    var focusPoint: CGPoint?
-}
+//class SceneParameters {
+//    var sceneName: String!
+//    var nPositions: Int { get { return self.positions.count } }
+//    var positions: [String]!
+//    var lensPosition: Float!
+//}
+//
+//class StructuredLightingParameters {
+//    var nExposures: Int { get { return self.exposureDurations.count } }
+//    var exposureDurations: [Double]!
+//    var exposureISOs: [Double]!
+//}
 
 
 func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {

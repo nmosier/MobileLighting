@@ -22,6 +22,7 @@ enum CameraInstruction: Int {
     case CaptureStillImage  // capture single image; optional parameters: resolution
     case CapturePhotoBracket    // capture photo bracket; required parameters:
                                 //      photoBracketExposureDurations; optional parameters: resolution
+//    case StartVideoCapture, EndVideoCapture
     
     // the following instructions are used by captureWithStructuredLighting function in Mac app's
     //   ProgramControl.swift

@@ -5,7 +5,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>English</string>
 		<key>CFBundleIdentifier</key>
-		<string>com.apple.xcode.dsym.CocoaAsyncSocket.framework</string>
+		<string>com.apple.xcode.dsym.com.robbiehanson.CocoaAsyncSocket</string>
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundlePackageType</key>

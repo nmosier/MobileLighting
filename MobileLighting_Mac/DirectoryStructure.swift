@@ -45,6 +45,16 @@ class DirectoryStructure {
             }
         }
     
+            func ambient(_ pos: Int) -> String {
+                return subdir(self.ambient, pos: pos)
+            }
+    
+            func ambient(pos: Int, exp: Int) -> String {
+                let path = ambient(pos) + "/exp\(exp)"
+                try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+                return path
+            }
+    
         var ambientBall: String {
             get {
                 return self.orig + "/" + "ambientBall"
@@ -68,17 +78,17 @@ class DirectoryStructure {
             }
     
                 // deprecated, will be removed in future
-                func stereoPhotosPair(left: Int, right: Int) -> String {
-                    let subdir = self.stereoPhotos + "/" + "pos\(left)\(right)"
-                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                    return subdir
-                }
-                    func stereoPhotosPairLeft(left: Int, right: Int) -> String {
-                        return subdir(stereoPhotosPair(left: left, right: right), pos: left)
-                    }
-                    func stereoPhotosPairRight(left: Int, right: Int) -> String {
-                        return subdir(stereoPhotosPair(left: left, right: right), pos: right)
-                    }
+//                func stereoPhotosPair(left: Int, right: Int) -> String {
+//                    let subdir = self.stereoPhotos + "/" + "pos\(left)\(right)"
+//                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+//                    return subdir
+//                }
+//                    func stereoPhotosPairLeft(left: Int, right: Int) -> String {
+//                        return subdir(stereoPhotosPair(left: left, right: right), pos: left)
+//                    }
+//                    func stereoPhotosPairRight(left: Int, right: Int) -> String {
+//                        return subdir(stereoPhotosPair(left: left, right: right), pos: right)
+//                    }
     // this versino should be used in future -- does not organize by position pairs
                     func stereoPhotos(_ pos: Int) -> String {
                         return subdir(stereoPhotos, pos: pos)
@@ -138,35 +148,6 @@ class DirectoryStructure {
                     try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
                     return subdir
                 }
-//                func decodedFile(_ direction: Int) -> String {
-//                    return decodedFile(direction, proj: currentProj, pos: currentPos)
-//                }
-//                func decodedFile(_ direction: Int, proj: Int, pos: Int) -> String {
-//                    return subdir(decoded, proj: proj, pos: pos) + "/result\(direction).pfm"
-//                }
-//                func decodedDirLeft(_ direction: Int, proj: Int, pos: Int) -> String {
-//                    let dir = subdir(decoded, proj: proj, pos: pos) + "/left"
-//                    try! FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-//                    return dir
-//                }
-//                func decodedDirRight(_ direction: Int, proj: Int, pos: Int) -> String {
-//                    let dir = subdir(decoded, proj: proj, pos: pos) + "/right"
-//                    try! FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-//                    return dir
-//                }
-//                func rectifiedFileLeft(_ direction: Int, proj: Int, left: Int, right: Int) -> String {
-//                    return subdir(decoded, proj: proj, pos: left) + "/result\(direction)-rectified\(left)\(right).pfm"
-//                }
-//                func rectifiedFileRight(_ direction: Int, proj: Int, left: Int, right: Int) ->String {
-//                    return subdir(decoded, proj: proj, pos: right) + "/result\(direction)-rectified\(left)\(right).pfm"
-//                }
-    
-//            var refined: String {
-//                get {
-//                    //return self.computed + "/" + "refined"
-//                    return self.decoded
-//                }
-//            }
     
             var disparity: String {
                 get {
@@ -234,13 +215,9 @@ class DirectoryStructure {
                     return self.calibComputed + "/" + "extrinsics"
                 }
             }
-            func extrinsicsSubdir(left: Int, right: Int) -> String {
-                let subdir = self.extrinsics + "/pos\(left)\(right)"
-                try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                return subdir
-            }
+
             func extrinsicsYML(left: Int, right: Int) -> String {
-                return self.extrinsicsSubdir(left: left, right: right) + "/" + "extrinsics.yml"
+                return self.extrinsics + "/" + "extrinsics\(left)\(right).yml"
             }
     
     
@@ -252,9 +229,6 @@ class DirectoryStructure {
             }
                 func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
                     return subdir(metadata, proj: proj, pos: pos) + "/metadata\(direction).yml"
-                }
-                func metadataFile(_ direction: Int) -> String {
-                    return subdir(metadata) + "/metadata\(direction).yml"
                 }
     
     
@@ -268,22 +242,19 @@ class DirectoryStructure {
     
     // subdir -- get subdirectory of provided directory path
     // indexed to current/provided projector and position
-    func subdir(_ dir: String, proj: Int, pos: Int) -> String {
+    private func subdir(_ dir: String, proj: Int, pos: Int) -> String {
         let subdir = self.subdir(dir, proj: proj) + "/" + "pos\(pos)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
-    func subdir(_ dir: String, proj: Int) -> String {
+    private func subdir(_ dir: String, proj: Int) -> String {
         let subdir = dir + "/" + "proj\(proj)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
-    func subdir(_ dir: String, pos: Int) -> String {
+    private func subdir(_ dir: String, pos: Int) -> String {
         let subdir = dir + "/" + "pos\(pos)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
-    }
-    func subdir(_ dir: String) -> String {
-        return subdir(dir, proj: currentProj, pos: currentPos)
     }
 }

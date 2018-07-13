@@ -17,7 +17,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     //MARK: Properties
     var captureSession: AVCaptureSession!
     var captureDevice: AVCaptureDevice!
-    var capturePhotoOutput: AVCapturePhotoOutput!
+    var capturePhotoOutput: AVCapturePhotoOutput! // for taking stills
+    var movieOutput = AVCaptureMovieFileOutput() // for taking videos
+    
     var photoSampleBuffers = [CMSampleBuffer]()
     var lensPositions =  [Float]()
     var sessionPreset: String!
@@ -86,15 +88,16 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
                 guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: pixelFormat)) else {
                     fatalError("Does not contain \(pixelFormat)")
                 }
-                
-                return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
+                let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
+                settings.isAutoStillImageStabilizationEnabled = false
+                return settings
             } else {
                 // use default exposure settings
                 let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
                 let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecJPEG,
-                                       AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.0)]]
+                                       AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.9)]]
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: processedFormat, bracketedSettings: bracketSettings)
             }
         }
@@ -151,6 +154,11 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureSession.sessionPreset = sessionPreset
         self.captureSession.addInput(videoInput)
         self.captureSession.addOutput(capturePhotoOutput)
+        self.captureSession.addOutput(movieOutput)
+        
+        // turn off video stabilization
+        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.preferredVideoStabilizationMode = .off
+        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.videoOrientation = .portrait
         
         capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo).videoOrientation = .portrait
         
@@ -185,6 +193,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         }
         
         print("Capturing photo: \(self.capturePhotoOutput)")
+        capturingNormalInvertedPair = false
+        capturingInverted = false
+        photoSettings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
@@ -201,6 +212,7 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         pixelBuffers_normal.removeAll()
         pixelBuffers_inverted.removeAll()
         
+        settings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
         
         // need to add more?
@@ -225,18 +237,12 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         capturingInverted = true
         //currentBinaryCodeBit = 0
         
+        settings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
     }
     
     
     //MARK: AVCapturePhotoCaptureDelegate
-    
-    func capture(_ captureOutput: AVCapturePhotoOutput, willBeginCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
-    }
-    
-    func capture(_ captureOutput: AVCapturePhotoOutput, willCapturePhotoForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings) {
-        print("CameraController: TEST — willCapturePhotoForResolvedSettings — \(timestampToString(date: Date()))")
-    }
     
     func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         guard let photoSampleBuffer = photoSampleBuffer else {
@@ -307,16 +313,15 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
             }
             capturingInverted = !capturingInverted
         } else {
-
+        
             for index in 0..<photoSampleBuffers.count {
                 let photoSampleBuffer = photoSampleBuffers[index]
                 let jpegData: Data
                 
                 if let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) {
-                    let im: CIImage = CIImage(cvPixelBuffer: imageBuffer)
+                    let im: CIImage = CIImage(cvPixelBuffer: imageBuffer).oriented(.right)
                     let colorspace = CGColorSpaceCreateDeviceRGB()
-                
-                    jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9])!
+                    jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 1.0])!
                 } else {
                     jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
                 }
@@ -406,4 +411,11 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureDevice.unlockForConfiguration()
     }
     
+    
+    func tmpVideoDir() -> String {
+        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String) + "/video"
+        do { try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
+        catch { fatalError("Couldn't create directory in Documents directory.")}
+        return path
+    }
 }

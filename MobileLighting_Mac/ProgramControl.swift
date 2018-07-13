@@ -15,7 +15,8 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case quit
     case reloadsettings
     
-    case takefull
+    case struclight
+    case takeamb
     
     // camera settings
     case readfocus, autofocus, setfocus, lockfocus
@@ -50,6 +51,8 @@ enum Command: String {      // rawValues are automatically the name of the case,
     case getintrinsics
     case getextrinsics
     
+    // take ambient photos
+    
     // for debugging
     case dispres
     case dispcode
@@ -67,7 +70,8 @@ let commandUsage: [Command : String] = [
     .disconnect: "disconnect [vxm|switcher]",
     .calibrate: "calibrate [# of photos]",
     .calibrate2pos: "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?",
-    .takefull: "takefull [projector #] [position #] [code system]?",
+    .struclight: "struclight [projector #] [position #] [code system]?",
+    .takeamb: "takeamb (still | video) [nPhotos]?",
     .setfocus: "setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)",
     .focuspoint: "focuspoint [x_coord] [y_coord]",
     .cb: "cb [squareSize]?",
@@ -93,9 +97,12 @@ func nextCommand() -> Bool {
         // if input empty, simply return & continue execution
         return true
     }
-    
+    return processCommand(input)
+}
+
+func processCommand(_ input: String) -> Bool {
     var nextToken = 0
-    let tokens = input.components(separatedBy: " ")
+    let tokens: [String] = input.split(separator: " ").map{ return String($0) }
     guard let command = Command(rawValue: tokens.first ?? "") else { // "" is invalid token, automatically rejected
         // if input contains no valid commands, return
         return true
@@ -107,7 +114,10 @@ func nextCommand() -> Bool {
     cmdSwitch: switch command {
     case .help:
         // to be implemented
-        print("help")
+        for (command, usage) in commandUsage {
+            print("\(command):\t\(usage)")
+        }
+        print()
         
     case .quit:
         return false
@@ -121,9 +131,9 @@ func nextCommand() -> Bool {
             break
         }
         
-        let initSettings: InitSettings
+        let sceneSettings: SceneSettings
         do {
-            initSettings = try InitSettings(initSettingsPath)
+            sceneSettings = try SceneSettings(sceneSettingsPath)
             print("Successfully loaded initial settings.")
         } catch {
             print("Fatal error: could not load init settings")
@@ -132,8 +142,8 @@ func nextCommand() -> Bool {
         
         if tokens[1] == "exposures" {
             print("Reloading exposures...")
-            exposureDurations = initSettings.exposureDurations
-            print("New exposures: \(exposureDurations)")
+            strucExposureDurations = sceneSettings.strucExposureDurations
+            print("New exposures: \(strucExposureDurations)")
         }
     
     // connect: use to connect external devices
@@ -326,39 +336,43 @@ func nextCommand() -> Bool {
     // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
     //  NOTE: this command does not move the arm; it must already be in the correct positions
     //      BUT it does configure the projectors
-    case .takefull:
-        let parameters = ["takefull", "projector", "position"]
-        let usage = "usage: takefull [projector #] [position #]"
+    case .struclight:
+//        let parameters = ["struclight", "projector", "position"]
+        let usage = "usage: struclight [id] [projector #] [position #] [resolution]?"
         // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
 //        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         
-        guard tokens.count >= parameters.count else {
+        guard tokens.count >= 4 else {
             print(usage)
             break
         }
-        guard let projector = Int(tokens[1]) else {
-            print("takefull: invalid projector number.")
+        guard let projPos = Int(tokens[1]) else {
+            print("struclight: invalid projector position number")
             break
         }
-        guard let position = Int(tokens[2]) else {
-            print("takefull: invalid position number \(tokens[2]).")
+        guard let projID = Int(tokens[2]) else {
+            print("struclight: invalid projector id.")
             break
         }
-        guard position >= 0, position < positions.count else {
-            print("takefull: position \(position) out of range.")
+        guard let armPos = Int(tokens[3]) else {
+            print("struclight: invalid position number \(tokens[2]).")
+            break
+        }
+        guard armPos >= 0, armPos < positions.count else {
+            print("struclight: position \(armPos) out of range.")
             break
         }
         
-        currentPos = position       // update current position
+        currentPos = armPos       // update current position
         
-        currentProj = projector     // update current projector
+        currentProj = projPos     // update current projector
         
         system = .MinStripeWidthCode
 
         let resolution: String
-        if tokens.count >= 4 {
-            resolution = tokens[3]
+        if tokens.count == 5 {
+            resolution = tokens[4]
         } else {
             resolution = defaultResolution
         }
@@ -366,17 +380,87 @@ func nextCommand() -> Bool {
         displayController.switcher?.turnOff(0)   // turns off all projs
         print("Hit enter when all projectors off.")
         _ = readLine()  // wait until user hits enter
-        displayController.switcher?.turnOn(projector)
+        displayController.switcher?.turnOn(projID)
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
         
-        var pose = positions[position].cString(using: .ascii)!
+        var pose = *positions[armPos]
         MovePose(&pose, robotVelocity, robotAcceleration)
         usleep(UInt32(robotDelay * 1.0e6))
         
-        captureWithStructuredLighting(system: system, projector: projector, position: position, resolution: resolution)
+        captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
         break
     
+        
+    case .takeamb:
+        let usage = "usage: takeamb (still|video) [nPhotos]? [resolution]?"
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        guard params.count > 0 else {
+            print(usage)
+            break
+        }
+        switch params[0] {
+        case "still":
+            guard params.count >= 2, let nPhotos = Int(params[1]) else {
+                print("usage: takeamb still [nPhotos] [resolution]?")
+                break cmdSwitch
+            }
+            let resolution: String
+            if params.count == 3 {
+                resolution = params[2]
+            } else {
+                resolution = defaultResolution
+            }
+            
+            print(resolution)
+            print(sceneSettings.ambientExposureISOs)
+            print(sceneSettings.ambientExposureDurations)
+            let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
+            
+            for pos in 0..<positions.count {
+                var posStr = *positions[pos]
+                MovePose(&posStr, robotAcceleration, robotVelocity)
+                print("Hit enter when camera in position.")
+                _ = readLine()
+                
+                // take photo bracket
+                cameraServiceBrowser.sendPacket(packet)
+                
+                var nReceived = 0
+                let completionHandler = { nReceived += 1 }
+                for exp in 0..<sceneSettings.ambientExposureDurations!.count {
+                    let path = dirStruc.ambient(pos: pos, exp: exp) + "/IMG\(exp).JPG"
+                    let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
+                    photoReceiver.dataReceivers.insertFirst(ambReceiver)
+                }
+                while nReceived != sceneSettings.ambientExposureDurations!.count {}
+                // continue
+            }
+            
+            // AmbientImageReceiver
+            
+            break
+        case "video":
+            trajectory.moveToStart()
+            print("takeamb video: hit enter when camera in position.")
+            _ = readLine()
+            
+            
+            
+            trajectory.executeScript()
+            print("takeamb video: hit enter when trajectory completed.")
+            _ = readLine()
+            
+            break
+        default:
+            break
+        }
+        
+        break
+        
+        
+        
     // requests current lens position from iPhone camera, prints it
     case .readfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
@@ -1048,7 +1132,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: false)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
         
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: exposureISOs)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.CaptureNormalInvertedPair, resolution: resolution, photoBracketExposureDurations: strucExposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: strucExposureISOs)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -1071,7 +1155,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         
         displayController.configureDisplaySettings(horizontal: horizontal, inverted: true)
         displayController.displayBinaryCode(forBit: currentCodeBit, system: system)
-        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: exposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: exposureISOs)
+        let packet = CameraInstructionPacket(cameraInstruction: CameraInstruction.FinishCapturePair, resolution: resolution, photoBracketExposureDurations: strucExposureDurations, binaryCodeBit: currentCodeBit, photoBracketExposureISOs: strucExposureISOs)
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + monitorTimeDelay) {
             cameraServiceBrowser.sendPacket(packet)
@@ -1079,17 +1163,17 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             
             if (shouldSendThreshImgs) {
                 let direction = horizontal ? 1 : 0
-                let prethreshpath = dirStruc.subdir(dirStruc.prethresh)
-                let threshpath = dirStruc.subdir(dirStruc.thresh)
+                let prethreshpath = dirStruc.prethresh + "/proj\(projector)/pos\(position)"//dirStruc.subdir(dirStruc.prethresh)
+                let threshpath = dirStruc.thresh + "/proj\(projector)/pos\(position)"
+                for path in [prethreshpath, threshpath] { try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
                 let handler2 = captureNextBinaryCode
                 let handler1 = {
                     photoReceiver.dataReceivers.insertFirst(
-                        CalibrationImageReceiver(handler2, dir: "tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                        CalibrationImageReceiver(handler2, dir: threshpath, id: currentCodeBit-1)//"tmp/thresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
                     )
                 }
-                //MARK: NEED TO FIX THIS AFTER HANDLE PHOTO RECEIPT BETTER
                 photoReceiver.dataReceivers.insertFirst(
-                    CalibrationImageReceiver(handler1, dir: "tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
+                    CalibrationImageReceiver(handler1, dir: prethreshpath, id: currentCodeBit-1) //"tmp/prethresh/\(horizontal ? "h" : "v")", id: currentCodeBit-1)
                 )
             } else {
                 photoReceiver.dataReceivers.insertFirst(
@@ -1128,7 +1212,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var metadataCompletionHandler: ()->Void = {
 //        if rectificationMode == .NONE || rectificationMode == .ON_PHONE {
             let direction: Int = horizontal ? 1 : 0
-            let filepath = dirStruc.metadataFile(horizontal ? 1 : 0)
+        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position)
             do {
                 let metadataStr = try String(contentsOfFile: filepath)
                 let metadata: Yaml = try Yaml.load(metadataStr)
@@ -1149,7 +1233,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         received = true
     }
     photoReceiver.dataReceivers.insertFirst(
-        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0))
+        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position))
     )
     
     while !received || !cameraServiceBrowser.readyToSendPacket {}
@@ -1178,7 +1262,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     )
     
     metadataCompletionHandler  = {
-        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0)
+        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position)
         do {
             let metadataStr = try String(contentsOfFile: filepath)
             let metadata: Yaml = try Yaml.load(metadataStr)
@@ -1196,7 +1280,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         received = true
     }
     photoReceiver.dataReceivers.insertFirst(
-        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0))
+        SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position))
     )
     
     while !received || !cameraServiceBrowser.readyToSendPacket {}
@@ -1216,8 +1300,8 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     }
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
-    let leftSubdir = dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1)
-    let rightSubdir = dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)
+    let leftSubdir = dirStruc.stereoPhotos(pos0)//dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1)
+    let rightSubdir = dirStruc.stereoPhotos(pos1)//dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)
     
     // delete all existing photos
 //    func removeImages(dir: String) -> Void {
@@ -1240,29 +1324,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
     settings.set(key: .Mode, value: Yaml.string("STEREO"))
     settings.save()
-    
-//    func wait() -> Bool {
-//        var input: String
-//        repeat {
-//            guard let inputtmp = readLine() else {
-//                return false
-//            }
-//            input = inputtmp
-//            let tokens = input.split(separator: " ")
-//            if tokens.count == 0 {
-//                return true
-//            } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
-//                return false
-//            } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
-//                let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
-//                let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
-//                cameraServiceBrowser.sendPacket(packet)
-//                photoReceiver.receiveLensPositionSync()
-//            } else {
-//                return true
-//            }
-//        } while true
-//    }
+
     
     var index: Int = 0
     while index < nPhotos {
