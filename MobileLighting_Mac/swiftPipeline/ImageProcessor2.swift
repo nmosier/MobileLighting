@@ -275,11 +275,11 @@ func reproject(left leftpos: Int, right rightpos: Int) {
             need to add code for using nonlinear reprojection -- but need warpdisp code first.
             */
             
-            var dir = dirStruc.reprojected(proj: proj, pos: pos).cString(using: .ascii)!
+            var dir = *dirStruc.reprojected(proj: proj, pos: pos)
             
-            var in_suffix_x = "/disp\(leftpos)\(rightpos)x-0initial.pfm".cString(using: .ascii)!
-            var out_suffix_x = "/disp\(leftpos)\(rightpos)x-1filtered.pfm".cString(using: .ascii)!
-            var out_suffix_y = "/disp\(leftpos)\(rightpos)y-1filtered.pfm".cString(using: .ascii)!
+            var in_suffix_x = *"/disp\(leftpos)\(rightpos)x-0initial.pfm"
+            var out_suffix_x = *"/disp\(leftpos)\(rightpos)x-1filtered.pfm"
+            var out_suffix_y = *"/disp\(leftpos)\(rightpos)y-1filtered.pfm"
             
             dispx = dir + in_suffix_x
             outx = dir + out_suffix_x

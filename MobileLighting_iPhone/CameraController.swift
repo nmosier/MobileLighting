@@ -10,7 +10,8 @@ import Foundation
 import AVFoundation
 import Photos
 
-class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
+    class CameraController: NSObject, AVCapturePhotoCaptureDelegate, AVCaptureFileOutputRecordingDelegate {
+        
     //MARK: constants
     static let preferredExposureTimescale: CMTimeScale = 1000000 // magic number provided by maxExposureDuration property
     
@@ -157,10 +158,10 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         self.captureSession.addOutput(movieOutput)
         
         // turn off video stabilization
+        self.capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo)?.preferredVideoStabilizationMode = .off
         self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.preferredVideoStabilizationMode = .off
-        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.videoOrientation = .portrait
-        
-        capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo).videoOrientation = .portrait
+        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.videoOrientation = cameraOrientation
+        capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo).videoOrientation = cameraOrientation //.portrait
         
         self.captureSession.commitConfiguration()
         
@@ -240,6 +241,52 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
         settings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
     }
+    
+    
+    //MARK: video capture
+    func startVideoRecording() {
+        guard !movieOutput.isRecording else {
+            print("video: cannot start recording video -- already recording.")
+            return
+        }
+        guard movieOutput.connection(withMediaType: AVMediaTypeVideo).activeVideoStabilizationMode == .off else {
+            print("video: could not turn off video stabilization mode.")
+            return
+        }
+        
+        let videoURL = URL(fileURLWithPath: tmpVideoDir())
+        movieOutput.startRecording(toOutputFileURL: videoURL, recordingDelegate: self)
+    }
+        
+    func stopVideoRecording() {
+        guard movieOutput.isRecording else {
+            print("video: error -- no video is being recorded.")
+            return
+        }
+        movieOutput.stopRecording()
+        // delegate method below will be called as soon as video fully processed
+    }
+        
+        
+    func capture(_ output: AVCaptureFileOutput!, didFinishRecordingToOutputFileAt outputFileURL: URL!, fromConnections connections: [Any]!, error: Error!) {
+        guard !movieOutput.isRecording else {
+            // for some reason, this method is called continuously -- need to check to make sure it's actually done recording.
+            return
+        }
+        guard error == nil else {
+            print(error.localizedDescription)
+            return
+        }
+        
+        // send video
+        guard let videoData = FileManager.default.contents(atPath: outputFileURL.path) else {
+            print("video: could not get video data -- perhaps the video file does not exist at path \(outputFileURL.absoluteString)")
+            return
+        }
+        let packet = PhotoDataPacket(photoData: videoData)
+        photoSender.sendPacket(packet)
+    }
+        
     
     
     //MARK: AVCapturePhotoCaptureDelegate
@@ -413,9 +460,9 @@ class CameraController: NSObject, AVCapturePhotoCaptureDelegate {
     
     
     func tmpVideoDir() -> String {
-        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String) + "/video"
-        do { try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
-        catch { fatalError("Couldn't create directory in Documents directory.")}
+        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String) + "/trajectory.mov"
+//        do { try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
+//        catch { fatalError("Couldn't create directory in Documents directory.")}
         return path
     }
 }

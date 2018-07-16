@@ -364,6 +364,16 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 let settings = cameraController.photoBracketSettings
                 cameraController.takePhoto(photoSettings: settings)
                 break
+            
+            case .StartVideoCapture:
+                print("starting to record video...")
+                cameraController.startVideoRecording()
+                break
+                
+            case .EndVideoCapture:
+                print("stopping video recording.")
+                cameraController.stopVideoRecording()
+                break
                
             // main case for capturing normal inverted pair instruction
             case CameraInstruction.CaptureNormalInvertedPair:

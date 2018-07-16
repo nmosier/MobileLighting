@@ -107,6 +107,11 @@ class List<T> {
         }
         return value
     }
+    
+    func removeAll() {
+        self._first = nil
+        self._last = nil
+    }
 }
 
 // properly add C strings together (removes null byte from first)

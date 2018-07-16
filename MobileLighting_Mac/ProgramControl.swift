@@ -56,6 +56,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
     // for debugging
     case dispres
     case dispcode
+    case clearpackets
     
     // for scripting
     case sleep
@@ -430,7 +431,7 @@ func processCommand(_ input: String) -> Bool {
                 var nReceived = 0
                 let completionHandler = { nReceived += 1 }
                 for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                    let path = dirStruc.ambient(pos: pos, exp: exp) + "/IMG\(exp).JPG"
+                    let path = dirStruc.ambientPhotos(pos: pos, exp: exp) + "/IMG\(exp).JPG"
                     let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                     photoReceiver.dataReceivers.insertFirst(ambReceiver)
                 }
@@ -446,11 +447,20 @@ func processCommand(_ input: String) -> Bool {
             print("takeamb video: hit enter when camera in position.")
             _ = readLine()
             
+            print("takeamb video: starting recording...")
+            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture)
+            cameraServiceBrowser.sendPacket(packet)
             
+            // configure video data receiver
+            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos)/video.mp4")
+            photoReceiver.dataReceivers.insertFirst(videoReceiver)
             
             trajectory.executeScript()
             print("takeamb video: hit enter when trajectory completed.")
             _ = readLine()
+            packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
+            cameraServiceBrowser.sendPacket(packet)
+            print("takeamb video: stopping recording.")
             
             break
         default:
@@ -1049,6 +1059,9 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         usleep(UInt32(secs * 1000000))
+        
+    case .clearpackets:
+        photoReceiver.dataReceivers.removeAll()
     }
     
     return true

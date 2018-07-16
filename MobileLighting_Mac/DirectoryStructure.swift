@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2]
+            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2, ambientPhotos, ambientVideos]
         }
     }
     
@@ -39,21 +39,33 @@ class DirectoryStructure {
             }
         }
     
-        var ambient: String {
+        private var ambient: String {
             get {
                 return self.orig + "/" + "ambient"
             }
         }
     
-            func ambient(_ pos: Int) -> String {
+    var ambientPhotos: String {
+        get {
+            return self.ambient + "/" + "photos"
+        }
+    }
+    
+            func ambientPhotos(_ pos: Int) -> String {
                 return subdir(self.ambient, pos: pos)
             }
     
-            func ambient(pos: Int, exp: Int) -> String {
-                let path = ambient(pos) + "/exp\(exp)"
+            func ambientPhotos(pos: Int, exp: Int) -> String {
+                let path = ambientPhotos(pos) + "/exp\(exp)"
                 try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
                 return path
             }
+    
+    var ambientVideos: String {
+        get {
+            return self.ambient + "/" + "videos"
+        }
+    }
     
         var ambientBall: String {
             get {

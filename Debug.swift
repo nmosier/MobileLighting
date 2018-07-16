@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 let shouldSaveOriginals = false
 let shouldSendThreshImgs = false
@@ -35,3 +36,12 @@ let robotDelay: Float = 5.0
 
 // calibration detection
 let minDetectedObjs: Int = 5
+
+// orientation
+/*
+enum CameraOrientation {
+    case Portrait
+    case Landscape
+} */
+//let cameraOrientation: CameraOrientation = .Portrait
+let cameraOrientation: AVCaptureVideoOrientation = .portrait
