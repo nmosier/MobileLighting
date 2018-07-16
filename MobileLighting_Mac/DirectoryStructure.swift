@@ -60,12 +60,17 @@ class DirectoryStructure {
                 try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
                 return path
             }
-    
-    var ambientVideos: String {
-        get {
-            return self.ambient + "/" + "videos"
-        }
-    }
+            
+            var ambientVideos: String {
+                get {
+                    return self.ambient + "/" + "videos"
+                }
+            }
+            func ambientVideos(_ exp: Int) -> String {
+                let subdir = "\(ambientVideos)/exp\(exp)"
+                try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+                return subdir
+            }
     
         var ambientBall: String {
             get {

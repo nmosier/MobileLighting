@@ -443,6 +443,22 @@ func processCommand(_ input: String) -> Bool {
             
             break
         case "video":
+            guard params.count >= 1, params.count <= 2 else {
+                print(usage)
+                break cmdSwitch
+            }
+            
+            let exp: Int
+            if params.count == 1 {
+                exp = 0
+            } else {
+                guard let exp_ = Int(tokens[1]) else {
+                    print("takeamb video: invalid exposure number \(tokens[1])")
+                    break cmdSwitch
+                }
+                exp = exp_
+            }
+            
             trajectory.moveToStart()
             print("takeamb video: hit enter when camera in position.")
             _ = readLine()
@@ -451,9 +467,13 @@ func processCommand(_ input: String) -> Bool {
             var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture)
             cameraServiceBrowser.sendPacket(packet)
             
+            usleep(UInt32(0.5 * 1e6)) // wait 0.5 seconds
+            
             // configure video data receiver
-            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos)/video.mp4")
+            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp))/video.mp4")
             photoReceiver.dataReceivers.insertFirst(videoReceiver)
+            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp))/imu.yml")
+            photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
             trajectory.executeScript()
             print("takeamb video: hit enter when trajectory completed.")

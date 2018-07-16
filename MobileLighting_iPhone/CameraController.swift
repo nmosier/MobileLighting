@@ -97,7 +97,7 @@ import Photos
                 let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
-                let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecJPEG,
+                let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecType.jpeg,
                                        AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.9)]]
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: processedFormat, bracketedSettings: bracketSettings)
             }
@@ -254,6 +254,11 @@ import Photos
             return
         }
         
+        // start imu data recording
+        motionRecorder = MotionRecorder()
+        motionRecorder.startRecording()
+        
+        // start video recording
         let videoURL = URL(fileURLWithPath: tmpVideoDir())
         movieOutput.startRecording(toOutputFileURL: videoURL, recordingDelegate: self)
     }
@@ -265,6 +270,9 @@ import Photos
         }
         movieOutput.stopRecording()
         // delegate method below will be called as soon as video fully processed
+        
+        // stop imu recording
+        motionRecorder.stopRecording()
     }
         
         
@@ -283,8 +291,15 @@ import Photos
             print("video: could not get video data -- perhaps the video file does not exist at path \(outputFileURL.absoluteString)")
             return
         }
-        let packet = PhotoDataPacket(photoData: videoData)
-        photoSender.sendPacket(packet)
+        let videoPacket = PhotoDataPacket(photoData: videoData)
+        photoSender.sendPacket(videoPacket)
+        
+        guard let imuData = motionRecorder.generateYML().data(using: .ascii) else {
+            print("motion manager: could not get data from IMU data YML string.")
+            return
+        }
+        let imuPacket = PhotoDataPacket(photoData: imuData)
+        photoSender.sendPacket(imuPacket)
     }
         
     

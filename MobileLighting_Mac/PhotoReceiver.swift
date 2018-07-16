@@ -289,3 +289,17 @@ class AmbientVideoReceiver: DataWriter, DataReceiver {
         self.path = path
     }
 }
+
+class IMUDataReceiver: DataWriter, DataReceiver {
+    let completionHandler: BlankHandler
+    let path: String
+    func handle(packet: PhotoDataPacket) {
+        print("Received IMU data.")
+        write(data: packet.photoData, path: path)
+        completionHandler()
+    }
+    init(_ completionHandler: @escaping BlankHandler, path: String) {
+        self.completionHandler = completionHandler
+        self.path = path
+    }
+}
