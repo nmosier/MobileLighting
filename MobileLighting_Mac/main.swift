@@ -22,7 +22,7 @@ import Yaml
 // creates shared application instance
 //  required in order for windows (for displaying binary codes) to display properly,
 //  since the Mac program compiles to a command-line binary
-var app = NSApplication.shared()
+var app = NSApplication.shared
 
 // Communication devices
 var cameraServiceBrowser: CameraServiceBrowser!

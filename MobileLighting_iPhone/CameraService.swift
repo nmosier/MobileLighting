@@ -14,15 +14,15 @@ import Yaml
 class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     //MARK: constants
     let resolutionToSessionPreset: [String : String] = [
-        "max"   : AVCaptureSessionPresetPhoto,
-        "high"  : AVCaptureSessionPresetHigh,
-        "medium": AVCaptureSessionPresetMedium,
-        "low"   : AVCaptureSessionPresetLow,
-        "352x288":AVCaptureSessionPreset352x288,
-        "640x480":AVCaptureSessionPreset640x480,
-        "1280x720":AVCaptureSessionPreset1280x720,
-        "1920x1080":AVCaptureSessionPreset1920x1080,
-        "3840x2160":AVCaptureSessionPreset3840x2160
+        "max"   : AVCaptureSession.Preset.photo.rawValue,
+        "high"  : AVCaptureSession.Preset.high.rawValue,
+        "medium": AVCaptureSession.Preset.medium.rawValue,
+        "low"   : AVCaptureSession.Preset.low.rawValue,
+        "352x288":AVCaptureSession.Preset.cif352x288.rawValue,
+        "640x480":AVCaptureSession.Preset.vga640x480.rawValue,
+        "1280x720":AVCaptureSession.Preset.hd1280x720.rawValue,
+        "1920x1080":AVCaptureSession.Preset.hd1920x1080.rawValue,
+        "3840x2160":AVCaptureSession.Preset.hd4K3840x2160.rawValue
     ];
     
     let resolutionDim: [String : (Int, Int)] = [
@@ -149,7 +149,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         if let pointOfFocus = packet.pointOfFocus, cameraController.captureDevice.isFocusPointOfInterestSupported {
             do {
-                try cameraController.configureCaptureDevice(focusMode: AVCaptureFocusMode.autoFocus, focusPointOfInterest: pointOfFocus)
+                try cameraController.configureCaptureDevice(focusMode: AVCaptureDevice.FocusMode.autoFocus, focusPointOfInterest: pointOfFocus)
                 print("Adjusting point of focus.")
             } catch {
                 print("Could not change point of focus.")
@@ -212,7 +212,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     cameraController.captureDevice.focusMode = .autoFocus
                     photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 } else {
-                    cameraController.captureDevice.setFocusModeLockedWithLensPosition(lensPosition, completionHandler: finishedFocusing)
+                    cameraController.captureDevice.setFocusModeLocked(lensPosition: lensPosition, completionHandler: finishedFocusing)
                 }
                 
                 cameraController.captureDevice.unlockForConfiguration()
@@ -327,7 +327,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 duration = min(cameraController.captureDevice.activeFormat.maxExposureDuration.seconds, duration)
                 iso = max(Double(cameraController.captureDevice.activeFormat.minISO), iso)
                 iso = min(Double(cameraController.captureDevice.activeFormat.maxISO), iso)
-                cameraController.captureDevice.setExposureModeCustomWithDuration(CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale), iso: Float(iso), completionHandler: { print("set exposure with duration \($0)") })
+                cameraController.captureDevice.setExposureModeCustom(duration: CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale), iso: Float(iso), completionHandler: { print("set exposure with duration \($0)") })
                 cameraController.captureDevice.unlockForConfiguration()
                 
             case CameraInstruction.CaptureStillImage:

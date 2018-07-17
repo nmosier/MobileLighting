@@ -52,7 +52,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var binaryCodeInverted: Bool?   // if binary code is inverted
     
     //---NOT IN USE---
-    var torchMode: AVCaptureTorchMode?
+    var torchMode: AVCaptureDevice.TorchMode?
     var torchLevel: Float?
     
     //MARK: INITIALIZERS
@@ -60,7 +60,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
     // public initializer for CameraInstructionPacket
     // NOTE: most values are optional, so they are safe to omit when calling this function unless
     //   you need to use them
-    convenience init(cameraInstruction: CameraInstruction, resolution: String = "max", photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, photoBracketExposureISOs: [Double]? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String = "max", photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureDevice.TorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, photoBracketExposureISOs: [Double]? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -85,7 +85,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.photoBracketExposureISOs = decoder.decodeObject(forKey: "photoBracketExposureISOs") as! [Double]?
         self.pointOfFocus = decoder.decodeObject(forKey: "pointOfFocus") as! CGPoint?
         if let torchModeRaw = decoder.decodeObject(forKey: "torchMode") as! Int? {
-            self.torchMode = AVCaptureTorchMode(rawValue: torchModeRaw)
+            self.torchMode = AVCaptureDevice.TorchMode(rawValue: torchModeRaw)
         } else {
             self.torchMode = nil
         }

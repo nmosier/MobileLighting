@@ -403,10 +403,12 @@ func processCommand(_ input: String) -> Bool {
         }
         switch params[0] {
         case "still":
+            
             guard params.count >= 2, let nPhotos = Int(params[1]) else {
                 print("usage: takeamb still [nPhotos] [resolution]?")
                 break cmdSwitch
             }
+            
             let resolution: String
             if params.count == 3 {
                 resolution = params[2]
@@ -414,9 +416,9 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
-            print(resolution)
-            print(sceneSettings.ambientExposureISOs)
-            print(sceneSettings.ambientExposureDurations)
+//            print(resolution)
+//            print(sceneSettings.ambientExposureISOs)
+//            print(sceneSettings.ambientExposureDurations)
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
             for pos in 0..<positions.count {
@@ -520,7 +522,7 @@ func processCommand(_ input: String) -> Bool {
 //            processingCommand = false
 //        })
 //        var done = false
-        photoReceiver.receiveLensPositionSync()
+        _ = photoReceiver.receiveLensPositionSync()
 //        while !done {}
         
     // tells the iPhone to set the focus to the given lens position & lock the focus
@@ -554,7 +556,7 @@ func processCommand(_ input: String) -> Bool {
 //        photoReceiver.receiveLensPosition(completionHandler: { (_: Float) in
 //                processingCommand = false
 //        })
-        photoReceiver.receiveLensPositionSync()
+        _ = photoReceiver.receiveLensPositionSync()
         break
         
     // currently useless, but leaving in here just in case it ever comes in handy
@@ -1546,12 +1548,12 @@ func configureDisplays() -> Bool {
     if displayController == nil {
         displayController = DisplayController()
     }
-    guard NSScreen.screens()!.count > 1  else {
+    guard NSScreen.screens.count > 1  else {
         print("Only one screen connected.")
         return false
     }
-    for screen in NSScreen.screens()! {
-        if screen != NSScreen.main()! {
+    for screen in NSScreen.screens {
+        if screen != NSScreen.main! {
             displayController.createNewWindow(on: screen)
         }
     }
@@ -1577,7 +1579,7 @@ func calibration_wait() -> Bool {
             let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
             let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
             cameraServiceBrowser.sendPacket(packet)
-            photoReceiver.receiveLensPositionSync()
+            _ = photoReceiver.receiveLensPositionSync()
         } else {
             return true
         }

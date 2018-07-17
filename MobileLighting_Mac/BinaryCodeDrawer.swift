@@ -40,7 +40,7 @@ class BinaryCodeDrawer {
     }
     
     func drawCode(forBit bit: Int, system: BinaryCodeSystem, horizontally: Bool? = nil, inverted: Bool? = nil, positionLimit: Int? = nil) {
-        NSGraphicsContext.setCurrent(self.context)
+        NSGraphicsContext.current = self.context
         let context = self.context.cgContext
         let horizontally = horizontally ?? self.drawHorizontally
         let inverted = inverted ?? self.drawInverted       // temporarily use this configuration; does not change instance's settings

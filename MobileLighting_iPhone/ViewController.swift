@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     
     
     @IBAction func updateExposureMode(_ sender: UISwitch) {
-        let mode: AVCaptureExposureMode = sender.isOn ? .locked : .autoExpose
+        let mode: AVCaptureDevice.ExposureMode = sender.isOn ? .locked : .autoExpose
         do {
             try cameraController.configureCaptureDevice(exposureMode: mode)
         } catch {
@@ -29,7 +29,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func updateFocusMode(_ sender: UISwitch) {
-        let mode: AVCaptureFocusMode = sender.isOn ? .locked : .autoFocus
+        let mode: AVCaptureDevice.FocusMode = sender.isOn ? .locked : .autoFocus
         do {
             try cameraController.configureCaptureDevice(focusMode: mode)
         } catch {
@@ -44,7 +44,7 @@ class ViewController: UIViewController {
         }
         
         let rawPos = sender.location(in: videoPreviewView)   // location in base coordinate system
-        let focusPoint = videoPreviewView.videoPreviewLayer.captureDevicePointOfInterest(for: rawPos)
+        let focusPoint = videoPreviewView.videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: rawPos)
         print("ViewController: focusing to point: (\(focusPoint.x), \(focusPoint.y))")
         do {
             try cameraController.configureCaptureDevice(focusMode: .autoFocus, focusPointOfInterest: focusPoint)

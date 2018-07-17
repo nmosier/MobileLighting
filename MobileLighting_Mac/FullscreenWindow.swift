@@ -46,7 +46,7 @@ class FullscreenWindow: NSView {
         super.init(frame: screen.frame)
         
         let contentRect = NSMakeRect(screen.frame.minX, screen.frame.minY, screen.frame.maxX-screen.frame.minX, screen.frame.maxY-screen.frame.minY)
-        let window = NSWindow(contentRect: contentRect, styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = NSWindow(contentRect: contentRect, styleMask: [NSWindow.StyleMask.borderless], backing: .buffered, defer: false)
         window.contentView = self
         window.isOpaque = true
         window.isMovableByWindowBackground = true
@@ -66,8 +66,8 @@ class FullscreenWindow: NSView {
         super.draw(dirtyRect)
         
         // make sure correct graphics context has been set
-        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
-        guard let graphicsContext = NSGraphicsContext.current() else {
+        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
+        guard let graphicsContext = NSGraphicsContext.current else {
             Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
             return
         }
@@ -169,7 +169,7 @@ class FullscreenWindow: NSView {
     func drawImage(_ image: CGImage) {
         self.displayContent = .Image
         self.image = image
-        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
+        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
         let context = self.fullscreenWindow.graphicsContext!.cgContext
         context.draw(image, in: self.frame)
         self.setNeedsDisplay(self.frame)
@@ -185,7 +185,7 @@ class FullscreenWindow: NSView {
     }
     
     func displayBinaryCode(forBit bit: Int, system: BinaryCodeSystem) {
-        NSGraphicsContext.setCurrent(self.fullscreenWindow.graphicsContext)
+        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
         
         currentCodeBit = bit
         currentSystem = system

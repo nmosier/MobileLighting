@@ -21,14 +21,14 @@ import Photos
 // based on code from Apple's Photo Capture Programming Guide
 // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
 func checkCameraAuthorization(_ completionHandler: @escaping ((_ authorized: Bool) -> Void)) {
-    switch AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo) {
+    switch AVCaptureDevice.authorizationStatus(for: AVMediaType.video) {
     case .authorized:
         // is authorized
         completionHandler(true)
         
     case .notDetermined:
         // need to ask for access
-        AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { success in
+        AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { success in
             completionHandler(success)
         })
         

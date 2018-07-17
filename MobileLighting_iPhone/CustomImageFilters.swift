@@ -48,14 +48,14 @@ class CustomKernelStrings {
 func getKernelString(from filepath: String) -> String {
     var kernel: String
     var result = String()
-    var chars: String.CharacterView
+    var chars: String//.CharacterView
     do {
         kernel = try String(contentsOfFile: filepath)
     } catch {
         print("getKernelString: error reading file.")
         return ""
     }
-    chars = kernel.characters
+    chars = kernel//.characters
     for c in chars {
         if c == "\t" {break}
         else if c == "\n" {result.append("\\n")}
@@ -65,11 +65,11 @@ func getKernelString(from filepath: String) -> String {
 }
 
 //MARK: Custom kernels
-let ExtremeIntensityKernel = CIColorKernel(string: CustomKernelStrings.ExtremeIntensities)!
-let IntensityDifferenceKernel = CIColorKernel(string: CustomKernelStrings.IntensityDifference)!
-let GrayscaleKernel = CIColorKernel(string: CustomKernelStrings.Grayscale)!
-let ThresholdKernel = CIColorKernel(string: CustomKernelStrings.Threshold)!
-let ThresholdKernel2 = CIKernel(string: CustomKernelStrings.Threshold2)!
+let ExtremeIntensityKernel = CIColorKernel(source: CustomKernelStrings.ExtremeIntensities)!
+let IntensityDifferenceKernel = CIColorKernel(source: CustomKernelStrings.IntensityDifference)!
+let GrayscaleKernel = CIColorKernel(source: CustomKernelStrings.Grayscale)!
+let ThresholdKernel = CIColorKernel(source: CustomKernelStrings.Threshold)!
+let ThresholdKernel2 = CIKernel(source: CustomKernelStrings.Threshold2)!
 
 //MARK: Custom filters
 
@@ -98,7 +98,7 @@ class ExtremeIntensitiesFilter: CIFilter {
             if let inputImage = self.inputImage,
                 let inputBackgroundImage = self.inputBackgroundImage {
                 let args = [inputImage as Any, inputBackgroundImage as Any]
-                return ExtremeIntensityKernel.apply(withExtent: inputImage.extent, arguments: args)
+                return ExtremeIntensityKernel.apply(extent: inputImage.extent, arguments: args)
             } else {
                 return nil
             }
@@ -131,7 +131,7 @@ class IntensityDifferenceFilter: CIFilter {
             if let inputImage = self.inputImage,
                 let inputBackgroundImage = self.inputBackgroundImage {
                 let args = [inputImage as Any, inputBackgroundImage as Any]
-                return IntensityDifferenceKernel.apply(withExtent: inputImage.extent, arguments: args)
+                return IntensityDifferenceKernel.apply(extent: inputImage.extent, arguments: args)
             } else {
                 return nil
             }
@@ -173,7 +173,7 @@ class GrayscaleFilter: CIFilter {
                 } else {
                     args = [inputImage as Any, CIVector(x: 1.0/3, y: 1.0/3, z: 1.0/3) as Any]
                 }
-                return GrayscaleKernel.apply(withExtent: inputImage.extent, arguments: args)
+                return GrayscaleKernel.apply(extent: inputImage.extent, arguments: args)
             } else {
                 return nil
             }
@@ -209,7 +209,7 @@ class ThresholdFilter: CIFilter {
                 // compute threshold_float, which is max val for black pixel (0)
                 //let threshold_float = 0.5 - (inputThresholdGrayscale ?? thresholdDefault)*0.5
                 let args = [inputImage as Any, thresholdDefault as Any]
-                return ThresholdKernel.apply(withExtent: inputImage.extent, arguments: args)
+                return ThresholdKernel.apply(extent: inputImage.extent, arguments: args)
             } else {
                 return nil
             }
@@ -271,7 +271,7 @@ class ThresholdFilter2: CIFilter {
                     return inputImage.extent
                 }
                 print("SmartThreshold: THRESHOLD=\(inputThreshold), ANGLE=\(inputAngle)")
-                return ThresholdKernel2.apply(withExtent: inputImage.extent, roiCallback: callback, arguments: args)
+                return ThresholdKernel2.apply(extent: inputImage.extent, roiCallback: callback, arguments: args)
             } else {
                 return nil
             }

@@ -80,13 +80,13 @@ import Photos
                     }
                     
                     let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
-                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(withExposureDuration: exposureTime, iso: iso))
+                    bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(exposureDuration: exposureTime, iso: iso))
                 }
                 let pixelFormat = kCVPixelFormatType_32BGRA
                 let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
                 print("Available types: \(capturePhotoOutput.availablePhotoPixelFormatTypes)")
                 
-                guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(NSNumber(value: pixelFormat)) else {
+                guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(OSType(NSNumber(value: pixelFormat))) else {
                     fatalError("Does not contain \(pixelFormat)")
                 }
                 let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
@@ -94,9 +94,9 @@ import Photos
                 return settings
             } else {
                 // use default exposure settings
-                let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: -3.0)!,
-                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 0.0)!,
-                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(withExposureTargetBias: 3.0)!]
+                let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: -3.0),
+                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: 0.0),
+                                       AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: 3.0)]
                 let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecType.jpeg,
                                        AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.9)]]
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: processedFormat, bracketedSettings: bracketSettings)
@@ -152,16 +152,16 @@ import Photos
         
         self.captureSession = AVCaptureSession()
         self.captureSession.beginConfiguration()
-        self.captureSession.sessionPreset = sessionPreset
+        self.captureSession.sessionPreset = AVCaptureSession.Preset(rawValue: sessionPreset)
         self.captureSession.addInput(videoInput)
         self.captureSession.addOutput(capturePhotoOutput)
         self.captureSession.addOutput(movieOutput)
         
         // turn off video stabilization
-        self.capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo)?.preferredVideoStabilizationMode = .off
-        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.preferredVideoStabilizationMode = .off
-        self.movieOutput.connection(withMediaType: AVMediaTypeVideo)?.videoOrientation = cameraOrientation
-        capturePhotoOutput.connection(withMediaType: AVMediaTypeVideo).videoOrientation = cameraOrientation //.portrait
+        self.capturePhotoOutput.connection(with: AVMediaType.video)?.preferredVideoStabilizationMode = .off
+        self.movieOutput.connection(with: AVMediaType.video)?.preferredVideoStabilizationMode = .off
+        self.movieOutput.connection(with: AVMediaType.video)?.videoOrientation = cameraOrientation
+        capturePhotoOutput.connection(with: AVMediaType.video)?.videoOrientation = cameraOrientation //.portrait
         
         self.captureSession.commitConfiguration()
         
@@ -169,18 +169,18 @@ import Photos
     }
     
     func useCaptureSessionPreset(_ sessionPreset: String) throws {
-        guard self.captureDevice.supportsAVCaptureSessionPreset(sessionPreset) else {
+        guard self.captureDevice.supportsSessionPreset(AVCaptureSession.Preset(rawValue: sessionPreset)) else {
             throw NSError()
         }
         
         if self.sessionPreset == nil {
             configureNewSession(sessionPreset: sessionPreset)
         } else if sessionPreset != self.sessionPreset {
-            guard self.captureSession.canSetSessionPreset(sessionPreset) else {
+            guard self.captureSession.canSetSessionPreset(AVCaptureSession.Preset(rawValue: sessionPreset)) else {
                 throw NSError()
             }
             self.captureSession.beginConfiguration()
-            self.captureSession.sessionPreset = sessionPreset
+            self.captureSession.sessionPreset = AVCaptureSession.Preset(rawValue: sessionPreset)
             self.captureSession.commitConfiguration()
         }
     }
@@ -249,7 +249,7 @@ import Photos
             print("video: cannot start recording video -- already recording.")
             return
         }
-        guard movieOutput.connection(withMediaType: AVMediaTypeVideo).activeVideoStabilizationMode == .off else {
+        guard movieOutput.connection(with: AVMediaType.video)?.activeVideoStabilizationMode == .off else {
             print("video: could not turn off video stabilization mode.")
             return
         }
@@ -260,7 +260,7 @@ import Photos
         
         // start video recording
         let videoURL = URL(fileURLWithPath: tmpVideoDir())
-        movieOutput.startRecording(toOutputFileURL: videoURL, recordingDelegate: self)
+        movieOutput.startRecording(to: videoURL, recordingDelegate: self)
     }
         
     func stopVideoRecording() {
@@ -276,13 +276,13 @@ import Photos
     }
         
         
-    func capture(_ output: AVCaptureFileOutput!, didFinishRecordingToOutputFileAt outputFileURL: URL!, fromConnections connections: [Any]!, error: Error!) {
+    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
         guard !movieOutput.isRecording else {
             // for some reason, this method is called continuously -- need to check to make sure it's actually done recording.
             return
         }
         guard error == nil else {
-            print(error.localizedDescription)
+            print(error?.localizedDescription)
             return
         }
         
@@ -306,7 +306,7 @@ import Photos
     
     //MARK: AVCapturePhotoCaptureDelegate
     
-    func capture(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?, previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
+    func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         guard let photoSampleBuffer = photoSampleBuffer else {
             print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
             //print("PRESET SETTINGS: \(captureSession.sessionPreset)")
@@ -352,7 +352,7 @@ import Photos
     
     
     
-    func capture(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureForResolvedSettings resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+    func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
         guard error == nil else {
             print("ERROR: \(error!.localizedDescription)")
             //self.capturePhotoOutput.capturePhoto(with: photoBracketSettings, delegate: self)
@@ -414,12 +414,12 @@ import Photos
     // based on code from Apple's Photo Capture Programming Guide
     // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
     func defaultDevice() -> AVCaptureDevice {
-        if let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInDuoCamera,
-                                                      mediaType: AVMediaTypeVideo,
+        if let device = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInDuoCamera,
+                                                      for: AVMediaType.video,
                                                       position: .back) {
             return device // use dual camera on supported devices
-        } else if let device = AVCaptureDevice.defaultDevice(withDeviceType: .builtInWideAngleCamera,
-                                                             mediaType: AVMediaTypeVideo,
+        } else if let device = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera,
+                                                             for: AVMediaType.video,
                                                              position: .back) {
             return device // use default back facing camera otherwise
         } else {
@@ -433,20 +433,20 @@ import Photos
         print("CAPABILITIES OF CAPTURE DEVICE \(device.description):")
         print("Focus point of interest supported: \(device.isFocusPointOfInterestSupported)")
         print("-Focus modes:")
-        print("\tlocked: \(device.isFocusModeSupported(AVCaptureFocusMode.locked))")
-        print("\tauto focus: \(device.isFocusModeSupported(AVCaptureFocusMode.autoFocus))")
-        print("\tcontinuous auto focus: \(device.isFocusModeSupported(AVCaptureFocusMode.continuousAutoFocus))")
+        print("\tlocked: \(device.isFocusModeSupported(AVCaptureDevice.FocusMode.locked))")
+        print("\tauto focus: \(device.isFocusModeSupported(AVCaptureDevice.FocusMode.autoFocus))")
+        print("\tcontinuous auto focus: \(device.isFocusModeSupported(AVCaptureDevice.FocusMode.continuousAutoFocus))")
         print("\tpoint of interest: \(device.isFocusPointOfInterestSupported)")
         print("-Exposure modes")
-        print("\tlocked: \(device.isExposureModeSupported(AVCaptureExposureMode.locked))")
-        print("\tauto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.autoExpose))")
-        print("\tcontinuous auto exposure: \(device.isExposureModeSupported(AVCaptureExposureMode.continuousAutoExposure))")
+        print("\tlocked: \(device.isExposureModeSupported(AVCaptureDevice.ExposureMode.locked))")
+        print("\tauto exposure: \(device.isExposureModeSupported(AVCaptureDevice.ExposureMode.autoExpose))")
+        print("\tcontinuous auto exposure: \(device.isExposureModeSupported(AVCaptureDevice.ExposureMode.continuousAutoExposure))")
         print("-Has torch mode: \(device.hasTorch)")
     }
     
     //MARK: Device configuration
-    func configureCaptureDevice(focusMode: AVCaptureFocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureExposureMode? = nil, flashMode: AVCaptureFlashMode? = nil,
-                                torchMode: AVCaptureTorchMode? = nil, torchLevel: Float? = nil, whiteBalanceMode: AVCaptureWhiteBalanceMode? = nil) throws {
+    func configureCaptureDevice(focusMode: AVCaptureDevice.FocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureDevice.ExposureMode? = nil, flashMode: AVCaptureDevice.FlashMode? = nil,
+                                torchMode: AVCaptureDevice.TorchMode? = nil, torchLevel: Float? = nil, whiteBalanceMode: AVCaptureDevice.WhiteBalanceMode? = nil) throws {
         try self.captureDevice.lockForConfiguration()
         
         if let focusPointOfInterest = focusPointOfInterest {
@@ -465,7 +465,7 @@ import Photos
             self.captureDevice.flashMode = flashMode    // deprecated, but including anyway (should be changed using AVCapturePhotoSettings.flashMode)
         }
         if torchMode == .on, let torchLevel = torchLevel {
-            try self.captureDevice.setTorchModeOnWithLevel(torchLevel)
+            try self.captureDevice.setTorchModeOn(level: torchLevel)
         } else if let torchMode = torchMode {
             self.captureDevice.torchMode = torchMode
         }

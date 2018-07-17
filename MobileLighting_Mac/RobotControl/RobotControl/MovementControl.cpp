@@ -46,6 +46,7 @@ int client()
     return sock;
 }
 
+/*
 extern "C" int server()
 {
     // SOCKET CONNECTION ON PORT 30000
@@ -81,7 +82,7 @@ extern "C" int server()
     printf("got result.\n");
     return new_socket;
 }
-
+*/
 /*
 extern "C" int waitrobot() {
     int client_sock = client();
