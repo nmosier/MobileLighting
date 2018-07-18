@@ -21,7 +21,7 @@ import Photos
     var capturePhotoOutput: AVCapturePhotoOutput! // for taking stills
     var movieOutput = AVCaptureMovieFileOutput() // for taking videos
     
-    var photoSampleBuffers = [CMSampleBuffer]()
+    var capturePhotos = [AVCapturePhoto]()
     var lensPositions =  [Float]()
     var sessionPreset: String!
     
@@ -142,7 +142,7 @@ import Photos
         try! self.captureDevice.lockForConfiguration()
         self.captureDevice.focusMode = .continuousAutoFocus
         self.captureDevice.exposureMode = .continuousAutoExposure
-        self.captureDevice.flashMode = .off
+//        self.captureDevice.flashMode = .off
         self.captureDevice.torchMode = .off
 
         self.captureDevice.whiteBalanceMode = .continuousAutoWhiteBalance
@@ -294,8 +294,8 @@ import Photos
             // for some reason, this method is called continuously -- need to check to make sure it's actually done recording.
             return
         }
-        guard error == nil else {
-            print(error?.localizedDescription)
+        if let error = error {
+            print(error.localizedDescription)
             return
         }
         
@@ -318,15 +318,11 @@ import Photos
     
     
     //MARK: AVCapturePhotoCaptureDelegate
-    
+    /*
     func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         guard let photoSampleBuffer = photoSampleBuffer else {
             print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
-            //print("PRESET SETTINGS: \(captureSession.sessionPreset)")
-            //print("BRACKET SETTINGS: \(bracketSettings!)")
             print("ERROR: \(error!.localizedDescription)")
-            // self.photoSender.sendPacket(PhotoDataPacket.error())  // send error
-            
             return
         }
         print("CameraController: lens position is \(self.captureDevice.lensPosition)")
@@ -364,7 +360,59 @@ import Photos
             self.lensPositions.append(self.captureDevice.lensPosition)
         }
     }
-    
+    */
+        
+        func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+//            guard let photoSampleBuffer = photoSampleBuffer else {
+//                print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
+//                print("ERROR: \(error!.localizedDescription)")
+//                return
+//            }
+//            print("CameraController: lens position is \(self.captureDevice.lensPosition)")
+            if let error = error {
+                print(error.localizedDescription)
+                return
+            }
+            
+            if (shouldSaveOriginals) {
+                savePhotoToLibrary(photo)
+            }
+            
+            if capturingNormalInvertedPair {
+                // select correct buffer array (normal/inverted)
+//                guard var pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) else {
+//                    print("CameraController: could not get pixel buffer from photo sample buffer.")
+//                    let packet = PhotoDataPacket.error()
+//                    photoSender.sendPacket(packet)
+//                    return
+//                }
+                guard var pixelBuffer = photo.pixelBuffer else {
+                    print("CameraController: could not get pixel buffer from photo.")
+                    let packet = PhotoDataPacket.error()
+                    photoSender.sendPacket(packet)
+                    return
+                }
+                
+                pixelBuffer = pixelBuffer.deepcopy()!
+                
+                
+                if capturingInverted {
+                    pixelBuffers_inverted.append(pixelBuffer)
+                } else {
+                    pixelBuffers_normal.append(pixelBuffer)
+                }
+                
+                
+                
+            } else {
+//                print("flash mode enabled = \(resolvedSettings.isFlashEnabled)")
+                
+//                self.photoSampleBuffers.append(photoSampleBuffer)
+                self.capturePhotos.append(photo)
+                self.lensPositions.append(self.captureDevice.lensPosition)
+            }
+            
+        }
     
     
     func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
@@ -391,30 +439,31 @@ import Photos
             capturingInverted = !capturingInverted
         } else {
         
-            for index in 0..<photoSampleBuffers.count {
-                let photoSampleBuffer = photoSampleBuffers[index]
+            for index in 0..<capturePhotos.count {
+                let photo = self.capturePhotos[index]
                 let jpegData: Data
                 
-                if let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) {
+                if let imageBuffer: CVPixelBuffer = photo.pixelBuffer { //CMSampleBufferGetImageBuffer(photoSampleBuffer) {
                     let im: CIImage = CIImage(cvPixelBuffer: imageBuffer).oriented(.right)
                     let colorspace = CGColorSpaceCreateDeviceRGB()
                     jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : jpegQuality])!
                 } else {
-                    jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
+//                    jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
+                    jpegData = photo.fileDataRepresentation()!
+                    
                 }
                 let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
                 photoSender.sendPacket(photoPacket)
             }
-            self.photoSampleBuffers.removeAll()
+            self.capturePhotos.removeAll()
             self.lensPositions.removeAll()
         }
         self.isCapturingPhoto = false
     }
     
-    func saveSampleBufferToPhotoLibrary(_ sampleBuffer: CMSampleBuffer) {
-        let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: sampleBuffer, previewPhotoSampleBuffer: nil)
-        
-        
+    func savePhotoToLibrary(_ photo: AVCapturePhoto) {
+//        let jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: sampleBuffer, previewPhotoSampleBuffer: nil)
+        let jpegData = photo.fileDataRepresentation()
         func completionHandler(_ success: Bool, _ error: Error?) {
             if success {
                 print("Successfully added photo to library.")
