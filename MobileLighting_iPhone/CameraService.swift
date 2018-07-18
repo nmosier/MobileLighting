@@ -495,7 +495,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             case .StartStructuredLightingCaptureFull:
                 // for now, specify hard-code in resolution
-                print("CURRENT ISO=\(cameraController.captureDevice.iso)")
+//                print("CURRENT ISO=\(cameraController.captureDevice.iso)")
 
                 // save current focus
                 sceneMetadata.focus = cameraController.captureDevice.lensPosition
@@ -510,7 +510,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 decoder = Decoder(width: width, height: height, binaryCodeSystem: binaryCodeSystem)
                 binaryCodeDirection = dir
-                print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
+//                print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
 
                 // make sure torch mode is off
                 if cameraController.captureDevice.torchMode != .off {
