@@ -74,8 +74,8 @@ let ThresholdKernel2 = CIKernel(source: CustomKernelStrings.Threshold2)!
 //MARK: Custom filters
 
 class ExtremeIntensitiesFilter: CIFilter {
-    var inputImage: CIImage?
-    var inputBackgroundImage: CIImage?
+    @objc dynamic var inputImage: CIImage?
+    @objc dynamic var inputBackgroundImage: CIImage?
     
     override var attributes: [String : Any] {
         return [
@@ -107,8 +107,8 @@ class ExtremeIntensitiesFilter: CIFilter {
 }
 
 class IntensityDifferenceFilter: CIFilter {
-    var inputImage: CIImage?
-    var inputBackgroundImage: CIImage?
+    @objc dynamic var inputImage: CIImage?
+    @objc dynamic var inputBackgroundImage: CIImage?
     
     override var attributes: [String : Any] {
         return [
@@ -140,9 +140,9 @@ class IntensityDifferenceFilter: CIFilter {
 }
 
 class GrayscaleFilter: CIFilter {
-    static let kCIRGBWeightsKey = "RGBWeights"
-    var inputImage: CIImage?
-    var RGBWeights: [Float]?
+    @objc static let kCIRGBWeightsKey = "RGBWeights"
+    @objc dynamic var inputImage: CIImage?
+    @objc dynamic var RGBWeights: [Float]?
     
     override var attributes: [String : Any] {
         return [
@@ -183,8 +183,8 @@ class GrayscaleFilter: CIFilter {
 
 class ThresholdFilter: CIFilter {
     static let kCIInputThresholdKey = "inputThresholdGrayscale"
-    var inputImage: CIImage?
-    var inputThresholdGrayscale: Float? // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
+    @objc dynamic var inputImage: CIImage?
+//    @objc dynamic var inputThresholdGrayscale: Float? // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
                                         // 1.0 means [0, 127] -> 0, [128, 255] -> 1
     
     override var attributes: [String : Any] {
@@ -218,10 +218,10 @@ class ThresholdFilter: CIFilter {
 }
 
 class ThresholdFilter2: CIFilter {
-    var inputImage: CIImage?
-    var inputThreshold: CGFloat = 0.03 // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
+    @objc dynamic var inputImage: CIImage?
+    @objc dynamic var inputThreshold: CGFloat = 0.03 // on range 0.0 ≤ 1.0, where 0.0 means [0, 0] -> 0 & [255, 255] -> 1
     // 1.0 means [0, 127] -> 0, [128, 255] -> 1
-    var inputAngle: CGFloat = 0.0
+    @objc dynamic var inputAngle: CGFloat = 0.0
     
     override var attributes: [String : Any] {
         return [
