@@ -93,7 +93,8 @@ class FullscreenWindow: NSView {
         case .Checkerboard(let squareSize):
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
-                bitmapPtr.deallocate(capacity: width*height)
+                bitmapPtr.deallocate()
+//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             for row in 0..<height {
@@ -114,7 +115,8 @@ class FullscreenWindow: NSView {
         case .White, .Black:
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
-                bitmapPtr.deallocate(capacity: width*height)
+                bitmapPtr.deallocate()
+//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             let pix: UInt32
@@ -126,7 +128,7 @@ class FullscreenWindow: NSView {
             default:
                 pix = 0x00000000
             }
-            bitmapPtr.initialize(to: pix, count: width*height)
+            bitmapPtr.initialize(repeating: pix, count: width*height)
             let provider = CGDataProvider(data: NSData(bytes: bitmapPtr, length: width*height*4))
             let colorspace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
             let info: CGBitmapInfo = [CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)]
@@ -139,7 +141,8 @@ class FullscreenWindow: NSView {
         case .DiagonalStripes(let stripWidth), .VerticalStripes(let stripWidth):
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
-                bitmapPtr.deallocate(capacity: width*height)
+                bitmapPtr.deallocate()
+//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             let calculation: (Int) -> UInt32
