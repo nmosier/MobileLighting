@@ -32,6 +32,8 @@ class MotionRecorder {
     
     func startRecording() {
         samples.removeAll()
+//        manager.showsDeviceMovementDisplay = true
+        print("is magnometer available = \(manager.isMagnetometerAvailable)")
         manager.startDeviceMotionUpdates(using: manager.attitudeReferenceFrame, to: OperationQueue.main, withHandler: sampleDeviceMotion(_:_:))
     }
     
@@ -51,18 +53,34 @@ class MotionRecorder {
     }
     
     func generateYML() -> String {
+        func xyzDict(x: Double, y: Double, z: Double) -> Yaml {
+            let dict = [
+                "x" : x,
+                "y" : y,
+                "z" : z,
+            ]
+            var ymlDict = [Yaml : Yaml]()
+            for (key, value) in dict {
+                ymlDict[Yaml.string(key)] = Yaml.double(value)
+            }
+            return Yaml.dictionary(ymlDict)
+        }
+        
         let mainArr = samples.map { (sample: CMDeviceMotion) -> Yaml in
-            let mag = sample.magneticField
-            let magYML = Yaml.array([mag.field.x, mag.field.y, mag.field.z].map{return Yaml.double($0)})
+            let mag = sample.magneticField.field
+//            let magYML = Yaml.array([mag.field.x, mag.field.y, mag.field.z].map{return Yaml.double($0)})
+            let magYML = xyzDict(x: mag.x, y: mag.y, z: mag.z)
             let acc = sample.userAcceleration
-            let accYML = Yaml.array([acc.x, acc.y, acc.z].map{return Yaml.double($0)})
+//            let accYML = Yaml.array([acc.x, acc.y, acc.z].map{return Yaml.double($0)})
+            let accYML = xyzDict(x: acc.x, y: acc.y, z: acc.z)
             let gyro = sample.rotationRate
-            let gryoYML = Yaml.array([gyro.x, gyro.y, gyro.z].map{return Yaml.double($0)})
+//            let gryoYML = Yaml.array([gyro.x, gyro.y, gyro.z].map{return Yaml.double($0)})
+            let gyroYML = xyzDict(x: gyro.x, y: gyro.y, z: gyro.z)
             let timeYML = Yaml.double(sample.timestamp - samples.first!.timestamp)
             let sampleDict = [
                 Yaml.string("magneticField")    : magYML,
                 Yaml.string("acceleration")     : accYML,
-                Yaml.string("gryoscope")        : gryoYML,
+                Yaml.string("gryoscope")        : gyroYML,
                 Yaml.string("time")             : timeYML,
             ]
             return Yaml.dictionary(sampleDict)

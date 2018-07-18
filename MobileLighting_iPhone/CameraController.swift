@@ -32,6 +32,8 @@ import Photos
     var capturingInverted: Bool = false
     var currentBinaryCodeBit: Int?
 //    var decoder: Decoder?
+        
+    var isCapturingPhoto: Bool = false
     
     var minExposureDuration: CMTime {
         get {
@@ -98,7 +100,7 @@ import Photos
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: 0.0),
                                        AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: 3.0)]
                 let processedFormat: [String : Any] = [AVVideoCodecKey : AVVideoCodecType.jpeg,
-                                       AVVideoCompressionPropertiesKey : [AVVideoQualityKey : NSNumber(value: 0.9)]]
+                                       AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]]
                 return AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: processedFormat, bracketedSettings: bracketSettings)
             }
         }
@@ -198,6 +200,7 @@ import Photos
         capturingInverted = false
         photoSettings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+        self.isCapturingPhoto = true
     }
     
     // main function for capturing normal-inverted pair
@@ -215,8 +218,7 @@ import Photos
         
         settings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
-        
-        // need to add more?
+        self.isCapturingPhoto = true
     }
     
     // sister function for capturing inverted bracket in normal-inverted pair
@@ -240,11 +242,12 @@ import Photos
         
         settings.isAutoStillImageStabilizationEnabled = false
         self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+        self.isCapturingPhoto = true
     }
     
     
     //MARK: video capture
-    func startVideoRecording() {
+    func startVideoRecording(torch torchMode: AVCaptureDevice.TorchMode = .off) {        
         guard !movieOutput.isRecording else {
             print("video: cannot start recording video -- already recording.")
             return
@@ -252,6 +255,12 @@ import Photos
         guard movieOutput.connection(with: AVMediaType.video)?.activeVideoStabilizationMode == .off else {
             print("video: could not turn off video stabilization mode.")
             return
+        }
+        
+        // configure torch mode
+        if torchMode == .on {
+            do { try self.captureDevice.setTorchModeOn(level: torchModeLevel) }
+            catch { print("error in setting torch mode.") }
         }
         
         // start imu data recording
@@ -273,6 +282,10 @@ import Photos
         
         // stop imu recording
         motionRecorder.stopRecording()
+        
+//        self.captureDevice.torchMode = .off
+        try? configureCaptureDevice(torchMode: .off)
+        
     }
         
         
@@ -345,6 +358,8 @@ import Photos
             
             
         } else {
+            print("flash mode enabled = \(resolvedSettings.isFlashEnabled)")
+            
             self.photoSampleBuffers.append(photoSampleBuffer)
             self.lensPositions.append(self.captureDevice.lensPosition)
         }
@@ -383,7 +398,7 @@ import Photos
                 if let imageBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(photoSampleBuffer) {
                     let im: CIImage = CIImage(cvPixelBuffer: imageBuffer).oriented(.right)
                     let colorspace = CGColorSpaceCreateDeviceRGB()
-                    jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 1.0])!
+                    jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : jpegQuality])!
                 } else {
                     jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
                 }
@@ -393,6 +408,7 @@ import Photos
             self.photoSampleBuffers.removeAll()
             self.lensPositions.removeAll()
         }
+        self.isCapturingPhoto = false
     }
     
     func saveSampleBufferToPhotoLibrary(_ sampleBuffer: CMSampleBuffer) {
@@ -445,7 +461,7 @@ import Photos
     }
     
     //MARK: Device configuration
-    func configureCaptureDevice(focusMode: AVCaptureDevice.FocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureDevice.ExposureMode? = nil, flashMode: AVCaptureDevice.FlashMode? = nil,
+    func configureCaptureDevice(focusMode: AVCaptureDevice.FocusMode? = nil, focusPointOfInterest: CGPoint? = nil, exposureMode: AVCaptureDevice.ExposureMode? = nil, /* flashMode: AVCaptureDevice.FlashMode? = nil, */
                                 torchMode: AVCaptureDevice.TorchMode? = nil, torchLevel: Float? = nil, whiteBalanceMode: AVCaptureDevice.WhiteBalanceMode? = nil) throws {
         try self.captureDevice.lockForConfiguration()
         
@@ -461,9 +477,9 @@ import Photos
         if let whiteBalanceMode = whiteBalanceMode {
             self.captureDevice.whiteBalanceMode = whiteBalanceMode
         }
-        if let flashMode = flashMode {
-            self.captureDevice.flashMode = flashMode    // deprecated, but including anyway (should be changed using AVCapturePhotoSettings.flashMode)
-        }
+//        if let flashMode = flashMode {
+//            self.captureDevice.flashMode = flashMode
+//        }
         if torchMode == .on, let torchLevel = torchLevel {
             try self.captureDevice.setTorchModeOn(level: torchLevel)
         } else if let torchMode = torchMode {

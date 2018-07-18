@@ -6,6 +6,7 @@ import Cocoa
 import VXMCtrl
 import SwitcherCtrl
 import Yaml
+import AVFoundation
 
 
 //MARK: COMMAND-LINE INPUT
@@ -401,6 +402,9 @@ func processCommand(_ input: String) -> Bool {
             print(usage)
             break
         }
+        
+        let flash2bool: [AVCaptureDevice.FlashMode : Bool] = [.on : true, .off : false]
+        let torch2bool: [AVCaptureDevice.TorchMode : Bool] = [.on : true, .off : false]
         switch params[0] {
         case "still":
             
@@ -416,10 +420,18 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
-//            print(resolution)
-//            print(sceneSettings.ambientExposureISOs)
-//            print(sceneSettings.ambientExposureDurations)
-            let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
+            var flashMode = AVCaptureDevice.FlashMode.off
+            for flag in flags {
+                switch flag {
+                case "-f":
+                    print("takeamb still: using flash mode...")
+                    flashMode = .on
+                default:
+                    print("takeamb still: flag \(flag) not recognized.")
+                }
+            }
+            
+            let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
             for pos in 0..<positions.count {
                 var posStr = *positions[pos]
@@ -433,7 +445,7 @@ func processCommand(_ input: String) -> Bool {
                 var nReceived = 0
                 let completionHandler = { nReceived += 1 }
                 for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                    let path = dirStruc.ambientPhotos(pos: pos, exp: exp) + "/IMG\(exp).JPG"
+                    let path = dirStruc.ambientPhotos(pos: pos, exp: exp, flash: flash2bool[flashMode]!) + "/IMG\(exp).JPG"
                     let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                     photoReceiver.dataReceivers.insertFirst(ambReceiver)
                 }
@@ -461,20 +473,31 @@ func processCommand(_ input: String) -> Bool {
                 exp = exp_
             }
             
+            var torchMode: AVCaptureDevice.TorchMode = .off
+            for flag in flags {
+                switch flag {
+                case "-f":
+                    print("takeamb video: using torch mode.")
+                    torchMode = .on
+                default:
+                    print("takeamb video: flag \(flag) not recognized.")
+                }
+            }
+            
             trajectory.moveToStart()
             print("takeamb video: hit enter when camera in position.")
             _ = readLine()
             
             print("takeamb video: starting recording...")
-            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture)
+            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, torchMode: torchMode)
             cameraServiceBrowser.sendPacket(packet)
             
             usleep(UInt32(0.5 * 1e6)) // wait 0.5 seconds
             
             // configure video data receiver
-            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp))/video.mp4")
+            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, flash: torch2bool[torchMode]!))/video.mp4")
             photoReceiver.dataReceivers.insertFirst(videoReceiver)
-            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp))/imu.yml")
+            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, flash: torch2bool[torchMode]!))/imu.yml")
             photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
             trajectory.executeScript()

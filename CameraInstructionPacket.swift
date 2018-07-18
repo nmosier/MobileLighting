@@ -51,16 +51,16 @@ class CameraInstructionPacket: NSObject, NSCoding {
     var binaryCodeBit: Int?         // bit of binary code being displayed
     var binaryCodeInverted: Bool?   // if binary code is inverted
     
-    //---NOT IN USE---
     var torchMode: AVCaptureDevice.TorchMode?
     var torchLevel: Float?
+    var flashMode: AVCaptureDevice.FlashMode?
     
     //MARK: INITIALIZERS
     
     // public initializer for CameraInstructionPacket
     // NOTE: most values are optional, so they are safe to omit when calling this function unless
     //   you need to use them
-    convenience init(cameraInstruction: CameraInstruction, resolution: String = "max", photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureDevice.TorchMode? = nil, torchLevel: Float? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, photoBracketExposureISOs: [Double]? = nil) {
+    convenience init(cameraInstruction: CameraInstruction, resolution: String = "max", photoBracketExposureDurations: [Double]? = nil, pointOfFocus: CGPoint? = nil, torchMode: AVCaptureDevice.TorchMode? = nil, torchLevel: Float? = nil, flashMode: AVCaptureDevice.FlashMode? = nil, lensPosition: Float? = nil, binaryCodeBit: Int? = nil, binaryCodeDirection: Bool? = nil, binaryCodeInverted: Bool? = nil, binaryCodeSystem: BinaryCodeSystem? = nil, photoBracketExposureISOs: [Double]? = nil) {
         self.init()
         self.cameraInstruction = cameraInstruction
         self.resolution = resolution
@@ -74,6 +74,7 @@ class CameraInstructionPacket: NSObject, NSCoding {
         self.binaryCodeDirection = binaryCodeDirection
         self.binaryCodeInverted = binaryCodeInverted
         self.binaryCodeSystem = binaryCodeSystem
+        self.flashMode = flashMode
         }
     
     // for decoding packet (never called by programmer)
@@ -90,12 +91,13 @@ class CameraInstructionPacket: NSObject, NSCoding {
             self.torchMode = nil
         }
         self.torchLevel = decoder.decodeObject(forKey: "torchLevel") as! Float?
+        if let torchModeRawValue = decoder.decodeObject(forKey: "flashMode") as! Int? {
+            self.flashMode = AVCaptureDevice.FlashMode(rawValue: torchModeRawValue)
+        }
         self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?
         
         if let binaryCodeSystemRaw = decoder.decodeObject(forKey: "binaryCodeSystem") as! Int? {
             self.binaryCodeSystem = BinaryCodeSystem(rawValue: binaryCodeSystemRaw)
-        } else {
-            self.binaryCodeSystem = nil
         }
         self.binaryCodeBit = decoder.decodeObject(forKey: "binaryCodeBit") as! Int?
         self.binaryCodeInverted = decoder.decodeObject(forKey: "binaryCodeInverted") as! Bool?
@@ -110,8 +112,9 @@ class CameraInstructionPacket: NSObject, NSCoding {
         coder.encode(self.photoBracketExposureDurations, forKey: "photoBracketExposureDurations")
         coder.encode(self.photoBracketExposureISOs, forKey: "photoBracketExposureISOs")
         coder.encode(self.pointOfFocus, forKey: "pointOfFocus")
-        coder.encode(self.torchMode?.rawValue ?? nil, forKey: "torchMode")  // encodes optional Int
+        coder.encode(self.torchMode?.rawValue, forKey: "torchMode")
         coder.encode(self.torchLevel, forKey: "torchLevel")
+        coder.encode(self.flashMode?.rawValue, forKey: "flashMode")
         coder.encode(self.lensPosition, forKey: "lensPosition")
         
         coder.encode(self.binaryCodeSystem?.rawValue ?? nil, forKey: "binaryCodeSystem")

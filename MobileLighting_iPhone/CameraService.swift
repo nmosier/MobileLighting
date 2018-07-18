@@ -338,10 +338,20 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     photoSender.sendPacket(PhotoDataPacket.error())
                     return
                 }
-                cameraController.takePhoto(photoSettings: AVCapturePhotoSettings())    // default settings: JPEG format
+                
+                let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
+                // configure flash mode (default is OFF)
+                if packet.flashMode == .on {
+                    settings.flashMode = .on
+                } else {
+                    // default: turn off flash
+                    settings.flashMode = .off
+                }
+                
+                cameraController.takePhoto(photoSettings: settings)    // default settings: JPEG format
                 break
                 
-            case CameraInstruction.CapturePhotoBracket:
+            case .CapturePhotoBracket:
                 guard let exposureDurations = packet.photoBracketExposureDurations, let exposureISOs = packet.photoBracketExposureISOs else {
                     print("ERROR: exposure times not provided for bracketed photo sequence.")
                     break
@@ -361,8 +371,46 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                     return
                 }
-                let settings = cameraController.photoBracketSettings
-                cameraController.takePhoto(photoSettings: settings)
+                
+                if packet.flashMode == .on {
+                    // take individual images if flash is on
+                    do {
+                        try cameraController.captureDevice.lockForConfiguration()
+                        try cameraController.captureDevice.setTorchModeOn(level: 1.0)
+                        cameraController.captureDevice.unlockForConfiguration()
+                    } catch {
+                        print("capture image bracket: could not turn on torch.")
+                    }
+                    
+                    for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
+                        
+                        let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
+                        var exposureModeSet = false
+                        do { try cameraController.captureDevice.lockForConfiguration() }
+                        catch { print("capturebracket: cannot lock camera for configuration."); return }
+                        cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
+                        cameraController.captureDevice.unlockForConfiguration()
+                        while !exposureModeSet {}
+                        
+                        let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
+//                        settings.flashMode = .on
+                        cameraController.takePhoto(photoSettings: settings)
+                        
+                        while cameraController.isCapturingPhoto {}
+                        print("done taking photo.")
+                        }
+                    do {
+                        try cameraController.captureDevice.lockForConfiguration()
+                        cameraController.captureDevice.torchMode = .off
+                        cameraController.captureDevice.unlockForConfiguration()
+                    }
+                    catch let error { print(error.localizedDescription) }
+                    
+                } else {
+                    // use photo bracket if flash is off
+                    let settings = cameraController.photoBracketSettings
+                    cameraController.takePhoto(photoSettings: settings)
+                }
                 break
             
             case .StartVideoCapture:
@@ -407,7 +455,9 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                     return
                 }
+                
                 let settings = cameraController.photoBracketSettings
+                settings.flashMode = .off // make sure flash is off
                 cameraController.takeNormalInvertedPair(settings: settings)
                 break
                 
@@ -446,7 +496,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             case .StartStructuredLightingCaptureFull:
                 // for now, specify hard-code in resolution
                 print("CURRENT ISO=\(cameraController.captureDevice.iso)")
-                
+
                 // save current focus
                 sceneMetadata.focus = cameraController.captureDevice.lensPosition
                 guard let binaryCodeSystem = packet.binaryCodeSystem, let dir = packet.binaryCodeDirection else {
@@ -461,6 +511,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 decoder = Decoder(width: width, height: height, binaryCodeSystem: binaryCodeSystem)
                 binaryCodeDirection = dir
                 print("CameraService: TEST - binaryCodeDirection is \(binaryCodeDirection)")
+
+                // make sure torch mode is off
+                if cameraController.captureDevice.torchMode != .off {
+                    try! cameraController.configureCaptureDevice(torchMode: .off)
+                }
             
             case .EndStructuredLightingCaptureFull:
                 // need to send off decoded image

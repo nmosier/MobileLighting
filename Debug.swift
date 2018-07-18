@@ -45,3 +45,10 @@ enum CameraOrientation {
 } */
 //let cameraOrientation: CameraOrientation = .Portrait
 let cameraOrientation: AVCaptureVideoOrientation = .portrait
+
+
+// torch mode
+let torchModeLevel: Float = 1.0 // max
+
+// jpeg quality
+let jpegQuality: NSNumber = 1.0
