@@ -215,7 +215,7 @@ void medianfilter(CFloatImage src, CFloatImage &dst, int k, int b)
                 m = median(&v[0], j);
             //float m = median(v); // slower
             dst.Pixel(x, y, b) = m;
-            if (0 && x == 182 && y == 975) {
+            if (/* DISABLES CODE */ (0) && x == 182 && y == 975) {
                 for (int i=0; i < (int)v.size(); i++)
                     printf("%5.1f ", v[i]);
                 printf("\nk=%d, rad = %d, v.size = %d, med = %g\n", k, rad, (int)v.size(), m);
@@ -564,7 +564,7 @@ float robustAverage(vector<float> nums, float maxdiff, int mingroup){
     std::sort(nums.begin(), nums.end());
     int stable =0;
     while((int)nums.size() != stable) {
-        stable = nums.size();
+        stable = (int) nums.size();
         float median = nums[nums.size()/2];
         vector<float> close;
         //vector<float> far;
@@ -720,7 +720,7 @@ void WriteBand(CFloatImage& img, int band, float scale, const char* filename, in
 CFloatImage mergeToNBandImage(vector<CFloatImage*> imgs)
 {
     CFloatImage merged;
-    CShape sh = CShape(imgs[0]->Shape().width, imgs[0]->Shape().height, imgs.size());
+    CShape sh = CShape(imgs[0]->Shape().width, imgs[0]->Shape().height, (int) imgs.size());
     
     merged.ReAllocate(sh);
     merged.ClearPixels();

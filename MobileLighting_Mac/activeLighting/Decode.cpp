@@ -136,7 +136,7 @@ void fillCodeHoles(CFloatImage im0, int maxwidth, float maxborderdiff, int direc
 	    fillCodeHolesLine(val, stride, w, maxwidth, maxborderdiff);
 	}
     } else { // y direction
-        stride = &im0.Pixel(0, 1, 0) - &im0.Pixel(0, 0, 0);
+        stride = (int) (&im0.Pixel(0, 1, 0) - &im0.Pixel(0, 0, 0));
 	for (x = 0; x < w; x++) {
 	    float *val = &im0.Pixel(x, 0, 0);
 	    fillCodeHolesLine(val, stride, h, maxwidth, maxborderdiff);
@@ -270,7 +270,7 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 			for (y = 0; y < h; y++) {
 		    float *v = &val.Pixel(0, y, 0);
 		    float *f = &fval.Pixel(0, y, 0);
-		        int stride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
+		        int stride = (int) (&val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0));
 		        // assume that f has same stride!
 		    //int debugy = (y == 617) ? y : 0;
 		        refineCodesLine(v, f, stride, w, rad, maxgrad); //, debugy);
@@ -279,7 +279,7 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 			for (x = 0; x < w; x++) {
 		    float *v = &val.Pixel(x, 0, 0);
 		    float *f = &fval.Pixel(x, 0, 0);	
-	        int stride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
+	        int stride = (int) (&val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0));
 		        // assume that f has same stride!
 		    //int debugy = (x == 998) ? x : 0;
 	        refineCodesLine(v, f, stride, h, rad, maxgrad); //, debugy);
@@ -298,14 +298,14 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 		int stride;
 		float *v, *f;
 		if (dx == 1 && dy == 0) {
-			stride = &val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0);
+			stride = (int) (&val.Pixel(1, 0, 0) - &val.Pixel(0, 0, 0));
 			for (y = 0; y < h; ++y) {
 				v = &val.Pixel(0, y, 0);
 				f = &fval.Pixel(0, y, 0);
 				refineCodesLine(v, f, stride, w, rad, maxgrad);
 			}	
 		} else if (dx == 0 && dy == 1) {
-			stride = &val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0);
+			stride = (int) (&val.Pixel(0, 1, 0) - &val.Pixel(0, 0, 0));
 			for (x = 0; x < w; ++x) {
 				v = &val.Pixel(x, 0, 0);
 				f = &fval.Pixel(x, 0, 0);
@@ -314,7 +314,7 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 		} else if (dx == 1 && dy == 1) {
 			int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
 			float maxgrad_adj = maxgrad * 2;//sqrt(2);
-			stride = &val.Pixel(1, 1, 0) - &val.Pixel(0, 0, 0);
+			stride = (int) (&val.Pixel(1, 1, 0) - &val.Pixel(0, 0, 0));
 			for (x = 0; x < w; ++x) {
 				v = &val.Pixel(x, 0, 0);
 				f = &fval.Pixel(x, 0, 0);
@@ -330,7 +330,7 @@ void refineCodes(CFloatImage val, CFloatImage &fval, int rad, float maxgrad, dou
 		} else if (dx == -1 && dy == 1) {
 			int rad_adj = round(rad / sqrt(2));	// adjust rad & maxgrad, since compared pixels are now sqrt(2) distance apart
 			float maxgrad_adj = maxgrad * 2; //sqrt(2);
-			stride = &val.Pixel(0, 1, 0) - &val.Pixel(1, 0, 0);
+			stride = (int) (&val.Pixel(0, 1, 0) - &val.Pixel(1, 0, 0));
 			for (x = 0; x < w; ++x) {
 				v = &val.Pixel(x, 0, 0);
 				f = &fval.Pixel(x, 0, 0);

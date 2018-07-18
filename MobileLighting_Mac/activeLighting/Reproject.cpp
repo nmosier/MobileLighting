@@ -138,7 +138,7 @@ void SolveProjectionCV(CFloatImage disp, CFloatImage codeu, CFloatImage codev, C
 
     if (verbose)
 	printf("unknown d: %.2f%%, unknown code: %.2f%%\n", 100.0*cntd/cnt, 100.0*cntc/cnt);
-    if (0 && verbose) printf("solving matrix\n");
+    if (/* DISABLES CODE */ (0) && verbose) printf("solving matrix\n");
 
     cv::Mat b(bvec);
 
@@ -238,7 +238,7 @@ void SolveProjectionCV_old(CFloatImage disp, CFloatImage codeu, CFloatImage code
 
     if (verbose)
 	printf("unknown d: %.2f%%, unknown code: %.2f%%\n", 100.0*cntd/cnt, 100.0*cntc/cnt);
-    if (0 && verbose) printf("solving matrix\n");
+    if (/* DISABLES CODE */ (0) && verbose) printf("solving matrix\n");
 
     cv::Mat b(bvec);
 
@@ -449,9 +449,9 @@ void compareDisp(const char *str, CFloatImage disp0, CFloatImage disp1, float ba
     char buffer[200];
     sprintf(buffer, "%s: compared: %5.2f   rms: %5.2f   bad: %5.2f   badthresh: %g\n",
 	       str, 100.0*cnt/(w*h), sqrt(sd/cnt), 100.0*cntBad/cnt, badThresh);
-    fprintf(log, buffer);
+    fprintf(log, "%s", buffer);
     if (verbose)
-        printf(buffer);
+        printf("%s", buffer);
     
     if (errFile != NULL)
 	WriteImageVerb(err, errFile, verbose);

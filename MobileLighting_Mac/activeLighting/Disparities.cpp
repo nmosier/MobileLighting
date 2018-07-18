@@ -511,28 +511,15 @@ void matchImages(CFloatImage fim0, CFloatImage fim1, CFloatImage dim, int dmin, 
 // edited 06/06/2018 by Nicholas Mosier to eliminate saving .flo files
 void computeDisparities(CFloatImage &fim0, CFloatImage &fim1, CFloatImage &fout0, CFloatImage &fout1, int dXmin, int dXmax, int dYmin, int dYmax)
 {
-    int verbose=1;
-    
-    //   CFloatImage fim0, fim1;
-    
-    //    ReadFlowFileVerb(fim0, in0, verbose);
-    //    ReadFlowFileVerb(fim1, in1, verbose);
-    
     if (fim0.Shape() != fim1.Shape())
         throw CError("computeDisparities: all images need to have same size");
-    
-    //CFloatImage t(fim0.Shape());
-    //CFloatImage d1(fim0.Shape());
+
     fout0.ReAllocate(fim0.Shape());
     fout1.ReAllocate(fim0.Shape());
     
     matchImages(fim0, fim1, fout0, -dXmax, -dXmin, -dYmax, -dYmin);
-    //    WriteFlowFileVerb(d0, out0, verbose);
-    
-    printf("here.\n");
     
     matchImages(fim1, fim0, fout1, dXmin, dXmax, dYmin, dYmax);
-    //    WriteFlowFileVerb(d1, out1, verbose);
 }
 
 
@@ -645,7 +632,7 @@ void fillDispHoles(CFloatImage img, int band, vector<struct ccomp> comp, CIntIma
                 }
             }
             std::sort(res.begin(), res.end());
-            int np = res.size();
+            int np = (int) res.size();
             float q75 = res[75 * np / 100];
             float q75thresh = 0.5; // require 75% of border pixels within this
             float q90 = res[90 * np / 100];
@@ -806,13 +793,6 @@ CFloatImage runFilter(CFloatImage img, float ythresh, int kx, int ky, int mincom
 //void mergeDisparityMaps(char* output, char** filenames, int count, int mingroup, float maxdiff)
 CFloatImage mergeDisparityMaps(CFloatImage images[], int count, int mingroup, float maxdiff)
 {
-    int verbose = 1;
-//    CFloatImage images[count];
-    
-//    for(int i =0; i < count; i++){
-//        ReadFlowFileVerb(images[i], filenames[i], verbose);
-//    }
-    
     CFloatImage out;
     CShape sh = images[0].Shape();
     out.ReAllocate(sh);
@@ -896,7 +876,6 @@ CFloatImage mergeDisparityMaps(CFloatImage images[], int count, int mingroup, fl
         
     }
     printf("\n");
-//    WriteFlowFileVerb(out, output, 1);
     return out;
 }
 
