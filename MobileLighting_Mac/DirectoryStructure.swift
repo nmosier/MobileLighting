@@ -45,24 +45,30 @@ class DirectoryStructure {
             }
         }
     
+    enum PhotoMode: String {
+        case normal
+        case flash
+        case torch
+    }
+    
     var ambientPhotos: String {
         get {
             return self.ambient + "/" + "photos"
         }
     }
     
-            func ambientPhotos(flash: Bool) -> String {
-                let subdir =  "\(ambientPhotos)/\(flash ? "flash" : "normal")"
+            func ambientPhotos(_ mode: PhotoMode) -> String {
+                let subdir =  "\(ambientPhotos)/\(mode.rawValue)"
                 try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
                 return subdir
             }
     
-            func ambientPhotos(pos: Int, flash: Bool) -> String {
-                return subdir(self.ambientPhotos(flash: flash), pos: pos)
+            func ambientPhotos(pos: Int, mode: PhotoMode) -> String {
+                return subdir(self.ambientPhotos(mode), pos: pos)
             }
     
-            func ambientPhotos(pos: Int, exp: Int, flash: Bool) -> String {
-                let path = ambientPhotos(pos: pos, flash: flash) + "/exp\(exp)"
+            func ambientPhotos(pos: Int, exp: Int, mode: PhotoMode) -> String {
+                let path = ambientPhotos(pos: pos, mode: mode) + "/exp\(exp)"
                         try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
                         return path
                     }
@@ -73,14 +79,19 @@ class DirectoryStructure {
                 }
             }
     
-    func ambientVideos(flash: Bool) -> String {
-        let subdir = "\(self.ambientVideos)/\(flash ? "flash" : "normal")"
+    enum VideoMode: String {
+        case normal
+        case torch
+    }
+    
+    func ambientVideos(_ mode: VideoMode) -> String {
+        let subdir = "\(self.ambientVideos)/\(mode.rawValue)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientVideos(exp: Int, flash: Bool) -> String {
-        let subdir = "\(self.ambientVideos(flash: flash))/exp\(exp)"
+    func ambientVideos(exp: Int, mode: VideoMode) -> String {
+        let subdir = "\(self.ambientVideos(mode))/exp\(exp)"
                 try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
                 return subdir
             }

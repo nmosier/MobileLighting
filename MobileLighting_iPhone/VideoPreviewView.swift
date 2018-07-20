@@ -44,7 +44,9 @@ class VideoPreviewView: UIView {
                 deviceOrientation.isPortrait || deviceOrientation.isLandscape else {
                     return
             }
+//            print("display orientation = \(displayOrientation)")
             connection.videoOrientation = displayOrientation
+//            connection.videoOrientation = .portrait
         }
     }
 

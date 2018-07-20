@@ -373,7 +373,10 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 
                 if packet.flashMode == .on {
-                    // take individual images if flash is on
+                    let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
+                    settings.flashMode = .on
+                    cameraController.takePhoto(photoSettings: settings)
+                } else if packet.torchMode == .on {
                     do {
                         try cameraController.captureDevice.lockForConfiguration()
                         try cameraController.captureDevice.setTorchModeOn(level: 1.0)
@@ -393,24 +396,25 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                         while !exposureModeSet {}
                         
                         let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
-//                        settings.flashMode = .on
+                        //                        settings.flashMode = .on
                         cameraController.takePhoto(photoSettings: settings)
                         
                         while cameraController.isCapturingPhoto {}
                         print("done taking photo.")
-                        }
+                    }
+                    
+                    
                     do {
                         try cameraController.captureDevice.lockForConfiguration()
                         cameraController.captureDevice.torchMode = .off
                         cameraController.captureDevice.unlockForConfiguration()
                     }
                     catch let error { print(error.localizedDescription) }
-                    
                 } else {
-                    // use photo bracket if flash is off
                     let settings = cameraController.photoBracketSettings
                     cameraController.takePhoto(photoSettings: settings)
                 }
+ 
                 break
             
             case .StartVideoCapture:

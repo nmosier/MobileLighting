@@ -276,26 +276,22 @@ func brightnessChange(_ srcBuffer: CVPixelBuffer) -> Double {
     
     print("avg_0 = \(avg_0), avg_pi4=\(avg_pi4), avg_pi2=\(avg_pi2), avg_3pi4=\(avg_3pi4)")
     
-    let dx: Int, dy: Int, angle: Double
+    let angle: Double
     if (ratio_xy >= ratio_diag) {
         if (avg_0 >= avg_pi2) {
-            // (dx, dy) = (1, 0)
             angle = 0.0
         } else {
-            // (dx, dy) = (0, 1)
             angle = Double.pi/2
         }
     } else {
         if (avg_pi4 >= avg_3pi4) {
-            // (dx, dy) = (1, 1)
             angle = Double.pi/4
         } else {
-            // (dx, dy) = (1, -1)
             angle = 3*Double.pi/4
         }
     }
     CVPixelBufferUnlockBaseAddress(srcBuffer, lockFlags)
-    return angle //(dx, dy)
+    return angle
 }
 
 
@@ -383,7 +379,7 @@ class Decoder {
         }
         
         CVPixelBufferLockBaseAddress(thresholdBuffer, CVPixelBufferLockFlags(rawValue: 0))
-        var threshPtr = CVPixelBufferGetBaseAddress(thresholdBuffer)!.bindMemory(to: UInt8.self, capacity: width*height*4)
+        let threshPtr = CVPixelBufferGetBaseAddress(thresholdBuffer)!.bindMemory(to: UInt8.self, capacity: width*height*4)
         let stride = CVPixelBufferGetBytesPerRow(thresholdBuffer)
         for y in 0..<height {
             for x in 0..<width {

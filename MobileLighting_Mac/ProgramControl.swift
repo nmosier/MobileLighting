@@ -403,11 +403,10 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         
-        let flash2bool: [AVCaptureDevice.FlashMode : Bool] = [.on : true, .off : false]
-        let torch2bool: [AVCaptureDevice.TorchMode : Bool] = [.on : true, .off : false]
+//        let flash2bool: [AVCaptureDevice.FlashMode : Bool] = [.on : true, .off : false]
+//        let torch2bool: [AVCaptureDevice.TorchMode : Bool] = [.on : true, .off : false]
         switch params[0] {
         case "still":
-            
             guard params.count >= 2, let nPhotos = Int(params[1]) else {
                 print("usage: takeamb still [nPhotos] [resolution]?")
                 break cmdSwitch
@@ -420,18 +419,25 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
+            var mode = DirectoryStructure.PhotoMode.normal
             var flashMode = AVCaptureDevice.FlashMode.off
+            var torchMode = AVCaptureDevice.TorchMode.off
             for flag in flags {
                 switch flag {
                 case "-f":
                     print("takeamb still: using flash mode...")
                     flashMode = .on
+                    mode = .flash
+                case "-t":
+                    print("takeamb still: using torch mode...")
+                    mode = .torch
+                    torchMode = .on
                 default:
                     print("takeamb still: flag \(flag) not recognized.")
                 }
             }
             
-            let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
+            let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
             for pos in 0..<positions.count {
                 var posStr = *positions[pos]
@@ -442,20 +448,28 @@ func processCommand(_ input: String) -> Bool {
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
                 
-                var nReceived = 0
-                let completionHandler = { nReceived += 1 }
-                for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                    let path = dirStruc.ambientPhotos(pos: pos, exp: exp, flash: flash2bool[flashMode]!) + "/IMG\(exp).JPG"
+                if mode == .flash {
+                    var received = false
+                    let completionHandler = { received = true }
+                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG.JPG"
                     let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                     photoReceiver.dataReceivers.insertFirst(ambReceiver)
+                    while !received {}
+                } else {
+                    var nReceived = 0
+                    let completionHandler = { nReceived += 1 }
+                    for exp in 0..<sceneSettings.ambientExposureDurations!.count {
+                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(exp).JPG"
+                        let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
+                        photoReceiver.dataReceivers.insertFirst(ambReceiver)
+                    }
+                    while nReceived != sceneSettings.ambientExposureDurations!.count {}
+                    // continue
                 }
-                while nReceived != sceneSettings.ambientExposureDurations!.count {}
-                // continue
             }
             
-            // AmbientImageReceiver
-            
             break
+            
         case "video":
             guard params.count >= 1, params.count <= 2 else {
                 print(usage)
@@ -474,11 +488,13 @@ func processCommand(_ input: String) -> Bool {
             }
             
             var torchMode: AVCaptureDevice.TorchMode = .off
+            var mode: DirectoryStructure.VideoMode = .normal
             for flag in flags {
                 switch flag {
-                case "-f":
+                case "-f", "-t":
                     print("takeamb video: using torch mode.")
                     torchMode = .on
+                    mode = .torch
                 default:
                     print("takeamb video: flag \(flag) not recognized.")
                 }
@@ -495,9 +511,9 @@ func processCommand(_ input: String) -> Bool {
             usleep(UInt32(0.5 * 1e6)) // wait 0.5 seconds
             
             // configure video data receiver
-            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, flash: torch2bool[torchMode]!))/video.mp4")
+            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/video.mp4")
             photoReceiver.dataReceivers.insertFirst(videoReceiver)
-            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, flash: torch2bool[torchMode]!))/imu.yml")
+            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/imu.yml")
             photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
             trajectory.executeScript()

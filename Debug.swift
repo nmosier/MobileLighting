@@ -44,7 +44,7 @@ enum CameraOrientation {
     case Landscape
 } */
 //let cameraOrientation: CameraOrientation = .Portrait
-let cameraOrientation: AVCaptureVideoOrientation = .portrait
+let cameraOrientation: AVCaptureVideoOrientation = .landscapeLeft
 
 
 // torch mode

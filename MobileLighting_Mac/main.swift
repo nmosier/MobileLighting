@@ -65,7 +65,7 @@ minSWfilepath = sceneSettings.minSWfilepath
 projectors = sceneSettings.nProjectors
 //exposureDurations = sceneSettings.exposureDurations
 //exposureISOs = sceneSettings.exposureISOs
-positions = sceneSettings.positionCoords
+positions = sceneSettings.trajectory.waypoints
 
 var strucExposureDurations = sceneSettings.strucExposureDurations
 var strucExposureISOs = sceneSettings.strucExposureISOs
