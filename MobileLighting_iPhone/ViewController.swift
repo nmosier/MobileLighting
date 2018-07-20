@@ -61,6 +61,10 @@ class ViewController: UIViewController {
         cameraService.startBroadcast()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        orientation = videoPreviewView.updateOrientation()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

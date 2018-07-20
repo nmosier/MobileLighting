@@ -14,3 +14,5 @@ var photoSender: PhotoSender = PhotoSender()
 var sceneMetadata = SceneMetadata()
 var decoder: Decoder?
 var motionRecorder = MotionRecorder()
+
+var orientation: AVCaptureVideoOrientation!

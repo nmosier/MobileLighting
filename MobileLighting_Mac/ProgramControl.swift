@@ -13,6 +13,7 @@ import AVFoundation
 
 enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
+    case unrecognized
     case quit
     case reloadsettings
     
@@ -65,28 +66,29 @@ enum Command: String {      // rawValues are automatically the name of the case,
 }
 
 let commandUsage: [Command : String] = [
-    .help: "help",
-    .quit: "quit",
-    .reloadsettings: "reloadsettings [attribute_name]",
-    .connect: "connect [iphone|switcher|vxm] [port string]?",
-    .disconnect: "disconnect [vxm|switcher]",
+    .unrecognized: "",
+    .help: "",
+    .quit: "",
+    .reloadsettings: "",
+    .connect: "connect (switcher|vxm) [port dev directory]",
+    .disconnect: "disconnect (switcher|vxm)",
     .calibrate: "calibrate [# of photos]",
     .calibrate2pos: "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?",
     .struclight: "struclight [projector #] [position #] [code system]?",
-    .takeamb: "takeamb (still | video) [nPhotos]?",
-    .setfocus: "setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)",
+    .takeamb: "takeamb still (-f|-t)? [nPhotos]\n        video (-f|-t)?",
+    .setfocus: "setfocus [lensPosition]",
     .focuspoint: "focuspoint [x_coord] [y_coord]",
-    .cb: "cb [squareSize]?",
+    .cb: "cb [squareSize=4]",
     .diagonal: "diagonal [stripe width]",
     .verticalbars: "verticalbars [width]",
-    .movearm: "movearm [pose_string | pose_number]",
-    .proj: "proj [projector_#|all] [on|off]|[1|0]",
-    .refine: "refine [imageFilename] [direction (0/1)]",
-    .disparity: "disparity [[projector #] [[left pos #] [right pos #]]?]?",
-    .rectify: "rectify [proj#] [pos1] [pos2]",
-    .addpos: "addpos [pos_string] [pos_id]?",
+    .movearm: "movearm [pose_string | pose_number\n        (x|y|z) [dist]",
+    .proj: "proj [projector#|all] [on|off]",
+    .refine: "refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]",
+    .disparity: "disparity (-r)? (-a | [projector #]) [left pos #] [right pos #]",
+    .rectify: "rectify (-a | [proj#]) [pos1] [pos2]",
+    .addpos: "addpos [pos_string] [pos_id]?", // currently defunct
     .getintrinsics: "getintrinsics [board_type = ARUCO_SINGLE]",
-    .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE"
+    .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE]"
 ]
 
 
@@ -105,15 +107,22 @@ func nextCommand() -> Bool {
 func processCommand(_ input: String) -> Bool {
     var nextToken = 0
     let tokens: [String] = input.split(separator: " ").map{ return String($0) }
-    guard let command = Command(rawValue: tokens.first ?? "") else { // "" is invalid token, automatically rejected
+    let command: Command
+    if let command_ = Command(rawValue: tokens.first ?? "") { // "" is invalid token, automatically rejected
         // if input contains no valid commands, return
-        return true
+        command = command_
+    } else {
+        command = .unrecognized
     }
     
     processingCommand = true
     
     nextToken += 1
     cmdSwitch: switch command {
+    case .unrecognized:
+        print("Command unrecognized. Type \"help\" for a list of commands.")
+        break
+        
     case .help:
         // to be implemented
         for (command, usage) in commandUsage {
@@ -313,13 +322,28 @@ func processCommand(_ input: String) -> Bool {
         
     case .stereocalib:
         let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
-        guard tokens.count > 1 else {
+        
+        let (params, flags) = partitionTokens(tokens)
+        guard params.count >= 1, let nPhotos = Int(tokens[1]) else {
             print(usage)
             break
         }
-        guard let nPhotos = Int(tokens[1]) else {
-            print(usage)
-            break
+        let resolution: String
+        if params.count == 2 {
+            resolution = tokens[1]
+        } else {
+            resolution = defaultResolution
+        }
+        
+        var appending = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                print("stereocalib: appending images.")
+                appending = true
+            default:
+                print("stereocalib: unrecognized flag \(flag).")
+            }
         }
         
         if calibrationExposure != (0, 0) {
@@ -328,11 +352,8 @@ func processCommand(_ input: String) -> Bool {
         }
         
         let posIDs = [Int](0..<positions.count)
-        if tokens.count == 2 {
-            captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos)
-        } else {
-            captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: tokens[2])
-        }
+        captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: resolution, appending: appending)
+        break
     
     // captures scene using structured lighting from specified projector and position number
     // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
@@ -1035,7 +1056,7 @@ func processCommand(_ input: String) -> Bool {
         // ABSOLUTE PATHS NOT REQUIRED
     case .getintrinsics:
         guard tokens.count <= 2 else {
-            print("usage: \(commandUsage[command])")
+            print("usage: \(commandUsage[command]!)")
             break
         }
         let patternEnum: CalibrationSettings.CalibrationPattern
@@ -1065,36 +1086,80 @@ func processCommand(_ input: String) -> Bool {
     
     // do stereo calibration
     case .getextrinsics:
-        guard tokens.count == 3 || tokens.count == 4 else {
-            print("usage: \(commandUsage[command] ?? "")")
-            break
+        let usage = commandUsage[.getextrinsics]!
+        let (params, flags) = partitionTokens(tokens)
+        
+        var all = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                all = true
+                print("getextrinsics: computing extrinsics for all positions.")
+            default:
+                print("getextrinsics: unrecognized flag \(flag).")
+            }
         }
-        guard let leftpos = Int(tokens[1]), let rightpos = Int(tokens[2]) else {
-            print("getextrinsics: invalid positions \(tokens[1]), \(tokens[2])")
-            break
-        }
-        let patternEnum: CalibrationSettings.CalibrationPattern
-        if tokens.count == 3 {
-            patternEnum = .ARUCO_SINGLE
-        } else {
-            guard let patternEnumTmp = CalibrationSettings.CalibrationPattern(rawValue: tokens[3]) else {
-                print("getextrinsics: invalid board pattern \(tokens[3])")
+        
+        let positionPairs: [(Int, Int)]
+        var curParam: Int
+        if all {
+            guard [1,2].contains(params.count) else {
+                print(usage)
                 break
             }
-            patternEnum = patternEnumTmp
+            let posIDs = [Int](0..<positions.count)
+            positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
+            curParam = 1
+        } else {
+            guard [3,4].contains(params.count), let pos0 = Int(params[1]), let pos1 = Int(params[2]) else {
+                print(usage)
+                break
+            }
+            positionPairs = [(pos0, pos1)]
+            curParam = 3
         }
-        generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
         
-        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-        calib.set(key: .Mode, value: Yaml.string("STEREO"))
-        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
-        calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
-        calib.save()
+        let patternEnum: CalibrationSettings.CalibrationPattern
+        if params.count > curParam {
+            guard let patternEnum_ = CalibrationSettings.CalibrationPattern(rawValue: params[curParam]) else {
+                print("getextrinsics: unrecognized board pattern \(params[curParam]).")
+                break
+            }
+            patternEnum = patternEnum_
+        } else {
+            patternEnum = .ARUCO_SINGLE
+        }
         
-        DispatchQueue.main.async {
-            var path = dirStruc.calibrationSettingsFile.cString(using: .ascii)!
+        //
+        //
+        //        guard let leftpos = Int(tokens[1]), let rightpos = Int(tokens[2]) else {
+        //            print("getextrinsics: invalid positions \(tokens[1]), \(tokens[2])")
+        //            break
+        //        }
+        //
+        //        if tokens.count == 3 {
+        //            patternEnum = .ARUCO_SINGLE
+        //        } else {
+        //            guard let patternEnumTmp = CalibrationSettings.CalibrationPattern(rawValue: tokens[3]) else {
+        //                print("getextrinsics: invalid board pattern \(tokens[3])")
+        //                break
+        //            }
+        //            patternEnum = patternEnumTmp
+        //        }
+        for (leftpos, rightpos) in positionPairs {
+            generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
+            
+            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+            calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
+            calib.set(key: .Mode, value: Yaml.string("STEREO"))
+            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
+            calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
+            calib.save()
+            
+            //        DispatchQueue.main.sync {
+            var path = *dirStruc.calibrationSettingsFile
             CalibrateWithSettings(&path)
+            //        }
         }
     
     // displays current resolution being used for external display
@@ -1405,7 +1470,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         var posStr = positions[pos0].cString(using: .ascii)!
         MovePose(&posStr, robotAcceleration, robotVelocity)
         print(msgBoard)
-        guard calibration_wait() else {
+        guard calibration_wait(currentPos: pos0) else {
             return
         }
         
@@ -1420,7 +1485,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         posStr = positions[pos1].cString(using: .ascii)!
         MovePose(&posStr, robotAcceleration, robotVelocity)
         print(msgMove)
-        guard calibration_wait() else {
+        guard calibration_wait(currentPos: pos1) else {
             return
         }
         
@@ -1458,7 +1523,6 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
 
 
 // captureNPosCalibration: takes stereo calibration photos for all N positions
-// not yet optimized
 func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "high", appending: Bool = false) {
     let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
     var photoID: Int
@@ -1520,7 +1584,7 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
             var posStr = *positions[posID]
             MovePose(&posStr, robotAcceleration, robotVelocity)
             print(msgMove)
-            guard calibration_wait() else {
+            guard calibration_wait(currentPos: posID) else {
                 return
             }
             
@@ -1602,7 +1666,7 @@ func configureDisplays() -> Bool {
 
 
 // CALIBRATION UTIL FUNCTIONS
-func calibration_wait() -> Bool {
+func calibration_wait(currentPos: Int) -> Bool {
     var input: String
     repeat {
         guard let inputtmp = readLine() else {
@@ -1619,6 +1683,10 @@ func calibration_wait() -> Bool {
             let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
             cameraServiceBrowser.sendPacket(packet)
             _ = photoReceiver.receiveLensPositionSync()
+        } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
+            var pose = *positions[pos]
+            MovePose(&pose, robotAcceleration, robotVelocity)
+            print("Hit enter when ready to return to original position.")
         } else {
             return true
         }
