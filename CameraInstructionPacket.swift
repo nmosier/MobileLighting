@@ -17,6 +17,8 @@ enum CameraInstruction: Int {
     case LockLensPosition   // lensPosition parameter optional
     case SetPointOfFocus    // requires pointOfFocus parameter
     
+    case ConfigureTorchMode
+    
     case ReadExposure, LockExposure, AutoExposure, SetExposure // sets camera exposure mode
     
     case CaptureStillImage  // capture single image; optional parameters: resolution
