@@ -49,6 +49,7 @@ let cameraOrientation: AVCaptureVideoOrientation = .landscapeLeft
 
 // torch mode
 let torchModeLevel: Float = 1.0 // max
+let torchModeFrequency: Double = 5.0 // in flashes / sec
 
 // jpeg quality
 let jpegQuality: NSNumber = 1.0
