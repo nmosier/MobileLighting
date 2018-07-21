@@ -36,6 +36,8 @@
         var isCapturingPhoto: Bool = false
         var isRecordingVideo: Bool = false
         
+        var torchModeQueue = DispatchQueue(label: "torchModeQueue")
+        
         var minExposureDuration: CMTime {
             get {
                 return self.captureDevice.activeFormat.minExposureDuration
@@ -195,11 +197,11 @@
                 print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
                 return
             }
-            
             print("Capturing photo: \(self.capturePhotoOutput)")
             capturingNormalInvertedPair = false
             capturingInverted = false
             photoSettings.isAutoStillImageStabilizationEnabled = false
+            self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
             self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
             self.isCapturingPhoto = true
         }
@@ -258,23 +260,32 @@
                 return
             }
             
-            // configure torch mode
-//            if torchMode == .on {
-//                do { try self.captureDevice.setTorchModeOn(level: torchModeLevel) }
-//                catch { print("error in setting torch mode.") }
-//            }
+            // configure torch mode, if requested
             self.isRecordingVideo = true
-            DispatchQueue(label: "videoRecorder").async {
-                while self.isRecordingVideo {
-                    do { try self.captureDevice.lockForConfiguration() }
-                    catch { continue }
-                    if self.captureDevice.torchMode == .off {
-                        try? self.captureDevice.setTorchModeOn(level: torchModeLevel)
-                    } else {
-                        self.captureDevice.torchMode = .off
+            if torchMode == .on {
+                self.torchModeQueue.async {
+                    while self.isRecordingVideo {
+                        do { try self.captureDevice.lockForConfiguration() }
+                        catch { continue }
+                        if self.captureDevice.torchMode == .off {
+                            try? self.captureDevice.setTorchModeOn(level: torchModeLevel)
+                        } else {
+                            self.captureDevice.torchMode = .off
+                        }
+                        self.captureDevice.unlockForConfiguration()
+                        
+                        let timestep = 1.0 / (2.0 * torchModeFrequency)
+                        usleep(UInt32(timestep * 1e6))
                     }
-                    self.captureDevice.unlockForConfiguration()
-                    usleep(UInt32(0.1 * 1e6))
+                    
+                    // turn off torch mode once done recording video
+                    do {
+                        try self.captureDevice.lockForConfiguration()
+                        self.captureDevice.torchMode = .off
+                        self.captureDevice.unlockForConfiguration()
+                    }
+                    catch let error { print("video: could not turn off torch mode. ", error.localizedDescription)  }
+                    
                 }
             }
             
@@ -460,14 +471,12 @@
                     let photo = self.capturePhotos[index]
                     let jpegData: Data
                     
-                    if let imageBuffer: CVPixelBuffer = photo.pixelBuffer { //CMSampleBufferGetImageBuffer(photoSampleBuffer) {
-                        let im: CIImage = CIImage(cvPixelBuffer: imageBuffer).oriented(.right)
+                    if let imageBuffer: CVPixelBuffer = photo.pixelBuffer {
+                        let im: CIImage = CIImage(cvPixelBuffer: imageBuffer).oriented(getImageOrientation(orientation))
                         let colorspace = CGColorSpaceCreateDeviceRGB()
                         jpegData = CIContext().jpegRepresentation(of: im, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : jpegQuality])!
                     } else {
-                        //                    jpegData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: nil)!
                         jpegData = photo.fileDataRepresentation()!
-                        
                     }
                     let photoPacket = PhotoDataPacket(photoData: jpegData, bracketedPhotoID: index, lensPosition: lensPositions[index])
                     photoSender.sendPacket(photoPacket)
@@ -496,7 +505,7 @@
         // based on code from Apple's Photo Capture Programming Guide
         // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
         func defaultDevice() -> AVCaptureDevice {
-            if let device = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInDuoCamera,
+            if let device = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInDualCamera,
                                                     for: AVMediaType.video,
                                                     position: .back) {
                 return device // use dual camera on supported devices
@@ -561,5 +570,14 @@
             //        do { try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
             //        catch { fatalError("Couldn't create directory in Documents directory.")}
             return path
+        }
+        
+        func getImageOrientation(_ videoOrientation: AVCaptureVideoOrientation) -> CGImagePropertyOrientation {
+            switch videoOrientation {
+            case .portrait: return CGImagePropertyOrientation.right
+            case .landscapeLeft: return CGImagePropertyOrientation.down
+            case .landscapeRight: return CGImagePropertyOrientation.up
+            case .portraitUpsideDown: return CGImagePropertyOrientation.left
+            }
         }
     }
