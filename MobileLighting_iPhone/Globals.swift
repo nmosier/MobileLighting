@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 var cameraService: CameraService!
 var cameraController = CameraController()
@@ -16,3 +17,4 @@ var decoder: Decoder?
 var motionRecorder = MotionRecorder()
 
 var orientation: AVCaptureVideoOrientation!
+var orientationObserver: NSKeyValueObservation!
