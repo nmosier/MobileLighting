@@ -17,7 +17,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var lockExposureSwitch: UISwitch!
     @IBOutlet weak var lockFocusSwitch: UISwitch!
     
-    
     @IBAction func updateExposureMode(_ sender: UISwitch) {
         let mode: AVCaptureDevice.ExposureMode = sender.isOn ? .locked : .autoExpose
         do {
@@ -62,7 +61,11 @@ class ViewController: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        orientation = videoPreviewView.updateOrientation()
+        orientation = videoPreviewView.updateOrientation() // initial configuration of orientation
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        _ = videoPreviewView.updateOrientation()
     }
     
     override func didReceiveMemoryWarning() {
