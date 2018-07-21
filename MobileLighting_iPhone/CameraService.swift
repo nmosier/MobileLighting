@@ -201,7 +201,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 } catch {
                     fatalError("unable to lock for configuration")
                 }
-                print("TRIED TO SET LENS POSITION: \(lensPosition)")
+                print("set lens position \(lensPosition)")
                 
                 let finishedFocusing: (CMTime) -> Void = { _ in
                     while cameraController.captureDevice.isAdjustingFocus {}
@@ -330,7 +330,15 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 cameraController.captureDevice.setExposureModeCustom(duration: CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale), iso: Float(iso), completionHandler: { print("set exposure with duration \($0)") })
                 cameraController.captureDevice.unlockForConfiguration()
                 
-            case CameraInstruction.CaptureStillImage:
+            case .ConfigureTorchMode:
+                do {
+                    try cameraController.configureCaptureDevice(torchMode: packet.torchMode, torchLevel: packet.torchMode != nil ? torchModeLevel : nil)
+                } catch {
+                    print("unable to configure torch mode on capture device.")
+                }
+                
+                
+            case .CaptureStillImage:
                 do {
                     try cameraController.useCaptureSessionPreset(self.resolutionToSessionPreset[resolution]!)
                 } catch {
@@ -419,7 +427,17 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
             
             case .StartVideoCapture:
                 print("starting to record video...")
-                cameraController.startVideoRecording()
+                // set exposure if provided
+                if let exposureDurations = packet.photoBracketExposureDurations, let exposureISOs = packet.photoBracketExposureISOs, let exposureDuration = exposureDurations.first, let exposureISO = exposureISOs.first {
+                    var exposureSet = false
+                    cameraController.captureDevice.setExposureModeCustom(duration: CMTime(exposureDuration: exposureDuration), iso: Float(exposureISO), completionHandler: {(_) in exposureSet = true })
+                    while !exposureSet {}
+                }
+                if let torchMode = packet.torchMode {
+                    cameraController.startVideoRecording(torch: torchMode)
+                } else {
+                    cameraController.startVideoRecording()
+                }
                 break
                 
             case .EndVideoCapture:
