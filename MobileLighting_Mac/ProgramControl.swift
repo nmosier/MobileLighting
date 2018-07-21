@@ -416,26 +416,24 @@ func processCommand(_ input: String) -> Bool {
     
         
     case .takeamb:
-        let usage = "usage: takeamb (still|video) [nPhotos]? [resolution]?"
+        let usage = "usage: takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposureID=1]"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
-        guard params.count > 0 else {
+        guard params.count >= 1 else {
             print(usage)
             break
         }
         
-//        let flash2bool: [AVCaptureDevice.FlashMode : Bool] = [.on : true, .off : false]
-//        let torch2bool: [AVCaptureDevice.TorchMode : Bool] = [.on : true, .off : false]
         switch params[0] {
         case "still":
-            guard params.count >= 2, let nPhotos = Int(params[1]) else {
-                print("usage: takeamb still [nPhotos] [resolution]?")
+            guard params.count >= 1 else {
+                print("usage: takeamb still [resolution]?")
                 break cmdSwitch
             }
             
             let resolution: String
-            if params.count == 3 {
-                resolution = params[2]
+            if params.count == 2 {
+                resolution = params[1]
             } else {
                 resolution = defaultResolution
             }
@@ -469,14 +467,7 @@ func processCommand(_ input: String) -> Bool {
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
                 
-                if mode == .flash {
-                    var received = false
-                    let completionHandler = { received = true }
-                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG.JPG"
-                    let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
-                    photoReceiver.dataReceivers.insertFirst(ambReceiver)
-                    while !received {}
-                } else {
+                func receivePhotos() {
                     var nReceived = 0
                     let completionHandler = { nReceived += 1 }
                     for exp in 0..<sceneSettings.ambientExposureDurations!.count {
@@ -485,23 +476,55 @@ func processCommand(_ input: String) -> Bool {
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)
                     }
                     while nReceived != sceneSettings.ambientExposureDurations!.count {}
-                    // continue
+                }
+                
+                switch mode {
+                case .flash:
+                    var received = false
+                    let completionHandler = { received = true }
+                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG.JPG"
+                    let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
+                    photoReceiver.dataReceivers.insertFirst(ambReceiver)
+                    while !received {}
+                    break
+                    
+                case .torch:
+                    let torchPacket = CameraInstructionPacket(cameraInstruction: .ConfigureTorchMode, torchMode: .on, torchLevel: torchModeLevel)
+                    cameraServiceBrowser.sendPacket(torchPacket)
+                    receivePhotos()
+                    torchPacket.torchMode = .off
+                    torchPacket.torchLevel = nil
+                    cameraServiceBrowser.sendPacket(torchPacket)
+                    break
+                    
+                case .normal:
+                    receivePhotos()
+                    break
+//                    var nReceived = 0
+//                    let completionHandler = { nReceived += 1 }
+//                    for exp in 0..<sceneSettings.ambientExposureDurations!.count {
+//                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(exp).JPG"
+//                        let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
+//                        photoReceiver.dataReceivers.insertFirst(ambReceiver)
+//                    }
+//                    while nReceived != sceneSettings.ambientExposureDurations!.count {}
+//                    // continue
                 }
             }
             
             break
             
         case "video":
-            guard params.count >= 1, params.count <= 2 else {
+            guard params.count >= 2, params.count <= 3 else {
                 print(usage)
                 break cmdSwitch
             }
             
             let exp: Int
             if params.count == 1 {
-                exp = 0
+                exp = 1
             } else {
-                guard let exp_ = Int(tokens[1]) else {
+                guard let exp_ = Int(tokens[1]), exp_ >= 0, exp_ < min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) else {
                     print("takeamb video: invalid exposure number \(tokens[1])")
                     break cmdSwitch
                 }
@@ -971,40 +994,96 @@ func processCommand(_ input: String) -> Bool {
         }
     
     case .rectify:
-        let usage = "usage: rectify [flags...] [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]"
+        let usage = "usage: rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
-        var all = false
+        var allproj = false
+        var allpos = false
         for flag in flags {
             switch flag {
             case "-a":
-                all = true
+                if !allproj {
+                    allproj = true
+                } else {
+                    allpos = true
+                }
             default:
                 print("rectify: invalid flag \(flag)")
                 break cmdSwitch
             }
         }
         
-        if all {
-            print(params.count)
+        var curTok = 0
+        let projIDs: [Int]
+        if allproj {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
-            let projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
-            
-            guard params.count == 2, let left = Int(params[0]), let right = Int(params[1]) else {
+            projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
+        } else {
+            guard params.count >= curTok+1 else {
                 print(usage)
                 break
             }
-            
-            for proj in projIDs {
+            guard let proj = Int(params[curTok]) else {
+                print("rectify: unrecognized projector ID \(params[curTok])")
+                break
+            }
+            projIDs = [proj]
+            curTok += 1
+        }
+        
+        let singlePosPair: (Int,Int)?
+        if allpos {
+            singlePosPair = nil
+        } else {
+            guard params.count == curTok + 2 else {
+                print(usage)
+                break
+            }
+            guard let left = Int(params[curTok]), let right = Int(params[curTok+1]) else {
+                print("rectify: unrecognized positions \(params[curTok]), \(params[curTok+1])")
+                break
+            }
+            singlePosPair = (left, right)
+        }
+        for proj in projIDs {
+            let posIDpairs: [(Int,Int)]
+            if allpos {
+                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: false)), prefix: "pos", suffix: "")
+                guard posIDs.count > 1 else {
+                    print("rectify: skipping projectory \(proj), not enough positions.")
+                    continue
+                }
+                posIDs.sort()
+                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
+            } else {
+                posIDpairs = [singlePosPair!]
+            }
+            for (left, right) in posIDpairs {
                 rectify(left: left, right: right, proj: proj)
             }
-        } else {
-            guard params.count == 3, let proj = Int(params[0]), let left = Int(params[1]), let right = Int(params[2]) else {
-                print(usage)
-                break
-            }
-            rectify(left: left, right: right, proj: proj)
         }
+//
+//
+//        if all {
+//            print(params.count)
+//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
+//            let projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
+//
+//            guard params.count == 2, let left = Int(params[0]), let right = Int(params[1]) else {
+//                print(usage)
+//                break
+//            }
+//
+//            for proj in projIDs {
+//                rectify(left: left, right: right, proj: proj)
+//            }
+//        } else {
+//            guard params.count == 3, let proj = Int(params[0]), let left = Int(params[1]), let right = Int(params[2]) else {
+//                print(usage)
+//                break
+//            }
+//            rectify(left: left, right: right, proj: proj)
+//        }
         
     case .merge:
         let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
@@ -1205,7 +1284,7 @@ func processCommand(_ input: String) -> Bool {
 func setLensPosition(_ lensPosition: Float) -> Float {
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
-    var lensPos = photoReceiver.receiveLensPositionSync()
+    let lensPos = photoReceiver.receiveLensPositionSync()
     return lensPos
 }
 
