@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreVideo
+import CoreMedia
 
 /*
 func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
@@ -157,4 +158,11 @@ func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
     let params = tokens.filter { return !$0.starts(with: "-") }
     let flags = tokens.filter { return $0.starts(with: "-") }
     return (params, flags)
+}
+
+extension CMTime {
+    init(exposureDuration: Double) {
+        let prefferedExposureDurationTimescale: CMTimeScale = 1000000
+        self.init(seconds: exposureDuration, preferredTimescale: prefferedExposureDurationTimescale)
+    }
 }
