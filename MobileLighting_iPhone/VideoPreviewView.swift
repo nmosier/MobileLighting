@@ -35,8 +35,14 @@ class VideoPreviewView: UIView {
         .portraitUpsideDown : .portraitUpsideDown,
         .landscapeLeft : .landscapeRight,
         .landscapeRight: .landscapeLeft,
+        .faceUp : .portrait,
+        .faceDown : .portrait,
+        .unknown : .portrait,
     ]
     
+//    class OrientationObserver: NSObject {
+//        @objc dynamic var
+//    }
     
     func updateOrientation() -> AVCaptureVideoOrientation {
         let orientation = orientationMap[UIDevice.current.orientation]!
