@@ -414,12 +414,44 @@ class Decoder {
     
     // ROTATED
     func getPFMData() -> Data {
-        let pfmHeaderStr: NSString = "Pf\n\(height) \(width)\n-1\n" as NSString
+        let dimensionDict: [AVCaptureVideoOrientation : (Int,Int) -> (Int, Int)] = [
+            .portrait : { return ($1,$0)  }, // rotated
+            .landscapeLeft : { return ($0,$1) }, // not rotated
+            .landscapeRight : { return ($0,$1) }, // not rotated
+            .portraitUpsideDown : { return ($1,$0) }
+        ]
+        
+        let (width_rot, height_rot): (Int, Int) = dimensionDict[orientation]!(self.width, self.height)
+        
+        let pfmHeaderStr: NSString = "Pf\n\(width_rot) \(height_rot)\n-1\n" as NSString
         var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
+        
+        print("using orientation = \(orientation.rawValue)")
         
         let arrlen: Int = width*height
         let arrlenm1: Int = arrlen-1    // for optimization in rotation calculation
+        
+        let rotate0: (Int) -> Int = { return $0 } // identity
+        let rotate90cw: (Int) -> Int = {
+            let x = $0 % self.width
+            let y = $0 / self.width
+            let x_ = self.height - y - 1
+            let y_ = x
+            let i_ = y_ * self.height + x_
+            return i_
+        }
+        let rotate180: (Int) -> Int = { return arrlenm1 - $0 } // I think this works
+        let rotate90ccw: (Int) -> Int = { return arrlenm1 - self.height * ($0 % self.width) - $0/self.width }
+        let rotationDict: [AVCaptureVideoOrientation : (Int) -> Int] = [
+            .portrait : rotate90ccw,
+            .landscapeLeft : rotate0,
+            .landscapeRight : rotate180,
+            .portraitUpsideDown : rotate90cw,
+        ]
+    
         var pfmBodyArray: [Float] = Array<Float>(repeating: 0.0, count: arrlen)
+        let rotator = rotationDict[orientation]!
+        
         for i in 0..<width*height {
             let val: Float
             if (unknownArray[i] == 0) {
@@ -445,8 +477,13 @@ class Decoder {
             //let x_rot = height - i/width - 1
             //let y_rot = width - i%width - 1
             //let i_rot = y_rot*height + x_rot
-            let i_rot = arrlenm1 - height*(i%width) - i/width   // optimized version of calculation above
+            
+//            let i_rot = arrlenm1 - height*(i%width) - i/width   // optimized version of calculation above
+            let i_rot = rotator(i)
             pfmBodyArray[i_rot] = val
+            
+            // updated version: account for orientation in rotation
+            
         }
         
         let pfmBodyData = Data(bytes: &pfmBodyArray, count: width*height*MemoryLayout<Float>.size)
