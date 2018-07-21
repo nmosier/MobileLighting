@@ -171,8 +171,15 @@ class DirectoryStructure {
                     try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
                     return subdir
                 }
+    
+    func decoded(proj: Int, rectified: Bool) -> String {
+        let subdir = "\(self.decoded(rectified))/proj\(proj)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
             func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
-                    let subdir = "\(self.decoded(rectified))/proj\(proj)/pos\(pos)"
+                let subdir = "\(self.decoded(proj: proj, rectified: rectified))/pos\(pos)"
                     try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
                     return subdir
                 }
