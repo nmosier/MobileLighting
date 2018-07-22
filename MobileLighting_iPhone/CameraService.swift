@@ -429,9 +429,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 print("starting to record video...")
                 // set exposure if provided
                 if let exposureDurations = packet.photoBracketExposureDurations, let exposureISOs = packet.photoBracketExposureISOs, let exposureDuration = exposureDurations.first, let exposureISO = exposureISOs.first {
-                    var exposureSet = false
-                    cameraController.captureDevice.setExposureModeCustom(duration: CMTime(exposureDuration: exposureDuration), iso: Float(exposureISO), completionHandler: {(_) in exposureSet = true })
-                    while !exposureSet {}
+                    do {
+                        var exposureSet = false
+                        try cameraController.captureDevice.lockForConfiguration()
+                        cameraController.captureDevice.setExposureModeCustom(duration: CMTime(exposureDuration: exposureDuration), iso: Float(exposureISO), completionHandler: {(_) in exposureSet = true })
+                        cameraController.captureDevice.unlockForConfiguration()
+                        while !exposureSet {}
+                    } catch let error { print(error.localizedDescription) }
                 }
                 if let torchMode = packet.torchMode {
                     cameraController.startVideoRecording(torch: torchMode)

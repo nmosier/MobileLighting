@@ -71,7 +71,7 @@ var strucExposureDurations = sceneSettings.strucExposureDurations
 var strucExposureISOs = sceneSettings.strucExposureISOs
 var calibrationExposure = (sceneSettings.calibrationExposureDuration ?? 0, sceneSettings.calibrationExposureISO ?? 0)
 
-let trajectory = sceneSettings.trajectory
+var trajectory = sceneSettings.trajectory
 
 // calibration settings
 focus = sceneSettings.focus

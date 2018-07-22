@@ -255,10 +255,13 @@
                 print("video: cannot start recording video -- already recording.")
                 return
             }
-            guard movieOutput.connection(with: AVMediaType.video)?.activeVideoStabilizationMode == .off else {
+            let connection = movieOutput.connection(with: .video)
+            guard connection?.activeVideoStabilizationMode == .off else {
                 print("video: could not turn off video stabilization mode.")
                 return
             }
+            connection?.videoOrientation = orientation
+            
             
             // configure torch mode, if requested
             self.isRecordingVideo = true

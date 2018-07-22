@@ -13,6 +13,9 @@ class Trajectory {
     let path: [String]
     let timestep: Double
     let waypoints: [String]
+    let blendRadius: Double
+    let acceleration: Double
+    let velocity: Double
     
     var duration: Double {
         get {
@@ -23,7 +26,7 @@ class Trajectory {
     var script: String {
         var script_ = "def Trajectory():\n"
         for point in path {
-            script_ += "movel(\(point), 2.0, 0.4, \(timestep))\n"
+            script_ += "movel(\(point), a=\(acceleration), v=\(velocity), r=\(blendRadius), t=\(timestep))\n"
         }
         script_ += "end\n"
         return script_
@@ -44,7 +47,7 @@ class Trajectory {
         guard let positionsTmp = yaml[Yaml.string("trajectory")].array else {
             fatalError("positions must be proivded as array.")
         }
-        let points = positionsTmp.flatMap {
+        let points = positionsTmp.compactMap {
             return $0.string
         }
         self.path = points // need to use copy so that can lookup waypoints before object intialized
@@ -52,7 +55,7 @@ class Trajectory {
         guard let waypointsTmp = yaml[Yaml.string("waypoints")].array else {
             fatalError("waypoints must be provided as array.")
         }
-        self.waypoints = waypointsTmp.flatMap {
+        self.waypoints = waypointsTmp.compactMap {
             if let index = $0.int {
                 guard index >= 0 && index < points.count else {
                     return nil
@@ -63,6 +66,19 @@ class Trajectory {
             }
         }
         
+        guard let blendRadius_ = yaml[Yaml.string("blendRadius")].double else {
+            fatalError("trajectory: blendRadius must be provided for recreating trajectory.")
+        }
+        self.blendRadius = blendRadius_
+        
+        guard let acceleration_ = yaml[Yaml.string("acceleration")].double else {
+            fatalError("trajectory: robot acceleration must be specified.")
+        }
+        guard let velocity_ = yaml[Yaml.string("velocity")].double else {
+            fatalError("trajectory: robot velocity must be specified.")
+        }
+        self.acceleration = acceleration_
+        self.velocity = velocity_
     }
     
     

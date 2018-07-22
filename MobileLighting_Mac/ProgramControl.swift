@@ -36,7 +36,6 @@ enum Command: String {      // rawValues are automatically the name of the case,
     
     // robot control
     case movearm
-    case addpos
     
     // image processing
     case refine
@@ -65,8 +64,54 @@ enum Command: String {      // rawValues are automatically the name of the case,
     
 }
 
+func getUsage(_ command: Command) -> String {
+    switch command {
+    case .unrecognized: return "Command unrecognized. Type \"help\" for a list of commands."
+    case .help: return "help"
+    case .quit: return "quit"
+    case .reloadsettings: return "reloadsettings"
+    case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
+    case .disconnect: return "disconnect (switcher|vxm)"
+    case .disconnectall: return "disconnectall"
+    case .calibrate: return "calibrate (-d|-a)? [# of photos]\n       -d: delete existing photos\n       -a: append to existing photos"
+    case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
+    case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
+    case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
+    case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposure#=1]"
+    case .readfocus: return "readfocus"
+    case .autofocus: return "autofocus"
+    case .lockfocus: return "lockfocus"
+    case .setfocus: return "setfocus [lensPosition s.t. 0≤ l.p. ≤1]"
+    case .focuspoint: return "focuspoint [x_coord] [y_coord]"
+    case .lockwhitebalance: return "lockwhitebalance"
+    case .readexposure: return "readexposure"
+    case .autoexposure: return "autoexposure"
+    case .lockexposure: return "lockexposure"
+    case .setexposure: return "setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)"
+    case .cb: return "cb [squareSize=2]"
+    case .black: return "black"
+    case .white: return "white"
+    case .diagonal: return "diagonal [stripe width]"
+    case .verticalbars: return "verticalbars [width]"
+    case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
+    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
+    case .refine: return "refine [proj] [pos]\n       -a [pos]\n       -r [proj] [leftpos] [rightpos]\n       -a -r [leftpos] [rightpos]"
+    case .disparity: return "disparity (-r)? [projector #] [left pos #] [right pos #]\n          (-r)? -a [left pos #] [right pos #]"
+    case .rectify: return "rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
+    case .merge: return "merge (-r)? [leftpos] [rightpos]"
+    case .reproject: return "reproject [leftpos] [rightpos]"
+    case .merge2: return "merge2 [leftpos] [rightpos]"
+    case .getintrinsics: return "getintrinsics"
+    case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .dispres: return "dispres"
+    case .dispcode: return "dispcode"
+    case .sleep: return "sleep [secs: Float]"
+    case .clearpackets: return "clearpackets"
+    }
+}
+
 let commandUsage: [Command : String] = [
-    .unrecognized: "",
+    .unrecognized: "Command unrecognized. Type \"help\" for a list of commands.",
     .help: "",
     .quit: "",
     .reloadsettings: "",
@@ -85,8 +130,7 @@ let commandUsage: [Command : String] = [
     .proj: "proj [projector#|all] [on|off]",
     .refine: "refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]",
     .disparity: "disparity (-r)? (-a | [projector #]) [left pos #] [right pos #]",
-    .rectify: "rectify (-a | [proj#]) [pos1] [pos2]",
-    .addpos: "addpos [pos_string] [pos_id]?", // currently defunct
+    .rectify: "rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a",
     .getintrinsics: "getintrinsics [board_type = ARUCO_SINGLE]",
     .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE]"
 ]
@@ -114,13 +158,14 @@ func processCommand(_ input: String) -> Bool {
     } else {
         command = .unrecognized
     }
+    let usage = "usage: \t\(getUsage(command))"
     
     processingCommand = true
     
     nextToken += 1
     cmdSwitch: switch command {
     case .unrecognized:
-        print("Command unrecognized. Type \"help\" for a list of commands.")
+        print(usage)
         break
         
     case .help:
@@ -134,33 +179,30 @@ func processCommand(_ input: String) -> Bool {
         return false
         
     case .reloadsettings:
-        // rereads init settings file and reloads specified attribute
-        // currently only supports changing exposures at runtime
-        let usage: String = "usage: reload [attribute_name]" // e.g. exposures
-        guard tokens.count == 2 else {
+        // rereads init settings file and reloads attributes
+//        let usage: String = "usage: reloadsettings"
+        guard tokens.count == 1 else {
             print(usage)
             break
         }
-        
-        let sceneSettings: SceneSettings
         do {
             sceneSettings = try SceneSettings(sceneSettingsPath)
             print("Successfully loaded initial settings.")
-        } catch {
-            print("Fatal error: could not load init settings")
-            break
-        }
-        
-        if tokens[1] == "exposures" {
-            print("Reloading exposures...")
             strucExposureDurations = sceneSettings.strucExposureDurations
-            print("New exposures: \(strucExposureDurations)")
+            strucExposureISOs = sceneSettings.strucExposureISOs
+            if let calibDuration = sceneSettings.calibrationExposureDuration, let calibISO = sceneSettings.calibrationExposureISO {
+                calibrationExposure = (calibDuration, calibISO)
+            }
+            trajectory = sceneSettings.trajectory
+        } catch let error {
+            print("Fatal error: could not load init settings, \(error.localizedDescription)")
+            break
         }
     
     // connect: use to connect external devices
     case .connect:
         guard tokens.count >= 2 else {
-            print("usage: connect [iphone|switcher|vxm] [port string]?")
+            print(usage)
             break
         }
         
@@ -191,7 +233,8 @@ func processCommand(_ input: String) -> Bool {
     // disconnect: use to disconnect vxm or switcher (generally not necessary)
     case .disconnect:
         guard tokens.count == 2 else {
-            print("usage: disconnect [vxm|switcher]")
+//            print("usage: disconnect [vxm|switcher]")
+            print(usage)
             break
         }
         
@@ -216,7 +259,8 @@ func processCommand(_ input: String) -> Bool {
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .calibrate:
         guard tokens.count == 2 || tokens.count == 3 else {
-            print("usage: calibrate [-d|-a]? [# of photos]\n       -d -- delete existing photos\n       -a -- append to existing photos")
+//            print("usage: calibrate [-d|-a]? [# of photos]\n       -d -- delete existing photos\n       -a -- append to existing photos")
+            print(usage)
             break
         }
         
@@ -298,7 +342,7 @@ func processCommand(_ input: String) -> Bool {
     // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
     //     proper location
     case .calibrate2pos:
-        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?"
+//        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?"
         guard tokens.count >= 4 && tokens.count <= 5 else {
             print(usage)
             break
@@ -321,7 +365,7 @@ func processCommand(_ input: String) -> Bool {
         break
         
     case .stereocalib:
-        let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
+//        let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
         
         let (params, flags) = partitionTokens(tokens)
         guard params.count >= 1, let nPhotos = Int(tokens[1]) else {
@@ -361,7 +405,7 @@ func processCommand(_ input: String) -> Bool {
     //      BUT it does configure the projectors
     case .struclight:
 //        let parameters = ["struclight", "projector", "position"]
-        let usage = "usage: struclight [id] [projector #] [position #] [resolution]?"
+//        let usage = "usage: struclight [id] [projector #] [position #] [resolution]?"
         // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
 //        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
@@ -416,7 +460,7 @@ func processCommand(_ input: String) -> Bool {
     
         
     case .takeamb:
-        let usage = "usage: takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposureID=1]"
+//        let usage = "usage: takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposureID=1]"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         guard params.count >= 1 else {
@@ -500,32 +544,23 @@ func processCommand(_ input: String) -> Bool {
                 case .normal:
                     receivePhotos()
                     break
-//                    var nReceived = 0
-//                    let completionHandler = { nReceived += 1 }
-//                    for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-//                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(exp).JPG"
-//                        let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
-//                        photoReceiver.dataReceivers.insertFirst(ambReceiver)
-//                    }
-//                    while nReceived != sceneSettings.ambientExposureDurations!.count {}
-//                    // continue
                 }
             }
             
             break
             
         case "video":
-            guard params.count >= 2, params.count <= 3 else {
+            guard params.count >= 1, params.count <= 2 else {
                 print(usage)
                 break cmdSwitch
             }
             
             let exp: Int
             if params.count == 1 {
-                exp = 1
+                exp = min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) / 2
             } else {
-                guard let exp_ = Int(tokens[1]), exp_ >= 0, exp_ < min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) else {
-                    print("takeamb video: invalid exposure number \(tokens[1])")
+                guard let exp_ = Int(params[1]), exp_ >= 0, exp_ < min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) else {
+                    print("takeamb video: invalid exposure number \(params[1])")
                     break cmdSwitch
                 }
                 exp = exp_
@@ -549,7 +584,7 @@ func processCommand(_ input: String) -> Bool {
             _ = readLine()
             
             print("takeamb video: starting recording...")
-            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, torchMode: torchMode)
+            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
             cameraServiceBrowser.sendPacket(packet)
             
             usleep(UInt32(0.5 * 1e6)) // wait 0.5 seconds
@@ -611,7 +646,8 @@ func processCommand(_ input: String) -> Bool {
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
         guard nextToken < tokens.count else {
-            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
+//            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
+            print(usage)
             break
         }
         guard let pos = Float(tokens[nextToken]) else {
@@ -626,7 +662,8 @@ func processCommand(_ input: String) -> Bool {
     case .focuspoint:
         // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
         guard tokens.count >= 3 else {
-            print("usage: focuspoint [x_coord] [y_coord]")
+//            print("usage: focuspoint [x_coord] [y_coord]")
+            print(usage)
             break
         }
         guard let x = Float(tokens[1]), let y = Float(tokens[2]) else {
@@ -677,7 +714,8 @@ func processCommand(_ input: String) -> Bool {
         
     case .setexposure:
         guard tokens.count == 3 else {
-            print("usage: setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)")
+//            print("usage: setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)")
+            print(usage)
             break
         }
         guard let exposureDuration = Double(tokens[1]), let exposureISO = Float(tokens[2]) else {
@@ -690,7 +728,7 @@ func processCommand(_ input: String) -> Bool {
     // displays checkerboard pattern
     // optional parameter: side length of squares, in pixels
     case .cb:
-        let usage = "usage: cb [squareSize]?"
+//        let usage = "usage: cb [squareSize]?"
         let size: Int
         guard tokens.count >= 1 && tokens.count <= 2 else {
             print(usage)
@@ -720,7 +758,7 @@ func processCommand(_ input: String) -> Bool {
     // displays diagonal stripes (at 45°) of specified width (measured horizontally)
     // (tool for testing pico projector and its diagonal pixel grid)
     case .diagonal:
-        let usage = "usage: diagonal [stripe width]"    // width measured horizontally
+//        let usage = "usage: diagonal [stripe width]"    // width measured horizontally
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -731,7 +769,7 @@ func processCommand(_ input: String) -> Bool {
     // displays vertical bars of specified width
     // (tool originaly made for testing pico projector)
     case .verticalbars:
-        let usage = "usage: verticalbars [width]"
+//        let usage = "usage: verticalbars [width]"
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -783,27 +821,12 @@ func processCommand(_ input: String) -> Bool {
             }
             
         default:
-            print("usage: \(commandUsage[.movearm]!)")
+//            print("usage: \(commandUsage[.movearm]!)")
+            print(usage)
             break
         }
         
         break
-    
-    case .addpos:
-        switch tokens.count {
-        case 2:
-            positions.append(tokens[1]) // append pos string
-        case 3:
-            guard let posID = Int(tokens[2]), posID <= positions.count && posID >= 0 else {
-                print("addpos: invalid position ID.")
-                break
-            }
-            if (posID == positions.count) { positions.append( tokens[1] ) }
-            else { positions[posID] = tokens[1] }
-        default:
-            print("usage: \(commandUsage[.addpos]!)")
-        }
-        
     
     // used to turn projectors on or off
     //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
@@ -811,7 +834,8 @@ func processCommand(_ input: String) -> Bool {
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
-            print("usage: proj [projector_#|all] [on|off]|[1|0]")
+//            print("usage: proj [projector_#|all] [on|off]|[1|0]")
+            print(usage)
             break
         }
         if let projector = Int(tokens[1]) {
@@ -846,7 +870,7 @@ func processCommand(_ input: String) -> Bool {
     // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine:
-        let usage = "usage: refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]"
+//        let usage = "usage: refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]"
         guard tokens.count > 1 else {
             print(usage)
             break cmdSwitch
@@ -941,7 +965,7 @@ func processCommand(_ input: String) -> Bool {
     //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
     case .disparity:
-        let usage = "usage: disparity [-r]? [-a | projector #] [left pos #] [right pos #]\n"
+//        let usage = "usage: disparity [-r]? [-a | projector #] [left pos #] [right pos #]\n"
 //        let flags = ["-r"]
         let (params, flags) = partitionTokens([String](tokens[1...]))
         var curParam = 0
@@ -994,7 +1018,7 @@ func processCommand(_ input: String) -> Bool {
         }
     
     case .rectify:
-        let usage = "usage: rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
+//        let usage = "usage: rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var allproj = false
@@ -1062,31 +1086,9 @@ func processCommand(_ input: String) -> Bool {
                 rectify(left: left, right: right, proj: proj)
             }
         }
-//
-//
-//        if all {
-//            print(params.count)
-//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
-//            let projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
-//
-//            guard params.count == 2, let left = Int(params[0]), let right = Int(params[1]) else {
-//                print(usage)
-//                break
-//            }
-//
-//            for proj in projIDs {
-//                rectify(left: left, right: right, proj: proj)
-//            }
-//        } else {
-//            guard params.count == 3, let proj = Int(params[0]), let left = Int(params[1]), let right = Int(params[2]) else {
-//                print(usage)
-//                break
-//            }
-//            rectify(left: left, right: right, proj: proj)
-//        }
         
     case .merge:
-        let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
+//        let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
         guard tokens.count >= 3 else {
             print(usage)
             break
@@ -1106,7 +1108,7 @@ func processCommand(_ input: String) -> Bool {
         merge(left: left, right: right, rectified: rectified)
         
     case .reproject:
-        let usage = "usage: reproject [leftpos] [rightpos]"
+//        let usage = "usage: reproject [leftpos] [rightpos]"
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -1119,7 +1121,7 @@ func processCommand(_ input: String) -> Bool {
         reproject(left: left, right: right)
         
     case .merge2:
-        let usage = "usage: merge2 [leftpos] [rightpos]"
+//        let usage = "usage: merge2 [leftpos] [rightpos]"
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -1135,7 +1137,8 @@ func processCommand(_ input: String) -> Bool {
         // ABSOLUTE PATHS NOT REQUIRED
     case .getintrinsics:
         guard tokens.count <= 2 else {
-            print("usage: \(commandUsage[command]!)")
+//            print("usage: \(commandUsage[command]!)")
+            print(usage)
             break
         }
         let patternEnum: CalibrationSettings.CalibrationPattern
@@ -1165,7 +1168,7 @@ func processCommand(_ input: String) -> Bool {
     
     // do stereo calibration
     case .getextrinsics:
-        let usage = commandUsage[.getextrinsics]!
+//        let usage = commandUsage[.getextrinsics]!
         let (params, flags) = partitionTokens(tokens)
         
         var all = false
@@ -1209,22 +1212,6 @@ func processCommand(_ input: String) -> Bool {
             patternEnum = .ARUCO_SINGLE
         }
         
-        //
-        //
-        //        guard let leftpos = Int(tokens[1]), let rightpos = Int(tokens[2]) else {
-        //            print("getextrinsics: invalid positions \(tokens[1]), \(tokens[2])")
-        //            break
-        //        }
-        //
-        //        if tokens.count == 3 {
-        //            patternEnum = .ARUCO_SINGLE
-        //        } else {
-        //            guard let patternEnumTmp = CalibrationSettings.CalibrationPattern(rawValue: tokens[3]) else {
-        //                print("getextrinsics: invalid board pattern \(tokens[3])")
-        //                break
-        //            }
-        //            patternEnum = patternEnumTmp
-        //        }
         for (leftpos, rightpos) in positionPairs {
             generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
             
@@ -1254,7 +1241,7 @@ func processCommand(_ input: String) -> Bool {
     
     // scripting
     case .sleep:
-        let usage = "usage: sleep [secs: Float]"
+//        let usage = "usage: sleep [secs: Float]"
         guard tokens.count == 2 else {
             print(usage)
             break
