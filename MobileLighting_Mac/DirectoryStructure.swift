@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2, ambientPhotos, ambientVideos]
+            return [scenes, scene, settings, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2, ambientPhotos, ambientVideos]
         }
     }
     
@@ -44,6 +44,10 @@ class DirectoryStructure {
                 return self.orig + "/" + "ambient"
             }
         }
+    
+    var settings: String {
+        return "\(self.scene)/settings"
+    }
     
     enum PhotoMode: String {
         case normal
@@ -195,6 +199,12 @@ class DirectoryStructure {
                     return subdir
                 }
     
+    func disparity(proj: Int, rectified: Bool) -> String {
+        let subdir = "\(self.disparity(rectified))/proj\(proj)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
                 func disparity(proj: Int, pos: Int, rectified: Bool) -> String {
                     return subdir(self.disparity(rectified), proj: proj, pos: pos)
                 }
@@ -219,6 +229,10 @@ class DirectoryStructure {
         get {
             return self.computed + "/" + "reprojected"
         }
+    }
+    
+    func reprojected(proj: Int) -> String {
+        return subdir(self.reprojected, proj: proj)
     }
 
     func reprojected(proj: Int, pos: Int) -> String {

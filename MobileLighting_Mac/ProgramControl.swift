@@ -11,7 +11,7 @@ import AVFoundation
 
 //MARK: COMMAND-LINE INPUT
 
-enum Command: String {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
+enum Command: String, EnumCollection {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
     case unrecognized
     case quit
@@ -67,7 +67,7 @@ enum Command: String {      // rawValues are automatically the name of the case,
 func getUsage(_ command: Command) -> String {
     switch command {
     case .unrecognized: return "Command unrecognized. Type \"help\" for a list of commands."
-    case .help: return "help"
+    case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
@@ -95,12 +95,12 @@ func getUsage(_ command: Command) -> String {
     case .verticalbars: return "verticalbars [width]"
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
-    case .refine: return "refine [proj] [pos]\n       -a [pos]\n       -r [proj] [leftpos] [rightpos]\n       -a -r [leftpos] [rightpos]"
-    case .disparity: return "disparity (-r)? [projector #] [left pos #] [right pos #]\n          (-r)? -a [left pos #] [right pos #]"
-    case .rectify: return "rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
-    case .merge: return "merge (-r)? [leftpos] [rightpos]"
-    case .reproject: return "reproject [leftpos] [rightpos]"
-    case .merge2: return "merge2 [leftpos] [rightpos]"
+    case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
+    case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
+    case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
+    case .reproject: return "reproject [left] [right]\n       reproject -a"
+    case .merge2: return "merge2 [left] [right]\n       merge2 -a"
     case .getintrinsics: return "getintrinsics"
     case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
     case .dispres: return "dispres"
@@ -109,7 +109,7 @@ func getUsage(_ command: Command) -> String {
     case .clearpackets: return "clearpackets"
     }
 }
-
+/*
 let commandUsage: [Command : String] = [
     .unrecognized: "Command unrecognized. Type \"help\" for a list of commands.",
     .help: "",
@@ -133,7 +133,7 @@ let commandUsage: [Command : String] = [
     .rectify: "rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a",
     .getintrinsics: "getintrinsics [board_type = ARUCO_SINGLE]",
     .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE]"
-]
+] */
 
 
 var processingCommand: Bool = false
@@ -141,6 +141,7 @@ var processingCommand: Bool = false
 // nextCommand: prompts for next command at command line, then handles command
 // -Return value -> true if program should continue, false if should exit
 func nextCommand() -> Bool {
+    print("> ", terminator: "")
     guard let input = readLine(strippingNewline: true) else {
         // if input empty, simply return & continue execution
         return true
@@ -165,15 +166,33 @@ func processCommand(_ input: String) -> Bool {
     nextToken += 1
     cmdSwitch: switch command {
     case .unrecognized:
-        print(usage)
+//        print(usage)
+        if let unknown = tokens.first {
+            let bestMatch = Command(closeTo: unknown)
+            print("did you mean: \(bestMatch.rawValue)")
+        } else {
+            print(usage)
+        }
         break
         
     case .help:
-        // to be implemented
-        for (command, usage) in commandUsage {
-            print("\(command):\t\(usage)")
+        switch tokens.count {
+        case 1:
+            let commands = Command.cases()
+            // print all commands & usage
+            for command in commands {
+                print("\(command):\t\(getUsage(command))")
+            }
+        case 2:
+            if let command = Command(rawValue: tokens[1]) {
+                print("\(command):\n\(getUsage(command))")
+            } else {
+                let command = Command(closeTo: tokens[1])
+                print("command \(tokens[1]) unrecognized. Did you mean: \(command.rawValue)")
+            }
+        default:
+            print(usage)
         }
-        print()
         
     case .quit:
         return false
@@ -878,21 +897,44 @@ func processCommand(_ input: String) -> Bool {
         let (params, flags) = partitionTokens([String](tokens[1...]))
         var curParam = 0
         
-        var rectified = false, all = false
+        var rectified = false, allproj = false, allpos = false
         for flag in flags {
             switch flag {
             case "-r":
                 rectified = true
             case "-a":
-                all = true
+                if !allproj {
+                    allproj = true
+                } else {
+                    allpos = true
+                }
             default:
                 print("refine: invalid flag \(flag)")
                 break cmdSwitch
             }
         }
+        
+        // verify proper # of tokens passed
+        if allproj, allpos {
+            guard params.count == 0 else {
+                print(usage)
+                break
+            }
+        } else if allproj {
+            guard params.count == (rectified ? 2 : 1) else {
+                print(usage)
+                break
+            }
+        } else {
+            guard params.count == (rectified ? 3 : 2) else {
+                print(usage)
+                break
+            }
+        }
+        
 
         var projs = [Int]()
-        if all {
+        if allproj {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
             projs = getIDs(projDirs, prefix: "proj", suffix: "")
         } else {
@@ -907,52 +949,81 @@ func processCommand(_ input: String) -> Bool {
 //                print("refine: invalid projector \(params[0])")
 //                break
 //            }
+        let singlePositions: [Int]?
+        if !allpos {
+            if !rectified {
+                guard let pos = Int(params[curParam]) else {
+                    print(usage)
+                    break
+                }
+                singlePositions = [pos]
+            } else {
+                guard let left = Int(params[curParam]), let right = Int(params[curParam+1]) else {
+                    print(usage)
+                    break
+                }
+                singlePositions = [left, right]
+            }
+        } else {
+            singlePositions = nil
+        }
 
         for proj in projs {
-            if !rectified {
-                
-                guard let pos = Int(params[curParam]) else {
-                    print("refine: invalid position \(params[curParam])")
-                    break
-                }
-                for direction: Int32 in [0, 1] {
-                    var imgpath = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm"
-                    var outdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: false)
-                    let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
-                    do {
-                        let metadataStr = try String(contentsOfFile: metadatapath)
-                        let metadata: Yaml = try Yaml.load(metadataStr)
-                        if let angle: Double = metadata.dictionary?["angle"]?.double {
-                            var posID = *"\(pos)"
-                            refineDecodedIm(&outdir, direction, &imgpath, angle, &posID)
-                        }
-                    } catch {
-                        print("refine error: could not load metadata file \(metadatapath).")
-                    }
-                }
+            let positions: [Int]
+            if !allpos {
+                positions = singlePositions!
             } else {
-                
-                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
-                    print("refine: invalid stereo positions \(params[curParam]), \(params[curParam+1])")
-                    break
-                }
-                for direction: Int in [0, 1] {
-                    for pos in [leftpos, rightpos] {
-                        var cimg = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm"
-                        var coutdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: true)
-                        
+                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
+                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
+            }
+            
+            if !rectified {
+                for pos in positions {
+//                guard let pos = Int(params[curParam]) else {
+//                    print("refine: invalid position \(params[curParam])")
+//                    break
+//                }
+                    for direction: Int32 in [0, 1] {
+                        var imgpath = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm"
+                        var outdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: false)
                         let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
                         do {
                             let metadataStr = try String(contentsOfFile: metadatapath)
                             let metadata: Yaml = try Yaml.load(metadataStr)
                             if let angle: Double = metadata.dictionary?["angle"]?.double {
-                                var posID = *"\(leftpos)\(rightpos)"
-                                refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
+                                var posID = *"\(pos)"
+                                refineDecodedIm(&outdir, direction, &imgpath, angle, &posID)
                             }
                         } catch {
                             print("refine error: could not load metadata file \(metadatapath).")
                         }
-                        
+                    }
+                }
+            } else {
+                let positionPairs = zip(positions, positions[1...])
+//                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
+//                    print("refine: invalid stereo positions \(params[curParam]), \(params[curParam+1])")
+//                    break
+//                }
+                for (leftpos, rightpos) in positionPairs {
+                    for direction: Int in [0, 1] {
+                        for pos in [leftpos, rightpos] {
+                            var cimg = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm"
+                            var coutdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: true)
+                            
+                            let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
+                            do {
+                                let metadataStr = try String(contentsOfFile: metadatapath)
+                                let metadata: Yaml = try Yaml.load(metadataStr)
+                                if let angle: Double = metadata.dictionary?["angle"]?.double {
+                                    var posID = *"\(leftpos)\(rightpos)"
+                                    refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
+                                }
+                            } catch {
+                                print("refine error: could not load metadata file \(metadatapath).")
+                            }
+                            
+                        }
                     }
                 }
             }
@@ -971,19 +1042,29 @@ func processCommand(_ input: String) -> Bool {
         var curParam = 0
         
         var rectified = false
-        var all = false
+        var allproj = false, allpos = false
         for flag in flags {
             switch flag {
             case "-r":
                 rectified = true
             case "-a":
-                all = true
+                if !allproj {
+                    allproj = true
+                } else {
+                    allpos = true
+                }
             default:
                 print("disparity: invalid flag \(flag)")
                 break cmdSwitch
             }
         }
-        if all {
+        
+        if allproj, allpos {
+            guard params.count == 0 else {
+                print(usage)
+                break
+            }
+        } else if allproj {
             guard params.count == 2 else {
                 print(usage)
                 break
@@ -996,29 +1077,37 @@ func processCommand(_ input: String) -> Bool {
         }
         
         var projs = [Int]()
-        if !all {
+        if !allproj {
             guard let proj = Int(params[curParam]) else {
                 print("disparity: invalid projector \(params[curParam])")
                 break
             }
             projs = [proj]
             curParam += 1
-        }
-        guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
-            print("disparity: invalid positions \(params[curParam]), \(params[curParam+1])")
-            break
-        }
-        if all {
+        } else {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
             projs = getIDs(projDirs, prefix: "proj", suffix: "")
         }
-
+        
         for proj in projs {
-            disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: rectified)
+            let positions: [Int]
+            if !allpos {
+                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
+                    print("disparity: invalid positions \(params[curParam]), \(params[curParam+1])")
+                    break
+                }
+                positions = [leftpos, rightpos]
+            } else {
+                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
+                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
+            }
+            
+            for (leftpos, rightpos) in zip(positions, positions[1...]) {
+                disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: rectified)
+            }
         }
-    
+
     case .rectify:
-//        let usage = "usage: rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var allproj = false
@@ -1089,48 +1178,197 @@ func processCommand(_ input: String) -> Bool {
         
     case .merge:
 //        let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
-        guard tokens.count >= 3 else {
+        
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        var rectified = false, allpos = false
+        for flag in flags {
+            switch flag {
+            case "-r":
+                rectified = true
+            case "-a":
+                allpos = true
+            default:
+                print("merge: unrecognized flag \(flag)")
+                break
+            }
+        }
+        
+        let nparams: Int
+        if allpos { nparams = 0 }
+        else { nparams = 2 }
+        guard params.count == nparams else {
             print(usage)
             break
         }
-        var curTok = 1
-        let rectified: Bool
-        if tokens[1] == "-r" {
-            rectified = true
-            curTok += 1
+        
+        let positions: [Int]
+        if !allpos {
+            guard let leftpos = Int(params[0]), let rightpos = Int(params[1]) else {
+                print(usage)
+                break
+            }
+            positions = [leftpos, rightpos]
         } else {
-            rectified = false
+            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(rectified)))
+            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
+            projdirs = projs.map {
+                return dirStruc.disparity(proj: $0, rectified: rectified)
+            }
+            
+            let positions2D: [[Int]] = projdirs.map {
+                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
+                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
+                return positions
+            }
+            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
+                return set.intersection(list)
+            }
+            positions = [Int](posset).sorted()
         }
-        guard tokens.count == curTok + 2, let left = Int(tokens[curTok]), let right = Int(tokens[curTok+1]) else {
-            print("merge: invalid stereo position pair provided.\n\(usage)")
-            break
+        
+        for (left, right) in zip(positions, positions[1...]) {
+            merge(left: left, right: right, rectified: rectified)
         }
-        merge(left: left, right: right, rectified: rectified)
+//        var curTok = 1
+//        let rectified: Bool
+//        if tokens[1] == "-r" {
+//            rectified = true
+//            curTok += 1
+//        } else {
+//            rectified = false
+//        }
+//        guard tokens.count == curTok + 2, let left = Int(tokens[curTok]), let right = Int(tokens[curTok+1]) else {
+//            print("merge: invalid stereo position pair provided.\n\(usage)")
+//            break
+//        }
+//        merge(left: left, right: right, rectified: rectified)
         
     case .reproject:
 //        let usage = "usage: reproject [leftpos] [rightpos]"
-        guard tokens.count == 3 else {
+        
+        // implement -a functionality
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        var allpos = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                allpos = true
+            default:
+                print("reproject: unrecognized flag \(flag)")
+                break
+            }
+        }
+        
+        let nparams: Int
+        if allpos {
+            nparams = 0
+        } else {
+            nparams = 2
+        }
+        guard params.count == nparams else {
             print(usage)
             break
         }
         
-        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
-            print("reproject: invalid stereo position pair provided.")
-            break
+        let positions: [Int]
+        if !allpos {
+            guard let left = Int(params[0]), let right = Int(params[1]) else {
+                print("reproject: invalid stereo position pair provided.")
+                break
+            }
+            positions = [left, right]
+        } else {
+            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(true)))
+            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
+            projdirs = projs.map {
+                return dirStruc.decoded(proj: $0, rectified: true)
+            }
+            
+            let positions2D: [[Int]] = projdirs.map {
+                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
+                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
+                return positions
+            }
+            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
+                return set.intersection(list)
+            }
+            positions = [Int](posset).sorted()
         }
-        reproject(left: left, right: right)
+        
+        for (left, right) in zip(positions, positions[1...]) {
+            reproject(left: left, right: right)
+        }
+        
+//        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
+//            print("reproject: invalid stereo position pair provided.")
+//            break
+//        }
+//        reproject(left: left, right: right)
         
     case .merge2:
 //        let usage = "usage: merge2 [leftpos] [rightpos]"
-        guard tokens.count == 3 else {
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        var allpos = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                allpos = true
+            default:
+                print("merge2: unrecognized flag \(flag).")
+                break
+            }
+        }
+        
+        let nparams: Int
+        if allpos { nparams = 0 }
+        else { nparams = 2 }
+        
+        guard params.count == nparams else {
             print(usage)
             break
         }
-        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
-            print("reproject: invalid stereo position pair provided.")
-            break
+        
+        let positions: [Int]
+        if !allpos {
+            guard let left = Int(params[0]), let right = Int(params[1]) else {
+                print("reproject: invalid stereo position pair provided.")
+                break
+            }
+            positions = [left, right]
+        } else {
+            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.reprojected))
+            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
+            projdirs = projs.map {
+                return dirStruc.reprojected(proj: $0)
+            }
+            
+            let positions2D: [[Int]] = projdirs.map {
+                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
+                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
+                return positions
+            }
+            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
+                return set.intersection(list)
+            }
+            positions = [Int](posset).sorted()
         }
-        mergeReprojected(left: left, right: right)
+        
+        for (left, right) in zip(positions, positions[1...]) {
+            mergeReprojected(left: left, right: right)
+        }
+        
+//        guard tokens.count == 3 else {
+//            print(usage)
+//            break
+//        }
+//        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
+//            print("reproject: invalid stereo position pair provided.")
+//            break
+//        }
+//        mergeReprojected(left: left, right: right)
         
     // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
     // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
@@ -1505,8 +1743,8 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     }
     let msgMove = "Hit enter when camera in position."
     let msgBoard = "Hit enter when board repositioned."
-    let leftSubdir = dirStruc.stereoPhotos(pos0)//dirStruc.stereoPhotosPairLeft(left: pos0, right: pos1)
-    let rightSubdir = dirStruc.stereoPhotos(pos1)//dirStruc.stereoPhotosPairRight(left: pos0, right: pos1)
+    let leftSubdir = dirStruc.stereoPhotos(pos0)
+    let rightSubdir = dirStruc.stereoPhotos(pos1)
     
     // delete all existing photos
 //    func removeImages(dir: String) -> Void {
@@ -1757,4 +1995,39 @@ func calibration_wait(currentPos: Int) -> Bool {
             return true
         }
     } while true
+}
+
+
+extension Command {
+    init(closeTo unknown: String) {
+        if let known = Command(rawValue: unknown) {
+            self = known
+        } else {
+            // if command unrecognized, find closest match
+            var cases: [String] = Command.cases().map { return $0.rawValue }
+            // now D.P. solution
+            let costs: [Int] = cases.map { (command: String) in
+                var cache = [[Int]](repeating: [Int](repeating: 0, count: command.count+1), count: unknown.count+1)
+                for i in 0..<command.count+1 {
+                    cache[0][i] = i
+                }
+                for j in 0..<unknown.count+1 {
+                    cache[j][0] = j
+                }
+//                print("cache for \(command) = ")
+                for j in 1..<unknown.count+1 {
+                    for i in 1..<command.count+1 {
+                        let cost = min(min(cache[j][i-1] + 1, cache[j-1][i] + 1), cache[j-1][i-1] + ((command[i-1] == unknown[j-1]) ? 0 : 1) )
+                        cache[j][i] = cost
+//                        print("\(cost) ", separator: " ", terminator: "")
+                    }
+//                    print("")
+                }
+                return cache[unknown.count][command.count]
+            }
+            let mincost = costs.min()!
+            let bestMatch = cases[costs.index(of: mincost)!]
+            self = Command(rawValue: bestMatch)!
+        }
+    }
 }

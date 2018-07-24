@@ -30,10 +30,10 @@ var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // manages Kramer switcher box
 var vxmController: VXMController!
 
+var sceneSettings: SceneSettings!
+
 // use minsw codes, not graycodes
 let binaryCodeSystem: BinaryCodeSystem = .MinStripeWidthCode
-
-// READ INITIAL SETTINGS
 
 // required settings vars
 var scenesDirectory: String
@@ -41,30 +41,76 @@ var sceneName: String
 var minSWfilepath: String
 
 // optional settings vars
-var projectors: Int?
+//var projectors: Int?
 //var exposureDurations: [Double]
 //var exposureISOs: [Double]
 var positions: [String]
 let focus: Double?
 
-// load init settings
-do {
-    sceneSettings = try SceneSettings(sceneSettingsPath)
-    print("Successfully loaded initial settings.")
-} catch {
-    print("Fatal error: could not load init settings")
+let mobileLightingUsage = "MobileLighting [path to sceneSettings.yml]\n       MobileLighting init [path to scenes folder [scene name]?]?"
+// parse command line arguments
+guard CommandLine.argc >= 2 else {
+    print("usage: \(mobileLightingUsage)")
     exit(0)
 }
+
+switch CommandLine.arguments[1] {
+case "init":
+    // initialize settings files, then quit
+    print("MobileLighting: entering init mode...")
+    if CommandLine.argc == 2 {
+        print("location of scenes folder: ", terminator: "")
+        scenesDirectory = readLine() ?? ""
+    } else {
+        scenesDirectory = CommandLine.arguments[2]
+    }
+    if CommandLine.argc == 4 {
+        sceneName = CommandLine.arguments[3]
+    } else {
+        print("scene name: ", terminator: "")
+        sceneName = readLine() ?? "untitled"
+    }
+    
+    do {
+        dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
+        try SceneSettings.create(dirStruc)
+        print("successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+    } catch let error {
+        print(error.localizedDescription)
+    }
+    print("MobileLighting exiting...")
+    exit(0)
+    
+case let path where path.lowercased().hasSuffix(".yml"):
+    do {
+        sceneSettings = try SceneSettings(path)
+    } catch let error {
+        print(error.localizedDescription)
+        print("MobileLighting exiting...")
+        exit(0)
+    }
+    
+default:
+    print("usage: \(mobileLightingUsage)")
+    exit(0)
+}
+
+
+// load init settings
+//do {
+//    sceneSettings = try SceneSettings(sceneSettingsPath)
+//    print("Successfully loaded initial settings.")
+//} catch {
+//    print("Fatal error: could not load init settings")
+//    exit(0)
+//}
 
 // save required settings
 scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
 minSWfilepath = sceneSettings.minSWfilepath
 
-// setup optional settings
-projectors = sceneSettings.nProjectors
-//exposureDurations = sceneSettings.exposureDurations
-//exposureISOs = sceneSettings.exposureISOs
+
 positions = sceneSettings.trajectory.waypoints
 
 var strucExposureDurations = sceneSettings.strucExposureDurations

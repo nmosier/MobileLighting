@@ -120,9 +120,9 @@ void computemaps(int width, int height, char *intrinsics, char *extrinsics)
     fextr["Rectification_Parameters"]["Projection_Matrix_2"] >> proj1;
     std::clog << "read camera matrices" << std::endl;
     std::clog << "undistorting first maps..." << std::endl;
-    initUndistortRectifyMap(k, d, rect0, proj0, ims, CV_32FC1, mapx0, mapy0);
+    initUndistortRectifyMap(k, d, rect0, proj0, ims*2, CV_32FC1, mapx0, mapy0);
     std::clog << "undistorting second maps..." << std::endl;
-    initUndistortRectifyMap(k, d, rect1, proj1, ims, CV_32FC1, mapx1, mapy1);
+    initUndistortRectifyMap(k, d, rect1, proj1, ims*2, CV_32FC1, mapx1, mapy1);
     std::clog << "done computing maps" << mapx0.size() << std::endl;
 }
 
@@ -138,7 +138,7 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     mapy = (camera == 0) ? mapy0 : mapy1;
     
     ReadFilePFM(image, string(impath));
-    cv::Size ims = image.size();
+    cv::Size ims = image.size() * 2;
     
     image2 = Mat(ims, imtype, 1);
     im_linear = Mat(ims, imtype, 1);
@@ -159,7 +159,9 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
             image2.at<float>(j,i) = val;
         }
     }
+    
     Mat image2_rotated;
     rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
+    resize(image2_rotated, image2_rotated, image.size());
     WriteFilePFM(image2_rotated, outpath, 1);
 }

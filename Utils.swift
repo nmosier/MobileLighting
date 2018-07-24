@@ -166,3 +166,30 @@ extension CMTime {
         self.init(seconds: exposureDuration, preferredTimescale: prefferedExposureDurationTimescale)
     }
 }
+
+
+
+// from https://stackoverflow.com/questions/32952248/get-all-enum-values-as-an-array
+// temporary implementation of getting all cases of an Enum
+// this can be replaced by CaseIterable protocol once Swift 4.2 and Xcode 10 are released (this summer 2018, I think)
+protocol EnumCollection : Hashable {}
+extension EnumCollection {
+    static func cases() -> AnySequence<Self> {
+        typealias S = Self
+        return AnySequence { () -> AnyIterator<S> in
+            var raw = 0
+            return AnyIterator {
+                let current : Self = withUnsafePointer(to: &raw) { $0.withMemoryRebound(to: S.self, capacity: 1) { $0.pointee }
+                }
+                guard current.hashValue == raw else { return nil }
+                raw += 1
+                return current
+            }
+        }
+    }
+}
+extension String {
+    subscript (i: Int) -> Character {
+        return self[index(startIndex, offsetBy: i)]
+    }
+}

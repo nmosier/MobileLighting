@@ -44,6 +44,7 @@ the use of this software, even if advised of the possibility of such damage.
 
 */
 
+
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
 
@@ -68,10 +69,18 @@ the use of this software, even if advised of the possibility of such damage.
 #include <dirent.h>
 #include <string> 
 
+
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <functional>
+
 using namespace cv;
 using namespace aruco;
 using namespace std;
 
+ //tmp for scaling images during rectification 
+int rf  = 2;
 
 //global variables for AruCo calibration 
 vector< vector< Point2f > > allCornersConcatenated1;
@@ -370,7 +379,7 @@ public:
 
         //If the image is too big, resize it. This makes it more visible and
         // prevents errors with ArUco detection.  
-        if (img.cols>1080) resize(img, img, Size(), 0.5, 0.5);
+        //if (img.cols>1080) resize(img, img, Size(), 0.5, 0.5);
         
         
         return img;
@@ -734,15 +743,15 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
     
     //for each objectPoints vector in overall objectPoints vector of vectors
     for (int i=0; i< (int)inCal.objectPoints.size(); i++)
-    {
-      
-        vector<Point3f> sharedObjectPoints;
-        vector<Point2f> sharedImagePoints, sharedImagePoints2; //shared image points for each inCal
+      {
+	std::map< string , int> countMap;
+	vector<Point3f> sharedObjectPoints;
+	vector<Point2f> sharedImagePoints, sharedImagePoints2; //shared image points for each inCal
 
-        oPoints = &inCal.objectPoints.at(i);
-        oPoints2 = &inCal2.objectPoints.at(i);
-        iPoints  = &inCal.imagePoints.at(i);
-        iPoints2 = &inCal2.imagePoints.at(i);
+	oPoints = &inCal.objectPoints.at(i);
+	oPoints2 = &inCal2.objectPoints.at(i);
+	iPoints  = &inCal.imagePoints.at(i);
+	iPoints2 = &inCal2.imagePoints.at(i);
 
 	
         if ((int)oPoints->size() >= (int)oPoints2->size()){
@@ -757,7 +766,15 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
 		if (oPoints->at(j) == oPoints2->at(shared)) break;
 	      if (shared != (int)oPoints2->size())       //object point is shared
 	      {
-		
+		stringstream temp;
+		temp << "(" << oPoints->at(j).x
+		     << "," << oPoints->at(j).y
+		     << "," << oPoints->at(j).z << ")";
+		auto result = countMap.insert(std::pair< string, int>(temp.str() , 1));
+		if (result.second == false)
+		  result.first->second++;
+		if (result. second != 1)
+		  continue;
 		sharedObjectPoints.push_back(oPoints->at(j));
 		sharedImagePoints.push_back(iPoints->at(j));
 		sharedImagePoints2.push_back(iPoints2->at(shared));
@@ -775,7 +792,17 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
 	      for (shared=0; shared<(int)oPoints->size(); shared++)
 		if (oPoints2->at(j) == oPoints->at(shared)) break;
 	      if (shared != (int)oPoints->size())       //object point is shared
-		{    
+		{
+		  stringstream temp;
+		  temp << "(" << oPoints2->at(j).x
+		       << "," << oPoints2->at(j).y
+		       << "," << oPoints2->at(j).z << ")";
+		  //cout << temp.str() << endl;
+		  auto result = countMap.insert(std::pair< string, int>(temp.str() , 1));
+		  if (result.second == false)
+		      result.first->second++;
+		  if (result. second != 1)
+		    continue;
 		  sharedObjectPoints.push_back(oPoints2->at(j));
 		  sharedImagePoints2.push_back(iPoints2->at(j));
 		  sharedImagePoints.push_back(iPoints->at(shared));
@@ -849,21 +876,32 @@ void chessboardDetect(Settings s, Mat &img, intrinsicCalibration &inCal)
 
 void getObjectAndImagePoints( vector< vector< Point2f > >  detectedCorners, vector< int > detectedIds, vector< Point3f > &objPoints, vector< Point2f > &imgPoints, Ptr<ChessBoard> &currentBoard) {
 
-
-    size_t nDetectedMarkers = detectedIds.size();
+  std::map< string , int> countMap;
+  size_t nDetectedMarkers = detectedIds.size();
 
    
-    objPoints.reserve(nDetectedMarkers);
-    imgPoints.reserve(nDetectedMarkers);
+  objPoints.reserve(nDetectedMarkers);
+  imgPoints.reserve(nDetectedMarkers);
 
-    // look for detected markers that belong to the board and get their information
-    for(unsigned int i = 0; i < nDetectedMarkers; i++) {
-        int currentId = detectedIds[i];
+  // look for detected markers that belong to the board and get their information
+  for(unsigned int i = 0; i < nDetectedMarkers; i++) {
+    int currentId = detectedIds[i];
         for(unsigned int j = 0; j < currentBoard->ids_vector.size(); j++) {
             if(currentId == currentBoard->ids_vector[j]) {
                 for(int p = 0; p < 4; p++) {
-                    objPoints.push_back(currentBoard->obj_points_vector[j][p]);
-                    imgPoints.push_back(detectedCorners[i][p]);
+		   stringstream temp;
+		   temp << "("
+			<< currentBoard->obj_points_vector[j][p].x << ","
+			<< currentBoard->obj_points_vector[j][p].y << ","
+			<< currentBoard->obj_points_vector[j][p].z << ")";
+		   // cout << temp.str() << endl;
+		   auto result = countMap.insert(std::pair< string , int>(temp.str() , 1));
+		   if (result.second == false)
+		     result.first-> second++;
+		   if (result.second !=1)
+		     continue;
+		   objPoints.push_back(currentBoard->obj_points_vector[j][p]);
+		   imgPoints.push_back(detectedCorners[i][p]);
                     
                 }
             }
@@ -935,7 +973,9 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
 
   vector< vector < Point2f >>  processedImagePoints1;
   vector< vector<Point3f>> processedObjectPoints1 ;
+
   
+  // prepares data for aruco calibration  
   processPoints(s, allCornersConcatenated1,
 		allIdsConcatenated1, markerCounterPerFrame1,
 		processedImagePoints1, processedObjectPoints1, currentBoard);
@@ -1059,6 +1099,198 @@ static void undistortImages(Settings s, intrinsicCalibration &inCal)
     }
 }
 
+
+void cropImage(stereoCalibration &sterCal, vector<Mat> rectifiedPair,
+	       vector<vector<int>> roi,   int pair){
+
+  vector<Mat> croppedImages;
+  vector<int> dxs;
+  char imgSave[100];
+  bool save =  true;
+  
+		        
+  int y = min(max(roi[0][1]- 100, 0), max(roi[1][1]- 100, 0));
+  int y1 = max(min( (roi[0][1] + roi[0][3])+ 100 , rectifiedPair[0].size().height - roi[0][1]),
+	       min( (roi[1][1] + roi[1][3])+ 100,  rectifiedPair[1].size().height - roi[1][1]));
+  int x = min(max(roi[0][0] - 100, 0) , max(roi[1][0] - 100, 0));
+  int x1 = max(min( (roi[0][0] + roi[0][2])+ 100, rectifiedPair[0].size().width - roi[0][0]),
+	       min( (roi[1][0] + roi[1][2])+ 100,  rectifiedPair[1].size().width - roi[1][0]));
+  
+  int w = x1 - x;
+  int h = y1 - y;
+
+  int dy = y;
+
+  /*
+  int w = max(min( roi[0][2] + (roi[0][0]-x)*2 , roi[0][2]+ 300),
+	      min( roi[1][2] + (roi[1][0]-x)*2 , roi[1][2]+ 300));
+  
+  int h = max(min(roi[0][3] + (roi[0][1]-y)*2  , roi[0][3] +300),
+	      min(roi[1][3] + (roi[1][1]-y)*2  , roi[1][3] +300));
+  */
+
+  for ( int view =0; view < 2; view++) {
+    
+    
+    int x = max(roi[view][0] - 100, 0);
+
+    dxs.push_back(x); 
+    // int w = min( roi[view][2] + (roi[view][0]-x)*2 , roi[view][2]+ 300);
+    //int h = min(roi[view][3] + (roi[view][1]-y)*2  , roi[view][3] +300);
+    
+    // int w = min( rectifiedPair[view].size().width - x , roi[view][2]+ 200);
+    // int h = min( rectifiedPair[view].size().height - y , roi[view][3] +200);
+    
+    Rect mask(x,y,w,h);
+    Mat croppedImage = rectifiedPair[view](mask);
+    
+    croppedImages.push_back(croppedImage);
+
+    if (save)
+      {
+	sprintf(imgSave, "cropped-%d-%d.jpg", pair, view);
+	imwrite(imgSave, croppedImages[view]);  
+      }
+  }
+ 
+  
+  /*
+  if (pair == 0)
+    sterCal.P1.at<double>(0,2) = sterCal.P1.at<double>(0,2)  
+  */
+	      
+}
+
+vector<int> thresholdImage(stereoCalibration sterCal, Mat rectifiedImage, int view , int pair){
+
+  // structures for saving images
+  char imgSave[100]; 
+  bool save = true;
+  // and for saving ccomponents stats
+  ofstream output("output_test.txt");
+
+  // structures for thresholding
+  Mat src_gray;
+  int thresh = 1;
+  int max_thresh = 255;
+  Mat threshold_output;
+  
+  // Clone and blur rectified image before thresholding
+  cvtColor(rectifiedImage, src_gray, COLOR_BGR2GRAY);
+  
+  /// Threshold grayscale image
+  threshold( src_gray, threshold_output, thresh, max_thresh, THRESH_BINARY );
+
+  
+  Mat out_color;
+  Mat labeledImage;
+  Mat stats;
+  Mat centroids;
+  int nLabels;
+  int connectivity = 4;
+
+  // an estimate for the bounding box of the desired frame
+  int valPixelsArea = sterCal.validRoi[view].height *  sterCal.validRoi[view].width;
+
+  // vector containing that will contain indeces
+  //  to the largest and second largest connected component in the image
+  vector<int> ccVector;
+  ccVector.push_back(1); // largest
+  ccVector.push_back(1); // second largest
+
+    
+  /// Find connected componets
+  nLabels =  connectedComponentsWithStats(threshold_output, labeledImage,
+					  stats, centroids, connectivity, CV_32S);
+
+  //vector of colors for each connected component
+  vector<cv::Vec3b> colors(nLabels+1);
+  
+  for (int j = 0; j < 2 ; j++)
+    for (int l = 1; l < nLabels; l++)
+      {
+	int x = stats.at<int>(Point(0, l));
+	int y = stats.at<int>(Point(1, l));
+	int w = stats.at<int>(Point(2, l));
+	int h = stats.at<int>(Point(3, l));
+	int a = stats.at<int>(Point(4, l));
+
+	output << "for label " << l << endl;
+	output << " x=" << x << " y=" << y
+	       << " w=" << w << " h=" << h
+	       << " area=" << a << endl << endl;
+	
+	colors[l] = cv::Vec3b(0,0,0); // background pixels remain black.
+
+	//  if much bigger than the region of valid pixels, skip the current connected compoent
+	if (w > sterCal.validRoi[view].width*2 || h >  sterCal.validRoi[view].width*2)
+	  continue;
+	
+	/*
+	cout << " iteration " << j << endl;
+	cout << " l =" << l << " and " << "ccVector[j]=" << ccVector[j] << endl;
+	cout << " current area " << a << endl;
+	cout << " largest area s.f. " << stats.at<int>(4, ccVector[j]) << endl; 
+	cout << " is current area more than largest area? " << endl << endl;
+	if ( a >= stats.at<int>(4, ccVector[j]))
+	  cout << " TRUE!" << endl << endl;
+	*/
+	
+	if (a > valPixelsArea && a >= stats.at<int>(Point(4, ccVector[j])))
+	  {
+	    if (j==1 && ccVector[j-1]==l) //a == stats.at<int>(4, ccVector[j-1]))
+	      continue;
+	    ccVector[j] = l;
+	  }
+      }
+
+
+  int lcc = ccVector[0];
+  int slcc = ccVector[1];
+
+  
+  //think if there is a better way than this ...
+  if (stats.at<int>(Point(3, lcc)) > stats.at<int>(Point(3, slcc)) &&
+      stats.at<int>(Point(2, lcc)) < sterCal.validRoi[view].width)
+    //stats.at<int>(Point(2, lcc)) <  stats.at<int>(Point(2, slcc)))
+    {
+      cout << "true" << endl;
+      cout << stats.at<int>(Point(3, lcc)) << "  and " << stats.at<int>(Point(3, slcc)) << endl;
+      ccVector[0]  = slcc;
+      ccVector[1] = lcc;
+    }
+  
+
+  // the connected component of interest will be white, (255, 255, 255)
+  colors[ccVector[0]] = cv::Vec3b(255, 255, 255);
+  out_color  = cv::Mat::zeros(rectifiedImage.size(), CV_8UC3);
+  for( int y = 0; y < out_color.rows; y++ )
+    for( int x = 0; x < out_color.cols; x++ )
+      {
+	int label = labeledImage.at<int>(y, x);
+	out_color.at<cv::Vec3b>(y, x) = colors[label];
+      }
+
+  int lx = stats.at<int>(Point(0, ccVector[0]));
+  int ly = stats.at<int>(Point(1, ccVector[0]));
+  int lw = stats.at<int>(Point(2, ccVector[0]));
+  int lh = stats.at<int>(Point(3, ccVector[0]));
+  int la = stats.at<int>(Point(4, ccVector[0]));
+
+  vector<int> roi = {lx, ly, lw, lh, la};
+  
+  output.close();
+
+  if (save)
+    {
+      sprintf(imgSave, "masked-%d-%d.jpg", pair, view);
+      imwrite(imgSave, out_color);  
+    }
+  
+  return roi;
+}
+
+
 // Rectifies an image pair using a set of extrinsic stereo parameters
 void rectifyImages(Settings s, intrinsicCalibration &inCal,
                    intrinsicCalibration &inCal2, stereoCalibration &sterCal)
@@ -1067,11 +1299,13 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
 
     //Precompute maps for remap()
     initUndistortRectifyMap(inCal.cameraMatrix, inCal.distCoeffs, sterCal.R1,
-                        sterCal.P1, s.imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
+                        sterCal.P1, s.imageSize * rf, CV_16SC2, rmap[0][0], rmap[0][1]);
     initUndistortRectifyMap(inCal2.cameraMatrix, inCal2.distCoeffs, sterCal.R2,
-                        sterCal.P2, s.imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
+                        sterCal.P2, s.imageSize * rf, CV_16SC2, rmap[1][0], rmap[1][1]);
 
     Mat canvas, rimg, cimg;
+    vector<Mat> vectorRimgs;
+    vector<vector<int>> vectorROIs;
     double sf = 600. / MAX(s.imageSize.width, s.imageSize.height);
     int w = cvRound(s.imageSize.width * sf);
     int h = cvRound(s.imageSize.height * sf);
@@ -1095,29 +1329,36 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
     {
         for( int k = 0; k < 2; k++ )
         {
-            Mat img = imread(s.imageList[i*2+k], 0), rimg, cimg;
-
-            if (img.cols>1080) resize(img, img, Size(), 0.5, 0.5);
+	  //Mat img = imread(s.imageList[i*2+k], 0), rimg, cimg;	  
+	  Mat img = s.imageSetup(i*2+k), rimg, cimg;
+	  //if (img.cols>1080) resize(img, img, Size(), 0.5, 0.5);
 	    
-            remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
+	  remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
+	  
+	  // If a valid path for rectified images has been provided, save them to this path
+	  if (save)
+	    {
+	      //vector<int> roi  = thresholdImage(sterCal, rimg, k, i);
+	      //vectorROIs.push_back(roi);
+	      //vectorRimgs.push_back(rimg);
+	      
+	      view = "left";
+	      if (k == 1) view = "right";
+	      sprintf(imgSave, "%s%s_rectified_%d.jpg", s.rectifiedPath.c_str(), view, i);
+	      imwrite(imgSave, rimg);
+	    }
+	    
+	  //cvtColor(rimg, cimg, COLOR_GRAY2BGR);
+	  Mat canvasPart = canvas(Rect(w*k, 0, w, h));
+	  resize(rimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
 
-            // If a valid path for rectified images has been provided, save them to this path
-            if (save)
-            {
-                view = "left";
-                if (k == 1) view = "right";
-                sprintf(imgSave, "%s%s_rectified_%d.jpg", s.rectifiedPath.c_str(), view, i);
-                imwrite(imgSave, rimg);
-            }
-
-            cvtColor(rimg, cimg, COLOR_GRAY2BGR);
-            Mat canvasPart = canvas(Rect(w*k, 0, w, h));
-            resize(cimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
-
-            Rect vroi(cvRound(sterCal.validRoi[k].x*sf), cvRound(sterCal.validRoi[k].y*sf),
+	  Rect vroi(cvRound(sterCal.validRoi[k].x*sf), cvRound(sterCal.validRoi[k].y*sf),
                       cvRound(sterCal.validRoi[k].width*sf), cvRound(sterCal.validRoi[k].height*sf));
-            rectangle(canvasPart, vroi, Scalar(0,0,255), 3, 8);
+	  rectangle(canvasPart, vroi, Scalar(0,0,255), 3, 8);
         }
+	
+	//cropImage(sterCal, vectorRimgs, vectorROIs, i);
+	
         for( int j = 0; j < canvas.rows; j += 16 )
             line(canvas, Point(0, j), Point(canvas.cols, j), Scalar(0, 255, 0), 1, 8);
     }
@@ -1190,7 +1431,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
                  inCal2.cameraMatrix, inCal2.distCoeffs,
                  s.imageSize, sterCal.R, sterCal.T, sterCal.R1, sterCal.R2,
                  sterCal.P1, sterCal.P2, sterCal.Q,
-                 CALIB_ZERO_DISPARITY, 1, s.imageSize,
+                 CALIB_ZERO_DISPARITY, -1, s.imageSize * rf,
                  &sterCal.validRoi[0], &sterCal.validRoi[1]);
 
     rectifyImages(s, inCal, inCal2, sterCal);
@@ -1203,28 +1444,28 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
     bool ok;
     if (s.mode == Settings::STEREO) {         // stereo calibration
         if (!s.useIntrinsicInput)
-        {
-
-	  // Stereo calibration requires both images to have the same # of image and object points;
-	  // getSharedPoints limits the points lists to only those points shared between each image
-	  if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
-	    getSharedPoints(inCal, inCal2);
-	  }
-	  cout << inCal.objectPoints.size() << endl;
-	  
-	  ok = runIntrinsicCalibration(s, inCal);
-	  
-	  printf("%s for left. Avg reprojection error = %.4f\n",
-		 ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-		 inCal.totalAvgErr);
-        ok = runIntrinsicCalibration(s, inCal2);
-        
-        printf("%s for right. Avg reprojection error = %.4f\n",
-	       ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-	       inCal2.totalAvgErr);
-        } else
+	  {
+	    
+	    // Stereo calibration requires both images to have the same # of image and object points;
+	    // getSharedPoints limits the points lists to only those points shared between each image
+	    if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
+	      getSharedPoints(inCal, inCal2);
+	    }
+	    cout << inCal.objectPoints.size() << endl;
+	    
+	    ok = runIntrinsicCalibration(s, inCal);
+	    
+	    printf("%s for left. Avg reprojection error = %.4f\n",
+		   ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
+		   inCal.totalAvgErr);
+	    ok = runIntrinsicCalibration(s, inCal2);
+	    
+	    printf("%s for right. Avg reprojection error = %.4f\n",
+		   ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
+		   inCal2.totalAvgErr);
+	  } else
 	  ok = true;
-
+	
         stereoCalibration sterCal = runStereoCalibration(s, inCal, inCal2);
         s.saveExtrinsics(sterCal);
 

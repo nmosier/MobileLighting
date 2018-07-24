@@ -124,12 +124,12 @@ extern "C" void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, in
     sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, out_suffix);
     WriteImageVerb(ccx1, buffer, 1);
     
-    if (!xonly) {
+//    if (!xonly) {
         sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
         WriteImageVerb(ccy0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
         WriteImageVerb(ccy1, buffer, 1);
-    }
+//    }
 }
 
 // CFloatImage runFilter(CFloatImage img, float ythresh, int kx, int ky, int mincompsize, int maxholesize);
@@ -163,7 +163,12 @@ extern "C" void mergeDisparities(char *imgsx[], char *imgsy[], char *outx, char 
     for (int i = 0; i < count; ++i) {
         CFloatImage x, y, flo;
         ReadImageVerb(x, imgsx[i], 1);
-        ReadImageVerb(y, imgsy[i], 1);
+        if (imgsy != NULL) {
+            ReadImageVerb(y, imgsy[i], 1);
+        } else {    // if should ignore imgsy
+            y.ReAllocate(x.Shape());
+            y.FillPixels(INFINITY);
+        }
         flo = mergeToFloImage(x, y);
         images[i] = flo;
     }

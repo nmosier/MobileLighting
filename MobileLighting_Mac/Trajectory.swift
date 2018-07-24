@@ -100,4 +100,23 @@ class Trajectory {
         sendscript(&cScript)
 //        usleep(UInt32(self.duration * 1e6))
     }
+    
+    static var format: Yaml {
+        get {
+            var mainDict = [Yaml:Yaml]()
+            mainDict[Yaml.string("trajectory")] = Yaml.array([Yaml](repeating: Yaml.string(""), count: 3))
+            mainDict[Yaml.string("waypoints")] = Yaml.array([Yaml](repeating: Yaml.string(""), count: 3))
+            mainDict[Yaml.string("timestep")] = Yaml.double(0.25)
+            mainDict[Yaml.string("blendRadius")] = Yaml.double(0.1)
+            mainDict[Yaml.string("acceleration")] = Yaml.double(0.4)
+            mainDict[Yaml.string("velocity")] = Yaml.double(0.4)
+            return Yaml.dictionary(mainDict)
+        }
+    }
+    
+    static func create(_ dirStruc: DirectoryStructure) throws {
+        let yml = Trajectory.format
+        let str = try yml.save()
+        try str.write(toFile: dirStruc.settings + "/trajectory.yml", atomically: true, encoding: .ascii)
+    }
 }

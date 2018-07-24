@@ -30,12 +30,11 @@ class SceneSettings {
     var trajectory: Trajectory
     
     // structured lighting
-    var nProjectors: Int
     var strucExposureDurations: [Double]
     var strucExposureISOs: [Double]
     
     // robot arm movement
-    var positionCoords: [String]
+//    var positionCoords: [String]
     
     // calibration
     var focus: Double?
@@ -45,6 +44,30 @@ class SceneSettings {
     // ambient
     var ambientExposureDurations: [Double]?
     var ambientExposureISOs: [Double]?
+    
+    static var format: Yaml {
+        get {
+            var maindict = [Yaml : Yaml]()
+            maindict[Yaml.string("scenesDir")] = Yaml.string("")
+            maindict[Yaml.string("sceneName")] = Yaml.string("")
+            maindict[Yaml.string("minSWdataPath")] = Yaml.string("")
+            maindict[Yaml.string("trajectoryPath")] = Yaml.string("")
+            var struclight = [Yaml : Yaml]()
+            struclight[Yaml.string("exposureDurations")] = Yaml.array([0.01,0.03,0.10].map{return Yaml.double($0)})
+            struclight[Yaml.string("exposureISOs")] = Yaml.array([50.0,150.0,500.0].map{ return Yaml.double($0)})
+            maindict[Yaml.string("struclight")] = Yaml.dictionary(struclight)
+            maindict[Yaml.string("focus")] = Yaml.double(0.0)
+            var calibration = [Yaml : Yaml]()
+            calibration[Yaml.string("exposureDuration")] = Yaml.double(0.055)
+            calibration[Yaml.string("exposureISO")] = Yaml.double(66.5)
+            maindict[Yaml.string("calibration")] = Yaml.dictionary(calibration)
+            var ambient = [Yaml : Yaml]()
+            ambient[Yaml.string("exposureDurations")] = Yaml.array([0.035,0.045,0.055].map{return Yaml.double($0)})
+            ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,60.0,70.0].map{ return Yaml.double($0)})
+            maindict[Yaml.string("ambient")] = Yaml.dictionary(ambient)
+            return Yaml.dictionary(maindict)
+        }
+    }
     
     init(_ filepath: String) throws {
         let settingsStr = try String(contentsOfFile: filepath)
@@ -65,7 +88,6 @@ class SceneSettings {
         self.sceneName = sceneName
         self.minSWfilepath = minSWfilepath
         
-        self.nProjectors = (mainDict[Yaml.string("projectors")]?.int)!
         self.strucExposureDurations = (mainDict[Yaml.string("struclight")]?.dictionary?[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
             (val: Yaml) -> Double in
             return val.double!
@@ -74,10 +96,10 @@ class SceneSettings {
             (val: Yaml) -> Double in
             return val.double!
             })!
-        self.positionCoords = (mainDict[Yaml.string("positions")]?.array?.filter({return $0.string != nil}).map{
-            (val: Yaml) -> String in
-            return val.string!
-            })!
+//        self.positionCoords = (mainDict[Yaml.string("positions")]?.array?.filter({return $0.string != nil}).map{
+//            (val: Yaml) -> String in
+//            return val.string!
+//            })!
         self.focus = mainDict[Yaml.string("focus")]?.double
         
         if let calibrationDict = mainDict[Yaml.string("calibration")]?.dictionary {
@@ -90,11 +112,10 @@ class SceneSettings {
         }
         
         if let ambientDict = mainDict[Yaml.string("ambient")] {
-            print("AMBIENT DICT")
-            self.ambientExposureISOs = ambientDict[Yaml.string("exposureISOs")].array?.flatMap {
+            self.ambientExposureISOs = ambientDict[Yaml.string("exposureISOs")].array?.compactMap {
                 return $0.double
             }
-            self.ambientExposureDurations = ambientDict[Yaml.string("exposureDurations")].array?.flatMap {
+            self.ambientExposureDurations = ambientDict[Yaml.string("exposureDurations")].array?.compactMap {
                 return $0.double
             }
         }
@@ -111,27 +132,19 @@ class SceneSettings {
         
         self.trajectory = Trajectory(trajectoryPath)
     }
+    
+    static func create(_ dirStruc: DirectoryStructure) throws {
+        let path = "\(dirStruc.settings)/sceneSettings.yml"
+        let dir = ((path.first == "/") ? "/" : "") + path.split(separator: "/").dropLast().joined(separator: "/")
+        //print("path: \(dir)")
+        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+        let yml = try SceneSettings.format.save()
+        try yml.write(toFile: path, atomically: true, encoding: .ascii)
+        
+        try Trajectory.create(dirStruc)
+    }
+    
 }
-
-// SceneParameters: will represent the parameters determined during and after scene capture,
-//   including the locations of each camera position (in robot arm coordinates), etc
-//   -contains two further groups of parameters: structured lighting parameters and calibration
-//      parameters
-//
-// IMPORTANT: this has not yet been implemented -- eventually, it should be used when writing
-//   scene parameters to YML file as well as reading scene parameters for use during image processing, e.g.
-//class SceneParameters {
-//    var sceneName: String!
-//    var nPositions: Int { get { return self.positions.count } }
-//    var positions: [String]!
-//    var lensPosition: Float!
-//}
-//
-//class StructuredLightingParameters {
-//    var nExposures: Int { get { return self.exposureDurations.count } }
-//    var exposureDurations: [Double]!
-//    var exposureISOs: [Double]!
-//}
 
 
 func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {

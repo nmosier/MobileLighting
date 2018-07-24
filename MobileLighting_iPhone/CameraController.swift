@@ -219,6 +219,8 @@
             pixelBuffers_normal.removeAll()
             pixelBuffers_inverted.removeAll()
             
+            self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
+            
             settings.isAutoStillImageStabilizationEnabled = false
             self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
             self.isCapturingPhoto = true

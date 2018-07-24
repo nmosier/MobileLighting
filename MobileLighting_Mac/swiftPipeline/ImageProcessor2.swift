@@ -119,10 +119,10 @@ func rectify(left: Int, right: Int, proj: Int) {
     var extr = dirStruc.extrinsicsYML(left: left, right: right).cString(using: .ascii)!
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
-    var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-4refined2.pfm"
-    var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-4refined2.pfm"
-    var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-4refined2.pfm"
-    var result1r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-4refined2.pfm"
+    var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm"
+    var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm"
+    var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm"
+    var result1r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm"
     computeMaps(&result0l, &intr, &extr)
 
     var outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
@@ -150,16 +150,17 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     var rightx, righty: [[CChar]]
     
     // search for projectors for which disparities have been computed for given left/right positions
-    guard let projectors = try? FileManager.default.contentsOfDirectory(atPath: "\(dirStruc.disparity(rectified))") else {
+    guard let projectorDirs = try? FileManager.default.contentsOfDirectory(atPath: "\(dirStruc.disparity(rectified))") else {
         print("merge: cannot find projectors directory at \(dirStruc.disparity(rectified))")
         return
     }
-    var projectorDirs = projectors.map {
-        return "\(dirStruc.disparity(rectified))/\($0)"
+    let projectors = getIDs(projectorDirs, prefix: "proj", suffix: "")
+    var positionDirs = projectors.map {
+        return (dirStruc.disparity(proj: $0, pos: leftpos, rectified: rectified), dirStruc.disparity(proj: $0, pos: rightpos, rectified: rectified))
     }
-    var positionDirs: [(String, String)] = projectorDirs.map {
-        return ("\($0)/pos\(leftpos)", "\($0)/pos\(rightpos)")
-    }
+//    var positionDirs: [(String, String)] = projectorDirs.map {
+//        return ("\($0)/pos\(leftpos)", "\($0)/pos\(rightpos)")
+//    }
     var pfmPathsLeft, pfmPathsRight: [(String, String)]
     if rectified {
         pfmPathsLeft = positionDirs.map {
@@ -176,6 +177,7 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
             return ("\($0.1)/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm")
         }
     }
+    
     pfmPathsLeft = pfmPathsLeft.filter {
         let (leftx, lefty) = $0
         return FileManager.default.fileExists(atPath: leftx) && FileManager.default.fileExists(atPath: lefty)
@@ -184,6 +186,7 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         let (rightx, righty) = $0
         return FileManager.default.fileExists(atPath: rightx) && FileManager.default.fileExists(atPath: righty)
     }
+    
     leftx = pfmPathsLeft.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }
     lefty = pfmPathsLeft.map{ return $0.1 }.map{ return $0.cString(using: .ascii)! }
     rightx = pfmPathsRight.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }

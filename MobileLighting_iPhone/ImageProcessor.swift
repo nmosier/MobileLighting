@@ -422,6 +422,7 @@ class Decoder {
         ]
         
         let (width_rot, height_rot): (Int, Int) = dimensionDict[orientation]!(self.width, self.height)
+//        let width_rot = width, height_rot = height
         
         let pfmHeaderStr: NSString = "Pf\n\(width_rot) \(height_rot)\n-1\n" as NSString
         var pfmData = pfmHeaderStr.data(using: String.Encoding.utf8.rawValue)!
@@ -451,6 +452,12 @@ class Decoder {
     
         var pfmBodyArray: [Float] = Array<Float>(repeating: 0.0, count: arrlen)
         let rotator = rotationDict[orientation]!
+        let flipper: (Int) -> Int = { (i0: Int) in
+            let x0 = i0 % width_rot
+            let y = i0 / width_rot
+            let x = width_rot - x0 - 1
+            return y * width_rot + x
+        }
         
         for i in 0..<width*height {
             let val: Float
@@ -479,7 +486,7 @@ class Decoder {
             //let i_rot = y_rot*height + x_rot
             
 //            let i_rot = arrlenm1 - height*(i%width) - i/width   // optimized version of calculation above
-            let i_rot = rotator(i)
+            let i_rot = flipper(rotator(i))
             pfmBodyArray[i_rot] = val
             
             // updated version: account for orientation in rotation
