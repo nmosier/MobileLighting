@@ -9,13 +9,8 @@
 import Foundation
 import CoreVideo
 import CoreMedia
+import Yaml
 
-/*
-func swift2Cstr(_ str: String) -> UnsafeMutablePointer<Int8> {
-    let nsstr = str as NSString
-    return UnsafeMutablePointer<Int8>(mutating: nsstr.utf8String!)
-}
-*/
 
 func makeDir(_ str: String) -> Void {
     do {
@@ -191,5 +186,12 @@ extension EnumCollection {
 extension String {
     subscript (i: Int) -> Character {
         return self[index(startIndex, offsetBy: i)]
+    }
+}
+
+extension Dictionary where Key == Yaml, Value == Yaml {
+    subscript (_ string: String) -> Yaml? {
+        let key = Yaml.string(string)
+        return self[key]
     }
 }

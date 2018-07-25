@@ -1,0 +1,65 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "2994C09F008056344684BCB5BFBB7079FC07F98F+++60D7F3C",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++2C49C1C" : 9223372036854775807,
+    "E111B14063EC98ABE518A93E1C4498F4167C2DEE+++6753FB2" : 9223372036854775807,
+    "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A+++356A7A3" : 9223372036854775807,
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++ACABE62" : 9223372036854775807,
+    "A3243F3EEAA94ACC825D0ED7648608890E06C1AE+++798A0ED" : 9223372036854775807,
+    "AA32540B0FCCC2689F6DCD1C6BFE7453B2E616D0+++97BDE96" : 9223372036854775807,
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++60D7F3C" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "1C5D0DEF-18BC-4252-8179-0B9F288D74D7",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++2C49C1C" : "MobileLighting_tmp\/",
+    "E111B14063EC98ABE518A93E1C4498F4167C2DEE+++6753FB2" : "YamlSwift\/",
+    "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A+++356A7A3" : "SerialTools\/",
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++ACABE62" : "MobileLighting_tmp\/",
+    "A3243F3EEAA94ACC825D0ED7648608890E06C1AE+++798A0ED" : "SerialTools\/.build\/checkouts\/SwiftSerial.git-6720711935699962966\/",
+    "AA32540B0FCCC2689F6DCD1C6BFE7453B2E616D0+++97BDE96" : "MobileLighting\/MobileLighting_Mac\/cameraCalib\/",
+    "2994C09F008056344684BCB5BFBB7079FC07F98F+++60D7F3C" : "MobileLighting\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "MobileLighting",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "MobileLighting.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:nmosier\/MobileLighting",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2994C09F008056344684BCB5BFBB7079FC07F98F+++2C49C1C"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/nmosier\/MobileLighting",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2994C09F008056344684BCB5BFBB7079FC07F98F+++60D7F3C"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/nmosier\/MobileLighting",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2994C09F008056344684BCB5BFBB7079FC07F98F+++ACABE62"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/kylebmeredith\/SerialTools",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A+++356A7A3"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "\/Users\/nicholas\/OneDrive%20-%20Middlebury%20College\/Summer%20Research%202017\/MobileLighting\/SerialTools\/.build\/repositories\/SwiftSerial.git-6720711935699962966",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A3243F3EEAA94ACC825D0ED7648608890E06C1AE+++798A0ED"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/kylebmeredith\/Camera-Calibration",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AA32540B0FCCC2689F6DCD1C6BFE7453B2E616D0+++97BDE96"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/behrang\/YamlSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "E111B14063EC98ABE518A93E1C4498F4167C2DEE+++6753FB2"
+    }
+  ]
+}

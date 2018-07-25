@@ -128,7 +128,7 @@ void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 
 extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
 {
-    printf("rectifying decoded image...");
+    printf("rectifying decoded image...\n");
     Mat image, im_linear, im_nearest, image2;
     Mat mapx, mapy;
     const float maxdiff = 0.5;
@@ -164,4 +164,19 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
     resize(image2_rotated, image2_rotated, image.size());
     WriteFilePFM(image2_rotated, outpath, 1);
+}
+
+extern "C" void rectifyAmbient(int camera, char *impath, char *outpath) {
+    printf("rectifying ambient image...\n");
+    Mat image = imread(impath);
+    Mat mapx, mapy;
+    const int imtype = CV_32FC1;
+    Mat image2 = Mat(image.size() * 2, imtype, 1);
+
+    mapx = (camera == 0) ? mapx0 : mapx1;
+    mapy = (camera == 0) ? mapy0 : mapy1;
+    
+    remap(image, image2, mapx, mapy, INTER_LINEAR, BORDER_CONSTANT, 0);
+    resize(image2, image2, image.size());
+    imwrite(outpath, image2);
 }

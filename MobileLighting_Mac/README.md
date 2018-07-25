@@ -8,6 +8,37 @@ ML consists of 2 different applications:
 * **MobileLighting Mac:** this is the control program with which the user interacts. It compiles to an executable and features a command-line interface.
 * **MobileLighting iOS:** this is the iOS app that runs on the iPhone / iPod Touch. Its main task is taking photos (and videos, IMU data) upon request from the macOS control program. It manages the camera and also processes structured light images up through the decoding step.
 
+## MobileLighting Setup & Installation
+### Compatibility
+MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Control has only been tested on macOS High Sierra (10.13).
+
+MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-facing camera and a flashlight.
+
+### Installation
+1. Install Xcode (available through the Mac App Store).
+1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.)
+1. Clone the entire Xcode project from the GitHub repository, <https://github.com/nmosier/MobileLighting>.
+1. Open the Xcode project at MobileLighting/MobileLighting.xcodeproj.
+1. Try building MobileLighting Control by opening the MobileLighting_Mac build target menu in the top-left corner of the window, to the right of the play button. Select "MobileLighting_Mac" -> "My Mac". Type ⌘+B (or "Product" -> "Build") to build MobileLighting_Mac. [See picture](readme_images/build_mac.png)
+1. You'll probably encounter some errors at buildtime. These can normally be fixed by changing the Xcode settings and/or re-adding the linked frameworks & libraries. Here's a full list of libraries that should be linked with the Xcode project:
+    * System libraries:
+        * libopencv_calib3d
+        * libopencv_core
+        * libopencv_features2d
+        * libopencv_imgproc
+        * libopencv_videoio
+        * libopencv_aruco
+        * libopencv_imgcodecs
+        * libpng
+    * MobileLighting libraries/frameworks:
+        * MobileLighting_Mac/CocoaAsyncSocket.framework
+        * MobileLighting_iPhone/CocoaAsyncSocket.framework
+        * MobileLighting_Mac/calib/libcalib (this currently needs to be manually recompiled using "make")
+        * MobileLighting_Mac/activeLighting/libImgProcessor
+1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it.
+1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
+1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
+    
 ## Communication
 The two apps of the  ML system communicate wirelessly using Bonjour / async sockets. ML Mac issues _CameraInstructions_ to ML iOS via _CameraInstructionPackets_, and ML iOS sends _PhotoDataPackets_ back to ML Mac.
 
@@ -36,4 +67,12 @@ The two apps of the  ML system communicate wirelessly using Bonjour / async sock
         * Try restarting the ML Mac app / ML iOS app while keeping the other running.
         * Try restarting both apps, but launching ML iOS _before_ ML Mac.
     * Sometimes, the connection between ML Mac and ML iOS drops unexpectedly. The "solution" is to try the same steps listed directly above.
+        
     
+## Dataset Acquisition
+There are numerous steps to dataset acquisition:
+1. Calibration image capture
+1. Structured lighting image capture
+1. Ambient data capture
+    1. Ambient images at multiple exposures
+        1. Ambient

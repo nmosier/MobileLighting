@@ -30,6 +30,8 @@ var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // manages Kramer switcher box
 var vxmController: VXMController!
 
+// settings
+let sceneSettingsPath: String
 var sceneSettings: SceneSettings!
 
 // use minsw codes, not graycodes
@@ -39,6 +41,7 @@ let binaryCodeSystem: BinaryCodeSystem = .MinStripeWidthCode
 var scenesDirectory: String
 var sceneName: String
 var minSWfilepath: String
+var dirStruc: DirectoryStructure
 
 // optional settings vars
 //var projectors: Int?
@@ -75,6 +78,11 @@ case "init":
         dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
         try SceneSettings.create(dirStruc)
         print("successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+        print("successfully created trajectory file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+        try CalibrationSettings.create(dirStruc)
+        print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+        try dirStruc.createDirs()
+        print("successfully created directory structure.")
     } catch let error {
         print(error.localizedDescription)
     }
@@ -83,6 +91,7 @@ case "init":
     
 case let path where path.lowercased().hasSuffix(".yml"):
     do {
+        sceneSettingsPath = path
         sceneSettings = try SceneSettings(path)
     } catch let error {
         print(error.localizedDescription)
@@ -109,7 +118,6 @@ default:
 scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
 minSWfilepath = sceneSettings.minSWfilepath
-
 
 positions = sceneSettings.trajectory.waypoints
 
@@ -145,10 +153,8 @@ if focus != nil {
 if configureDisplays() {
     print("main: Successfully configured displays.")
 } else {
-    print("main: ERROR — failed to configure displays.")
+    print("main: WARNING - failed to configure displays.")
 }
-
-
 
 let mainQueue = DispatchQueue(label: "mainQueue")
 //let mainQueue = DispatchQueue.main    // for some reason this causes the NSSharedApp (which manages the windwos for displaying binary codes, etc) to block! But the camera calibration functions must be run from the DisplatchQueue.main, so async them whenever they are called

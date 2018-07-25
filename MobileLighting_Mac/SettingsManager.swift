@@ -263,4 +263,42 @@ class CalibrationSettings {
 //        let out = try! Yaml.dictionary([Yaml.string("Settings") : self.yml]).save()
 //        try! out.write(to: URL(fileURLWithPath: filepath), atomically: true, encoding: .utf8)
     }
+    
+    static var format: Yaml {
+        get {
+            var settingsDict = [Yaml : Yaml]()
+            settingsDict["Num_MarkersX"] = Yaml.array([8,8].map{return Yaml.int($0)})
+            settingsDict["Num_MarkersY"] = Yaml.array([8,7].map{return Yaml.int($0)})
+            settingsDict["Num_of_Boards"] = Yaml.int(2)
+            settingsDict["ChessboardSize_Width"] = Yaml.int(17)
+            settingsDict["ChessboardSize_Height"] = Yaml.int(12)
+            settingsDict["Calibration_Pattern"] = Yaml.string("(automatically configured)")
+            settingsDict["Calibrate_AssumeZeroTangentialDistortion"] = Yaml.int(1)
+            settingsDict["ImageList_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["ExtrinsicOutput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["Show_UndistortedImages"] = Yaml.int(0)
+            settingsDict["Wait_NextDetectedImage"] = Yaml.int(0)
+            settingsDict["IntrinsicInput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["Calibrate_FixPrincipalPointAtTheCenter"] = Yaml.int(0)
+            settingsDict["UndistortedImages_Path"] = Yaml.string("0")
+            settingsDict["DetectedImages_Path"] = Yaml.string("0")
+            settingsDict["Show_RectifiedImages"] = Yaml.int(1)
+            settingsDict["Square size"] = Yaml.double(25.4)
+            settingsDict["IntrinsicOutput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["Dictionary"] = Yaml.int(11)
+            settingsDict["Calibrate_FixAspectRatio"] = Yaml.int(0)
+            settingsDict["RectifiedImages_Path"] = Yaml.string("0")
+            settingsDict["Marker_Length"] = Yaml.array([72,108].map{return Yaml.double($0)})
+            settingsDict["Calibrate_FixDistCoeffs"] = Yaml.string("00111")
+            settingsDict["First_Marker"] = Yaml.array([113,516].map{return Yaml.int($0)})
+            settingsDict["Mode"] = Yaml.string(CalibrationMode.STEREO.rawValue)
+            let mainDict = Yaml.dictionary(settingsDict)
+            return Yaml.dictionary([Yaml.string("Settings") : mainDict])
+        }
+    }
+    
+    static func create(_ dirStruc: DirectoryStructure) throws {
+        let path = dirStruc.calibrationSettingsFile
+        try Yaml.save(CalibrationSettings.format, toFile: path)
+    }
 }

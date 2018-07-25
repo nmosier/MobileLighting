@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, settings, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, calibrationSettings, reprojected, merged2, ambientPhotos, ambientVideos]
+            return [scenes, scene, settings, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, imageLists, reprojected, merged2, ambientPhotos, ambientVideos]
         }
     }
     
@@ -47,6 +47,12 @@ class DirectoryStructure {
     
     var settings: String {
         return "\(self.scene)/settings"
+    }
+    
+    var calibrationSettingsFile: String {
+        get {
+            return self.settings + "/" + "calibration.yml"
+        }
     }
     
     enum PhotoMode: String {
@@ -126,24 +132,20 @@ class DirectoryStructure {
                         return subdir(stereoPhotos, pos: pos)
                     }
     
-            var calibrationSettings: String {
+            var imageLists: String {
                 get {
-                    return self.calibration + "/" + "settings"
+                    return self.calibration + "/" + "imageLists"
                 }
             }
-                var calibrationSettingsFile: String {
-                    get {
-                        return self.calibrationSettings + "/" + "calibration.yml"
-                    }
-                }
+    
                 var intrinsicsImageList: String {
                     get {
-                        return self.calibrationSettings + "/" + "intrinsicsImageList.yml"
+                        return self.imageLists + "/" + "intrinsicsImageList.yml"
                     }
                 }
                 var stereoImageList: String {
                     get {
-                        return self.calibrationSettings + "/" + "stereoImageList.yml"
+                        return self.imageLists + "/" + "stereoImageList.yml"
                     }
                 }
     

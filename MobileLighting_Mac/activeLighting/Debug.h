@@ -9,7 +9,7 @@ enum refine_mode_t {
     refine_planar
 };
 
-refine_mode_t refine_mode = refine_old;
+refine_mode_t refine_mode = refine_planar;//refine_old;
 
 int refine_plane_windowsize = 5;	// # of pixels for width & height of window considered
 int refine_plane_minsupport = 20;
