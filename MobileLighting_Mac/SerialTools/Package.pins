@@ -1,0 +1,12 @@
+{
+  "autoPin": true,
+  "pins": [
+    {
+      "package": "SwiftSerial",
+      "reason": null,
+      "repositoryURL": "https://github.com/yeokm1/SwiftSerial.git",
+      "version": "0.0.11"
+    }
+  ],
+  "version": 1
+}

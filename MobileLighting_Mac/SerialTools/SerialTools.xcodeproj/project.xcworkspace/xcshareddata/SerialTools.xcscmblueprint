@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "A3243F3EEAA94ACC825D0ED7648608890E06C1AE" : 9223372036854775807,
+    "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "17F6E886-568C-4BFB-A4C8-926A131202C1",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "A3243F3EEAA94ACC825D0ED7648608890E06C1AE" : "SerialTools\/.build\/checkouts\/SwiftSerial.git-6720711935699962966\/",
+    "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A" : "SerialTools\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "SerialTools",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "SerialTools.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/kylebmeredith\/SerialTools",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6EB352190F0B0C933E43673FF4C2E4B5DD4E286A"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "\/Users\/nicholas\/OneDrive%20-%20Middlebury%20College\/Summer%20Research%202017\/MobileLighting\/SerialTools\/.build\/repositories\/SwiftSerial.git-6720711935699962966",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A3243F3EEAA94ACC825D0ED7648608890E06C1AE"
+    }
+  ]
+}
