@@ -10,3 +10,7 @@ do
     make
     popd
 done
+
+pushd ./MobileLighting_Mac/SerialTools
+swift package update
+popd
