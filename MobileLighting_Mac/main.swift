@@ -151,9 +151,9 @@ if focus != nil {
 }
 
 if configureDisplays() {
-    print("main: Successfully configured displays.")
+    print("main: Successfully configured display.")
 } else {
-    print("main: WARNING - failed to configure displays.")
+    print("main: WARNING - failed to configure display.")
 }
 
 let mainQueue = DispatchQueue(label: "mainQueue")

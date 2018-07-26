@@ -77,7 +77,7 @@ func getUsage(_ command: Command) -> String {
     case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
     case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
     case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
-    case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposure#=1]"
+    case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
     case .lockfocus: return "lockfocus"
@@ -244,7 +244,17 @@ func processCommand(_ input: String) -> Bool {
             }
             vxmController = VXMController(portName: tokens[2])
             _ = vxmController.startVXM()
-            
+        
+        case "display":
+            guard tokens.count == 2 else {
+                print("connect display takes no additional arguments.")
+                break
+            }
+            guard configureDisplays() else {
+                print("connect display: failed to configure display.")
+                break
+            }
+            print("connect display: successfully configured display.")
         default:
             print("cannot connect: invalid device name.")
         }
@@ -386,7 +396,7 @@ func processCommand(_ input: String) -> Bool {
     case .stereocalib:
 //        let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
         
-        let (params, flags) = partitionTokens(tokens)
+        let (params, flags) = partitionTokens([String](tokens[1...]))
         guard params.count >= 1, let nPhotos = Int(tokens[1]) else {
             print(usage)
             break
@@ -1537,54 +1547,6 @@ func waitForEstablishedCommunications() {
     while !photoReceiver.readyToReceive {}
 }
 
-// configures the display controller object, whcih manages the displays
-// untested for multiple screens; Kramer switcher box is treated as only one screen
-func configureDisplays() -> Bool {
-    if displayController == nil {
-        displayController = DisplayController()
-    }
-    guard NSScreen.screens.count > 1  else {
-        print("Only one screen connected.")
-        return false
-    }
-    for screen in NSScreen.screens {
-        if screen != NSScreen.main! {
-            displayController.createNewWindow(on: screen)
-        }
-    }
-    return true
-}
-
-
-
-// CALIBRATION UTIL FUNCTIONS
-func calibration_wait(currentPos: Int) -> Bool {
-    var input: String
-    repeat {
-        guard let inputtmp = readLine() else {
-            return false
-        }
-        input = inputtmp
-        let tokens = input.split(separator: " ")
-        if tokens.count == 0 {
-            return true
-        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
-            return false
-        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
-            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
-            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
-            cameraServiceBrowser.sendPacket(packet)
-            _ = photoReceiver.receiveLensPositionSync()
-        } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
-            var pose = *positions[pos]
-            MovePose(&pose, robotAcceleration, robotVelocity)
-            print("Hit enter when ready to return to original position.")
-        } else {
-            return true
-        }
-    } while true
-}
-
 
 extension Command {
     init(closeTo unknown: String) {
@@ -1596,20 +1558,35 @@ extension Command {
             // now D.P. solution
             let costs: [Int] = cases.map { (command: String) in
                 var cache = [[Int]](repeating: [Int](repeating: 0, count: command.count+1), count: unknown.count+1)
+                var runs = [[Int]](repeating: [Int](repeating:0, count: command.count+1), count: unknown.count+1)
                 for i in 0..<command.count+1 {
                     cache[0][i] = i
                 }
                 for j in 0..<unknown.count+1 {
                     cache[j][0] = j
                 }
-//                print("cache for \(command) = ")
                 for j in 1..<unknown.count+1 {
                     for i in 1..<command.count+1 {
-                        let cost = min(min(cache[j][i-1] + 1, cache[j-1][i] + 1), cache[j-1][i-1] + ((command[i-1] == unknown[j-1]) ? 0 : 1) )
+                        let cost = min(min(cache[j][i-1] + 1, cache[j-1][i] + 1), cache[j-1][i-1] + ((command[i-1] == unknown[j-1]) ? -runs[j-1][i-1] : 1) )
                         cache[j][i] = cost
+                        switch cost {
+                        case cache[j][i-1] + 1:
+                            // zero out run
+                            runs[j][i] = 0
+                        case cache[j-1][i] + 1:
+                            // zero out run
+                            runs[j][i] = 0
+                        case cache[j-1][i-1] - runs[j-1][i-1]:
+                            // increase run
+                            runs[j][i] = runs[j-1][i-1] + 1
+                        case cache[j-1][i-1] + 1:
+                            runs[j][i] = 0
+                        default:
+                            // impossible
+                            break
+                        }
 //                        print("\(cost) ", separator: " ", terminator: "")
                     }
-//                    print("")
                 }
                 return cache[unknown.count][command.count]
             }

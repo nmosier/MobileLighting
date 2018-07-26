@@ -1,5 +1,6 @@
 import Foundation
 import Yaml
+import Cocoa
 
 // captureWithStructuredLighting - does a 'full take' of current scene using the specified binary code system.
 //   - system: BinaryCodeSystem - either GrayCode or MinStripeWidthCode
@@ -214,4 +215,24 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     )
     
     while !received || !cameraServiceBrowser.readyToSendPacket {}
+}
+
+
+
+// configures the display controller object, whcih manages the displays
+// untested for multiple screens; Kramer switcher box is treated as only one screen
+func configureDisplays() -> Bool {
+    if displayController == nil {
+        displayController = DisplayController()
+    }
+    guard NSScreen.screens.count > 1  else {
+        print("Only one screen connected.")
+        return false
+    }
+    for screen in NSScreen.screens {
+        if screen != NSScreen.main! {
+            displayController.createNewWindow(on: screen)
+        }
+    }
+    return true
 }

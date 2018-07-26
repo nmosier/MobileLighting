@@ -199,3 +199,31 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
     
     
 }
+
+
+func calibration_wait(currentPos: Int) -> Bool {
+    var input: String
+    repeat {
+        guard let inputtmp = readLine() else {
+            return false
+        }
+        input = inputtmp
+        let tokens = input.split(separator: " ")
+        if tokens.count == 0 {
+            return true
+        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
+            return false
+        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
+            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+            cameraServiceBrowser.sendPacket(packet)
+            _ = photoReceiver.receiveLensPositionSync()
+        } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
+            var pose = *positions[pos]
+            MovePose(&pose, robotAcceleration, robotVelocity)
+            print("Hit enter when ready to return to original position.")
+        } else {
+            return true
+        }
+    } while true
+}
