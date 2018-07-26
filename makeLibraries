@@ -1,7 +1,7 @@
 #!/bin/bash
 # shell script for making libraries required for image processing
 
-libdirs=(./MobileLighting_Mac/activeLighting/imageLib ./MobileLighting_Mac/activeLighting/pfmLib ./MobileLighting_Mac/calib)
+libdirs=( ./MobileLighting_Mac/activeLighting/imageLib ./MobileLighting_Mac/activeLighting/pfmLib ./MobileLighting_Mac/calib )
 
 for dir in $libdirs
 do
