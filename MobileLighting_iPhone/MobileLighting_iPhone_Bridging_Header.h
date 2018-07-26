@@ -9,6 +9,9 @@
 #ifndef MobileLighting_iPhone_Bridging_Header_h
 #define MobileLighting_iPhone_Bridging_Header_h
 
+// #define RECTIFY_ON_IPHONE
+#ifdef RECTIFY_ON_IPHONE
 #import "Rectify.h"
+#endif
 
 #endif /* MobileLighting_iPhone_Bridging_Header_h */

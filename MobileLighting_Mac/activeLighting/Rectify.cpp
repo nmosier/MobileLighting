@@ -103,9 +103,12 @@ void rectify(int nimages, int camera, int w, int h, char* destdir, char** matric
 
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
+int resizing_factor;
 
-void computemaps(int width, int height, char *intrinsics, char *extrinsics)
+void computemaps(int width, int height, char *intrinsics, char *extrinsics, char *settings)
 {
+    FileStorage calibSettings(settings, FileStorage::READ);
+    calibSettings["Settings"]["Resizing factor"] >> resizing_factor;
     cv::Size ims(width, height);
     std::clog << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
@@ -120,9 +123,9 @@ void computemaps(int width, int height, char *intrinsics, char *extrinsics)
     fextr["Rectification_Parameters"]["Projection_Matrix_2"] >> proj1;
     std::clog << "read camera matrices" << std::endl;
     std::clog << "undistorting first maps..." << std::endl;
-    initUndistortRectifyMap(k, d, rect0, proj0, ims*2, CV_32FC1, mapx0, mapy0);
+    initUndistortRectifyMap(k, d, rect0, proj0, ims*resizing_factor, CV_32FC1, mapx0, mapy0);
     std::clog << "undistorting second maps..." << std::endl;
-    initUndistortRectifyMap(k, d, rect1, proj1, ims*2, CV_32FC1, mapx1, mapy1);
+    initUndistortRectifyMap(k, d, rect1, proj1, ims*resizing_factor, CV_32FC1, mapx1, mapy1);
     std::clog << "done computing maps" << mapx0.size() << std::endl;
 }
 
@@ -137,8 +140,10 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     mapx = (camera == 0) ? mapx0 : mapx1;
     mapy = (camera == 0) ? mapy0 : mapy1;
     
+    
+    
     ReadFilePFM(image, string(impath));
-    cv::Size ims = image.size() * 2;
+    cv::Size ims = image.size() * resizing_factor;
     
     image2 = Mat(ims, imtype, 1);
     im_linear = Mat(ims, imtype, 1);
@@ -171,7 +176,7 @@ extern "C" void rectifyAmbient(int camera, char *impath, char *outpath) {
     Mat image = imread(impath);
     Mat mapx, mapy;
     const int imtype = CV_32FC1;
-    Mat image2 = Mat(image.size() * 2, imtype, 1);
+    Mat image2 = Mat(image.size() * resizing_factor, imtype, 1);
 
     mapx = (camera == 0) ? mapx0 : mapx1;
     mapy = (camera == 0) ? mapy0 : mapy1;

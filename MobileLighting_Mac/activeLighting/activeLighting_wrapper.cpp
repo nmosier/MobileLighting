@@ -8,23 +8,25 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "activeLighting.h"
+//#include "activeLighting.h"
 #include "Rectify.hpp"
 #include "Utils.h"
 #include "Disparities.h"
+#include "Reproject.h"
+#include "Decode.h"
 #include <assert.h>
 
 extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID) {
     refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
 }
 
-extern "C" void computeMaps(char *impath, char *intr, char *extr) {
+extern "C" void computeMaps(char *impath, char *intr, char *extr, char *settings) {
     printf("%s\n%s\n%s\n", impath, intr, extr);
     CFloatImage im;
     ReadImage(im, impath);
     CShape sh = im.Shape();
     printf("decoded image dimensions: [%d x %d]\n", sh.width, sh.height);
-    computemaps(sh.width, sh.height, intr, extr);
+    computemaps(sh.width, sh.height, intr, extr, settings);
 }
 
 extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int rectified, int dXmin, int dXmax, int dYmin, int dYmax) {

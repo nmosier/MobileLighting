@@ -115,15 +115,16 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
 }
 
 func rectify(left: Int, right: Int, proj: Int) {
-    var intr = dirStruc.intrinsicsYML.cString(using: .ascii)!
-    var extr = dirStruc.extrinsicsYML(left: left, right: right).cString(using: .ascii)!
+    var intr = *dirStruc.intrinsicsYML
+    var extr = *dirStruc.extrinsicsYML(left: left, right: right)
+    var settings = *dirStruc.calibrationSettingsFile
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
     var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm"
     var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm"
     var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm"
     var result1r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm"
-    computeMaps(&result0l, &intr, &extr)
+    computeMaps(&result0l, &intr, &extr, &settings)
 
     var outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
         rectdirleft + "/result\(left)\(right)v-0rectified.pfm",

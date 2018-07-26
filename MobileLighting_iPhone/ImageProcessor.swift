@@ -40,10 +40,10 @@ func processCodeImages(normal pixelBuffers_normal: [CVPixelBuffer], inverted pix
     var combinedIntensityBuffer = combineIntensities(intensityBuffers, shouldThreshold: true)
     intensityBuffers.removeAll()
     
-    // Now try to rectify images
-    if rectificationMode == .ON_PHONE {
-        combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
-    }
+    // rectify images if option set
+    #if RECTIFY_ON_IPHONE
+    combinedIntensityBuffer = rectifyPixelBuffer(combinedIntensityBuffer, camera: stereoPosition)
+    #endif
     // get prominent stripe direction
     // if this is for the first structured lighting image
     if (bit == 0) {
@@ -115,6 +115,7 @@ func combineIntensities(_ buffers: [CVPixelBuffer], shouldThreshold: Bool) -> CV
     return buffers[0]
 }
 
+#if RECTIFY_ON_IPHONE
 func rectifyPixelBuffer(_ buffer: CVPixelBuffer, camera: Int) -> CVPixelBuffer {
     var intrinsics = (Bundle.main.bundlePath + "/intrinsics.yml").cString(using: .ascii)!
     var extrinsics = (Bundle.main.bundlePath + "/extrinsics.yml").cString(using: .ascii)!
@@ -143,6 +144,7 @@ func rectifyPixelBuffer(_ buffer: CVPixelBuffer, camera: Int) -> CVPixelBuffer {
     CVPixelBufferUnlockBaseAddress(outbuffer!, CVPixelBufferLockFlags(rawValue:0))
     return outbuffer!
 }
+#endif
 
 // implements zero-crossing thresholding algorithm
 //  using pixel loop

@@ -35,6 +35,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
         * MobileLighting_iPhone/CocoaAsyncSocket.framework
         * MobileLighting_Mac/calib/libcalib (this currently needs to be manually recompiled using "make")
         * MobileLighting_Mac/activeLighting/libImgProcessor
+1. You may also encounter code signing errors — these can generally be resolved by opening the Xcode project's settings (in the left sidebar where all the files are listed, click on the blue Xcode project icon with the name <project>.xcodeproj). Select the target, and then open the "General" tab. Check the "Automatically manage signing" box under the "signing" section. [Here's a visual guide](readme_images/codesign.png)
 1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it.
 1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.

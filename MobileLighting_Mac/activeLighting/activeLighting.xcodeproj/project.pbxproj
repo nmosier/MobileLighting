@@ -14,7 +14,6 @@
 		E186057020C813E900206D40 /* flowIO.h in Headers */ = {isa = PBXBuildFile; fileRef = E186054C20C813E800206D40 /* flowIO.h */; };
 		E186057220C813E900206D40 /* activeLighting_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186054E20C813E800206D40 /* activeLighting_wrapper.cpp */; };
 		E186057320C813E900206D40 /* Decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186054F20C813E800206D40 /* Decode.cpp */; };
-		E186058A20C813E900206D40 /* activeLighting.h in Headers */ = {isa = PBXBuildFile; fileRef = E186056A20C813E900206D40 /* activeLighting.h */; };
 		E186058B20C813E900206D40 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186056B20C813E900206D40 /* Utils.cpp */; };
 		E186058C20C813E900206D40 /* Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = E186056C20C813E900206D40 /* Utils.h */; };
 		E186058D20C813E900206D40 /* Disparities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E186056D20C813E900206D40 /* Disparities.cpp */; };
@@ -29,6 +28,8 @@
 		E18605A020C816F300206D40 /* libopencv_features2d.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E186059F20C816F300206D40 /* libopencv_features2d.dylib */; };
 		E18605A220C8175600206D40 /* imageLib.h in Headers */ = {isa = PBXBuildFile; fileRef = E18605A120C8175600206D40 /* imageLib.h */; };
 		E1A2165820C8764A0016DFC6 /* Debug.h in Sources */ = {isa = PBXBuildFile; fileRef = E186056E20C813E900206D40 /* Debug.h */; };
+		E1A57AE121093B2400C208C6 /* Reproject.h in Headers */ = {isa = PBXBuildFile; fileRef = E1A57AE021093B2400C208C6 /* Reproject.h */; };
+		E1A57AE321093B9C00C208C6 /* Decode.h in Headers */ = {isa = PBXBuildFile; fileRef = E1A57AE221093B9C00C208C6 /* Decode.h */; };
 		E1FD591220EE9B3000EB04AA /* Reproject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1FD591120EE9B3000EB04AA /* Reproject.cpp */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,8 @@
 		E186059F20C816F300206D40 /* libopencv_features2d.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.dylib; path = ../../../../../../../../usr/local/lib/libopencv_features2d.dylib; sourceTree = "<group>"; };
 		E18605A120C8175600206D40 /* imageLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = imageLib.h; path = imageLib/imageLib.h; sourceTree = "<group>"; };
 		E196122020D19CE800D85EDB /* Rectify.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Rectify.hpp; sourceTree = "<group>"; };
+		E1A57AE021093B2400C208C6 /* Reproject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Reproject.h; sourceTree = "<group>"; };
+		E1A57AE221093B9C00C208C6 /* Decode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Decode.h; sourceTree = "<group>"; };
 		E1FD591120EE9B3000EB04AA /* Reproject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reproject.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,9 +90,11 @@
 				E186054E20C813E800206D40 /* activeLighting_wrapper.cpp */,
 				E186056E20C813E900206D40 /* Debug.h */,
 				E186054F20C813E800206D40 /* Decode.cpp */,
+				E1A57AE221093B9C00C208C6 /* Decode.h */,
 				E186056D20C813E900206D40 /* Disparities.cpp */,
 				E114D51920CF106600020017 /* Rectify.cpp */,
 				E1FD591120EE9B3000EB04AA /* Reproject.cpp */,
+				E1A57AE021093B2400C208C6 /* Reproject.h */,
 				E196122020D19CE800D85EDB /* Rectify.hpp */,
 				E186054B20C813E800206D40 /* flowIO.cpp */,
 				E186054C20C813E800206D40 /* flowIO.h */,
@@ -137,9 +142,10 @@
 				E1694A6420E6B3D900AC3FF9 /* Disparities.h in Headers */,
 				E186058E20C813E900206D40 /* Debug.h in Headers */,
 				E18605A220C8175600206D40 /* imageLib.h in Headers */,
+				E1A57AE121093B2400C208C6 /* Reproject.h in Headers */,
+				E1A57AE321093B9C00C208C6 /* Decode.h in Headers */,
 				E186057020C813E900206D40 /* flowIO.h in Headers */,
 				E186058C20C813E900206D40 /* Utils.h in Headers */,
-				E186058A20C813E900206D40 /* activeLighting.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
