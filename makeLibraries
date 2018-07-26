@@ -6,7 +6,7 @@ libdirs=(./MobileLighting_Mac/activeLighting/imageLib ./MobileLighting_Mac/activ
 for dir in $libdirs
 do
     pushd $dir
-    make clean
+    # make clean
     make
     popd
 done
