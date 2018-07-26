@@ -3,7 +3,7 @@
 
 libdirs=( ./MobileLighting_Mac/activeLighting/imageLib ./MobileLighting_Mac/activeLighting/pfmLib ./MobileLighting_Mac/calib )
 
-for dir in $libdirs
+for dir in ${libdirs[@]}
 do
     pushd $dir
     # make clean
