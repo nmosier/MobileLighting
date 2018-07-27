@@ -296,7 +296,6 @@
 		E1682DEE20F94C2000DF0FD4 /* libopencv_features2d.3.4.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.3.4.1.dylib; path = ../../../../../../usr/local/Cellar/opencv/3.4.1_5/lib/libopencv_features2d.3.4.1.dylib; sourceTree = "<group>"; };
 		E1682DEF20F94C2000DF0FD4 /* libopencv_core.3.4.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.1.dylib; path = ../../../../../../usr/local/Cellar/opencv/3.4.1_5/lib/libopencv_core.3.4.1.dylib; sourceTree = "<group>"; };
 		E1682E0A20F9580700DF0FD4 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		E174EE1C2106113500AC5755 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E17AC73B20FE29300007EF77 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E17AC73F20FE29B40007EF77 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaAsyncSocket.framework; sourceTree = "<group>"; };
@@ -318,6 +317,7 @@
 		E1A2165620C841000016DFC6 /* DirectoryStructure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryStructure.swift; sourceTree = "<group>"; };
 		E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RobotControl.xcodeproj; path = RobotControl/RobotControl.xcodeproj; sourceTree = "<group>"; };
 		E1A57ABC2108D4AE00C208C6 /* SerialTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SerialTools.xcodeproj; path = SerialTools/SerialTools.xcodeproj; sourceTree = "<group>"; };
+		E1AE6D90210AA4FD00B6E3C6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "MobileLighting_Mac/activeLighting/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImgProcessor.i386-g.a"; path = "MobileLighting_Mac/activeLighting/libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
 		E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodes.swift; sourceTree = "<group>"; };
@@ -374,6 +374,7 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
+				E1AE6D90210AA4FD00B6E3C6 /* README.md */,
 				E17AC76D20FE38860007EF77 /* Yaml.xcodeproj */,
 				E196122120D1AC9100D85EDB /* extrinsics.yml */,
 				E196122220D1AC9200D85EDB /* intrinsics.yml */,
@@ -471,7 +472,6 @@
 				E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */,
 				E1F4FF921EE9CFF6008E0096 /* ProgramControl.swift */,
 				E1C0F41E2107A5720088B609 /* StructuredLight.swift */,
-				E174EE1C2106113500AC5755 /* README.md */,
 				E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */,
 				E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */,
 				E1A2165620C841000016DFC6 /* DirectoryStructure.swift */,

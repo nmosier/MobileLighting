@@ -131,7 +131,7 @@ Flags:
 
 ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
 
-Before each photo, ML Mac will move the robot arm to the correct position and ask you to hit enter once it has reached the position. It then takes the photo, which is saved at <scene>/orig/calibration/stereo/pos<i>, where <i> is the postion number.
+Before each photo, ML Mac will move the robot arm to the correct position and ask you to hit enter once it has reached the position. It then takes the photo, which is saved at <scene>/orig/calibration/stereo/posX, where X is the postion number.
 
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
